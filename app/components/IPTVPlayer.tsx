@@ -1305,7 +1305,8 @@ export default function IPTVPlayer() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="flex items-center px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-[10px] sm:text-xs text-gray-400 font-medium whitespace-nowrap shadow-sm">
-                  Developed by <span className="text-white font-bold ml-1">S. SHAJON</span>
+                  Developed by{" "}
+                  <span className="text-white font-bold ml-1">S. SHAJON</span>
                 </span>
                 <a
                   href="https://github.com/SHAJON-404/iptv"
