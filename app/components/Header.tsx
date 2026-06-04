@@ -77,7 +77,7 @@ export default function Header() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex items-center gap-3 sm:gap-4 pl-3.5 pr-2.5 py-2 sm:py-2.5 rounded-2xl sm:rounded-3xl bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-md shadow-xl shadow-black/20 transition-all duration-300"
+            className="hidden sm:flex items-center gap-3 sm:gap-4 pl-3.5 pr-2.5 py-2 sm:py-2.5 rounded-2xl sm:rounded-3xl bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.08] hover:border-white/[0.15] backdrop-blur-md shadow-xl shadow-black/20 transition-all duration-300"
           >
             {/* Developer Avatar */}
             <div className="relative flex-shrink-0">
