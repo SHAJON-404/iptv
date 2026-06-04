@@ -1296,27 +1296,25 @@ export default function IPTVPlayer() {
 
           {/* 4. Footer with Developer Info */}
           <div className="w-full pt-4 md:pt-6 pb-2">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3.5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl shadow-black/40">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
               <div className="flex items-center gap-2">
-                <p className="text-gray-500 text-[10px] sm:text-xs font-medium text-center sm:text-left">
-                  Watch premium live TV channels directly from official stream sources.
+                <p className="text-gray-500 text-[10px] sm:text-xs font-medium">
+                  Watch premium live TV channels directly from official stream
+                  sources.
                 </p>
               </div>
-              
-              {/* Dedicated Sub-Card containing both credits and repo link */}
-              <div className="px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center gap-3 shadow-md shadow-black/15">
-                <span className="text-[10px] sm:text-xs text-gray-400 font-medium whitespace-nowrap">
-                  Developed by{" "}
-                  <span className="text-gray-200 font-bold">S. SHAJON</span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-[10px] sm:text-xs text-gray-400 font-medium whitespace-nowrap shadow-sm">
+                  Developed by <span className="text-white font-bold ml-1">S. SHAJON</span>
                 </span>
-                <span className="text-white/10 text-xs select-none">|</span>
                 <a
                   href="https://github.com/SHAJON-404/iptv"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[10px] sm:text-xs text-primary hover:text-white font-semibold transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.08] hover:border-white/[0.18] text-[10px] sm:text-xs text-gray-300 hover:text-white font-semibold transition-all duration-300 shadow-sm whitespace-nowrap"
                 >
-                  GitHub Repository
+                  <GithubIcon size={12} className="opacity-80" />
+                  <span>GitHub Repository</span>
                 </a>
               </div>
             </div>
