@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+LICENSE
+.npmrc
+*.log
