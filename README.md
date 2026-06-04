@@ -20,14 +20,43 @@ Web Players:
 
 ## 🌍 Live TV Channels Database
 
-If you want to use the curated, lightweight JSON-based IPTV channel database (containing 1220+ channels) in another project, you can fetch the raw file directly:
+If you want to use the curated, lightweight IPTV channel database (containing 6800+ channels) in another project, media player, or Android TV, you can fetch the raw files directly:
 
-```
-https://raw.githubusercontent.com/SHAJON-404/iptv/refs/heads/main/app/data/channels.json
-```
+- **JSON Format**:
+  ```
+  https://raw.githubusercontent.com/SHAJON-404/iptv/refs/heads/main/app/data/channels.json
+  ```
+
+- **M3U Playlist Format** (For Android TV, VLC, Kodi, or any IPTV Player):
+  ```
+  https://raw.githubusercontent.com/SHAJON-404/iptv/refs/heads/main/app/data/channels.m3u
+  ```
 
 > [!IMPORTANT]
 > **License & Credit Notice**: If you use this channel database or stream source list in your own projects, you **must share and display proper credit** to the original developer (**S. SHAJON**) along with a link back to this repository.
+
+---
+
+## 🛠️ M3U Playlist Converter
+
+If you need the channel database in standard M3U format, you can use the built-in Node.js conversion script.
+
+### Usage
+
+1. **Quick Conversion** (using defaults: `app/data/channels.json` ➔ `app/data/channels.m3u`):
+   ```bash
+   npm run convert-m3u
+   ```
+   *Or run it directly:*
+   ```bash
+   node scripts/json-to-m3u.js
+   ```
+
+2. **Custom Paths**:
+   If you have a custom JSON database or want to output to a specific location:
+   ```bash
+   node scripts/json-to-m3u.js <path-to-input.json> <path-to-output.m3u>
+   ```
 
 ---
 

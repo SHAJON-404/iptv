@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "convert-m3u": "node scripts/json-to-m3u.js"
   },
   "dependencies": {
     "hls.js": "^1.6.16",
