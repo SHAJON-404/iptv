@@ -124,7 +124,8 @@ Special thanks to all IPTV open-source repository maintainers and contributors w
 This project is open-source software licensed under the **GNU General Public License v3 (GPLv3)**.
 
 ### Open Source Compliance Guidelines:
-1. **Copyleft Protection**: Any extensions, improvements, or derivative works built on top of this codebase must also be open-sourced and distributed under the same GPLv3 license.
+1. **Copyleft Protection & Mandatory Open Source**: You are free to use, modify, and build upon everything in this repository, but any derivative player, application, or database **MUST remain fully open-source** and distributed under the same GPLv3 license.
 2. **Preserve Developer Attribution**: You must preserve all S. SHAJON copyright, developer profile links (GitHub, Telegram, Facebook), and licensing labels in both the user interface and code files.
+3. **No Commercial Ads or Betting/Gambling Promotions**: If you build your own IPTV player or service based on this codebase, database, or resources, you are **strictly prohibited** from integrating or displaying any form of commercial advertisements, pop-up ads, redirect ads, or betting/gambling promotions of any kind.
 
 Developed with ♥ by [S. SHAJON](https://t.me/SHAJON). Follow [GitHub Profile](https://github.com/SHAJON-404) for updates.
