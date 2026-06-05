@@ -1,0 +1,25 @@
+{
+  "name": "IPTV Player",
+  "short_name": "IPTV Player",
+  "description": "Stream 6500+ live TV channels from Bangladesh, India, and worldwide. Premium IPTV web player.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070414",
+  "theme_color": "#8b5cf6",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["entertainment", "lifestyle"]
+}

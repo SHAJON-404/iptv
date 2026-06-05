@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -7,10 +7,84 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://tv.shajon.dev";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#070414" },
+    { media: "(prefers-color-scheme: light)", color: "#070414" },
+  ],
+};
+
 export const metadata: Metadata = {
-  title: "IPTV Player — Watch Live TV Channels",
+  title: "IPTV Player — Watch 6500+ Live TV Channels Free",
   description:
-    "Watch premium live TV channels directly. Stream high quality content directly from official stream sources with a beautiful, modern player.",
+    "Stream 6500+ live TV channels from Bangladesh, India, and worldwide. Premium IPTV web player with HLS streaming, custom playlist support, and a modern UI. No app install needed.",
+  keywords: [
+    "IPTV",
+    "live TV",
+    "streaming",
+    "HLS player",
+    "TV channels",
+    "Bangladesh TV",
+    "sports live",
+    "T Sports",
+    "free TV",
+    "online TV",
+    "IPTV player",
+    "m3u player",
+    "web TV player",
+  ],
+  authors: [{ name: "S. SHAJON", url: "https://github.com/SHAJON-404" }],
+  creator: "S. SHAJON",
+  publisher: "S. SHAJON",
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: "IPTV Player",
+    title: "IPTV Player — Watch 6500+ Live TV Channels Free",
+    description:
+      "Stream 6500+ live TV channels from Bangladesh, India, and worldwide. Premium IPTV web player with HLS streaming, custom playlist support, and a modern UI.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "IPTV Player — Live TV streaming with 6500+ channels",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "IPTV Player — Watch 6500+ Live TV Channels Free",
+    description:
+      "Stream 6500+ live TV channels free. Premium web player with HLS streaming and custom playlist support.",
+    images: ["/og-image.png"],
+    creator: "@shajon404",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
+  manifest: "/manifest.json",
+  category: "entertainment",
 };
 
 export default function RootLayout({
