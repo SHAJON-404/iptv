@@ -1,6 +1,6 @@
 # 📺 IPTV Player — Watch Live TV Channels
 
-A modern, high-performance, and premium web-based IPTV player built with **Next.js 16**, **React 19**, **Three.js**, and **Tailwind CSS v4**. Stream high-quality live TV channels directly from official broadcast sources with a cinematic user interface.
+A modern, high-performance, and premium web-based IPTV player built with **Next.js 16**, **React 19**, and **Tailwind CSS v4**. Stream high-quality live TV channels directly from official broadcast sources with a cinematic user interface.
 
 Web Players:
 - **Dedicated Web Player**: https://tv.shajon.dev
@@ -11,10 +11,10 @@ Web Players:
 ## ✨ Features
 
 - 📺 **Cinematic Video Player**: Large, center-aligned, aspect-ratio locked media container utilizing HLS.js and native iOS Safari player engines. Supports Picture-in-Picture (PiP), custom volume controls, double-tap seek, and auto-fallback muted play.
-- 🌌 **Three.js Cybernetic Background**: Dynamic WebGL particle flow field featuring parallax camera coordinates responsive to mouse movements, a moving neon grid floor, and glowing orbital space structures.
+- 🌌 **3D CSS Net Background**: A highly optimized, static 3D perspective cyber grid with deep purple and cyan radial glows and a subtle viewport mesh overlay, designed for maximum performance (0% CPU/GPU overhead) on all devices.
 - 🔍 **Interactive Channel Grid**: Filter and search through thousands of Bangla and international live TV channels in real-time. Responsive grid display dynamically adjusts for mobile, tablet, and desktop viewports.
 - ⚡ **Full Skeleton UI Loading States**: Fully unified, custom-designed pulsing skeleton templates for every card element (Player, Details, Developer Info, Total Channels, and Channel List grid) to prevent layout shifts.
-- 🧭 **Glassmorphic Sticky Header**: A tall, luxurious sticky header with brand identification, active live broadcast pulsing status, and developer contact badges.
+- 🧭 **Glassmorphic Sticky Header**: A clean, luxurious sticky header with brand identification and active live broadcast pulsing status.
 
 ---
 
@@ -65,7 +65,6 @@ If you need the channel database in standard M3U format, you can use the built-i
 - **Framework**: [Next.js 16 (App Router)](https://nextjs.org/)
 - **Library**: [React 19](https://react.dev/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **3D Graphics**: [Three.js](https://threejs.org/) (for WebGL background effects)
 - **Animations**: [Motion](https://motion.dev/) (formerly Framer Motion)
 - **Stream Engine**: [HLS.js](https://github.com/video-dev/hls.js/)
 
