@@ -198,8 +198,10 @@ export default function BackgroundScene() {
     // ── 4. Animation clock and loops ──
     const startTime = performance.now();
     let animId: number;
+    let isPaused = false;
 
     const animate = () => {
+      if (isPaused) return;
       animId = requestAnimationFrame(animate);
       const time = (performance.now() - startTime) * 0.001;
 
@@ -243,8 +245,23 @@ export default function BackgroundScene() {
     };
     animate();
 
-    // Resize handler
+    // Pause/resume animation when player enters/exits fullscreen
+    // The background is invisible behind the fullscreen player, so skip rendering
+    const handleFullscreenEvent = (e: Event) => {
+      const { isFullscreen } = (e as CustomEvent).detail;
+      if (isFullscreen) {
+        isPaused = true;
+        cancelAnimationFrame(animId);
+      } else {
+        isPaused = false;
+        animate();
+      }
+    };
+    window.addEventListener("iptv-fullscreen", handleFullscreenEvent);
+
+    // Resize handler — skip resize during fullscreen to avoid layout thrashing
     const onResize = () => {
+      if (isPaused) return;
       W = window.innerWidth;
       H = window.innerHeight;
       camera.aspect = W / H;
@@ -254,9 +271,11 @@ export default function BackgroundScene() {
     window.addEventListener("resize", onResize);
 
     return () => {
+      isPaused = true;
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("iptv-fullscreen", handleFullscreenEvent);
       renderer.domElement.remove();
       renderer.dispose();
     };

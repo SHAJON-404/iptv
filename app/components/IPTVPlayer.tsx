@@ -99,6 +99,7 @@ export default function IPTVPlayer() {
   const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolume] = useState(0.8);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const isFullscreenRef = useRef(false);
   const [isPip, setIsPip] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isRotated, setIsRotated] = useState(false);
@@ -113,6 +114,10 @@ export default function IPTVPlayer() {
 
   useEffect(() => {
     isMutedRef.current = isMuted;
+    // Sync muted state imperatively instead of via React prop to avoid video re-renders
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
   }, [isMuted]);
 
   useEffect(() => {
@@ -198,6 +203,12 @@ export default function IPTVPlayer() {
   useEffect(() => {
     const handleFullscreenChange = () => {
       const isFs = !!document.fullscreenElement;
+      isFullscreenRef.current = isFs;
+
+      // Notify BackgroundScene to pause/resume animation
+      window.dispatchEvent(new CustomEvent("iptv-fullscreen", { detail: { isFullscreen: isFs } }));
+
+      // Update state synchronously so CSS classes match immediately
       setIsFullscreen(isFs);
       if (!isFs) {
         setIsRotated(false);
@@ -1060,7 +1071,7 @@ export default function IPTVPlayer() {
       ) : loading ? (
         <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full items-center animate-pulse">
           {/* 1. Player Card Skeleton */}
-          <div className="w-full aspect-video rounded-2xl md:rounded-3xl bg-white/[0.01] border border-white/5 flex items-center justify-center min-h-[200px]">
+          <div className="w-full aspect-video rounded-2xl md:rounded-3xl bg-white/[0.01] border border-white/5 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
               <Radio size={32} className="text-white/20 animate-pulse" />
             </div>
@@ -1150,10 +1161,13 @@ export default function IPTVPlayer() {
               onMouseMove={handleMouseMove}
               onClick={handlePlayerClick}
               onDoubleClick={handlePlayerDoubleClick}
-              className={`bg-black shadow-2xl group transition-all duration-300 ${
+              style={{ willChange: "transform" }}
+              className={`bg-black shadow-2xl group ${
                 isRotated
                   ? "fixed z-[9999] top-1/2 left-1/2 w-[100vh] h-[100vw] -translate-x-1/2 -translate-y-1/2 rotate-90 origin-center"
-                  : "relative aspect-video rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/5 w-full"
+                  : isFullscreen
+                    ? "relative w-full h-full bg-black"
+                    : "relative aspect-video rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/5 w-full"
               } ${
                 showControls ? "cursor-default" : "cursor-none"
               }`}
@@ -1161,7 +1175,6 @@ export default function IPTVPlayer() {
               <video
                 ref={videoRef}
                 playsInline
-                muted={isMuted}
                 className="w-full h-full object-contain bg-black cursor-pointer"
               />
 
@@ -1462,13 +1475,13 @@ export default function IPTVPlayer() {
                 </div>
               </motion.div>
             ) : (
-              <div className="md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full animate-pulse">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/10 border border-white/10 flex-shrink-0 flex items-center justify-center">
-                  <Radio size={20} className="text-white/20" />
+              <div className="md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex-shrink-0 flex items-center justify-center">
+                  <Tv size={20} className="text-primary" />
                 </div>
-                <div className="space-y-2 flex-1 min-w-0">
-                  <div className="h-4 bg-white/10 rounded w-2/3" />
-                  <div className="h-3 bg-white/10 rounded w-1/3" />
+                <div className="space-y-1 min-w-0">
+                  <h2 className="text-base sm:text-lg font-bold text-gray-300">Select a Channel</h2>
+                  <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500">Choose from the list below</span>
                 </div>
               </div>
             )}
