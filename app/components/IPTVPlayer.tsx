@@ -27,24 +27,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Hls from "hls.js";
-
-const GithubIcon = ({ size = 14, className = "" }: { size?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
-  </svg>
-);
-
-const TelegramIcon = ({ size = 13, className = "" }: { size?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-  </svg>
-);
-
-const FacebookIcon = ({ size = 14, className = "" }: { size?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-  </svg>
-);
+import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 
 interface Channel {
   id: string;
@@ -76,7 +59,7 @@ export default function IPTVPlayer() {
     { id: "default", name: "Default TV", type: "default", channels: [] },
   ]);
   const [activePlaylistId, setActivePlaylistId] = useState<string>("default");
-  
+
   // Custom playlist loading states
   const [playlistTab, setPlaylistTab] = useState<"browse" | "manage">("browse");
   const [importUrl, setImportUrl] = useState("");
@@ -533,17 +516,17 @@ export default function IPTVPlayer() {
     try {
       const saved = localStorage.getItem("iptv_saved_playlists");
       const savedActiveId = localStorage.getItem("iptv_active_playlist_id");
-      
+
       if (saved) {
         const parsedSaved = JSON.parse(saved) as Playlist[];
         const customPlaylists = parsedSaved.filter(p => p.id !== "default");
-        
+
         setPlaylists(prev => [
           prev[0], // Keep default
           ...customPlaylists
         ]);
       }
-      
+
       if (savedActiveId) {
         setActivePlaylistId(savedActiveId);
       }
@@ -580,7 +563,7 @@ export default function IPTVPlayer() {
           throw new Error(`Failed to load channels (Status ${response.status})`);
         }
         const data = await response.json();
-        
+
         setPlaylists(prev => {
           return prev.map(p => {
             if (p.id === "default") {
@@ -638,7 +621,7 @@ export default function IPTVPlayer() {
 
       if (line.startsWith("#EXTINF:")) {
         currentChannel = {};
-        
+
         const logoMatch = line.match(/(?:tvg-logo|logo)="([^"]+)"/i);
         if (logoMatch) currentChannel.logo = logoMatch[1];
 
@@ -650,8 +633,8 @@ export default function IPTVPlayer() {
           currentChannel.name = line.substring(commaIndex + 1).trim();
         }
       } else if (
-        line.startsWith("http://") || 
-        line.startsWith("https://") || 
+        line.startsWith("http://") ||
+        line.startsWith("https://") ||
         (line && !line.startsWith("#"))
       ) {
         if (currentChannel.name || line.includes("index.m3u8") || line.includes(".m3u8") || line.includes(".mp4")) {
@@ -663,7 +646,7 @@ export default function IPTVPlayer() {
           currentChannel.id = `custom-ch-${parsedChannels.length}-${Date.now()}`;
           if (!currentChannel.group) currentChannel.group = "Custom";
           if (!currentChannel.logo) currentChannel.logo = "";
-          
+
           parsedChannels.push(currentChannel as Channel);
         }
         currentChannel = {};
@@ -703,7 +686,7 @@ export default function IPTVPlayer() {
       try {
         const text = event.target?.result as string;
         let parsed: Channel[] = [];
-        
+
         if (file.name.endsWith(".json")) {
           parsed = parseJSON(text);
         } else {
@@ -1162,15 +1145,13 @@ export default function IPTVPlayer() {
               onClick={handlePlayerClick}
               onDoubleClick={handlePlayerDoubleClick}
               style={{ willChange: "transform" }}
-              className={`bg-black shadow-2xl group ${
-                isRotated
+              className={`bg-black shadow-2xl group ${isRotated
                   ? "fixed z-[9999] top-1/2 left-1/2 w-[100vh] h-[100vw] -translate-x-1/2 -translate-y-1/2 rotate-90 origin-center"
                   : isFullscreen
                     ? "relative w-full h-full bg-black"
                     : "relative aspect-video rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/5 w-full"
-              } ${
-                showControls ? "cursor-default" : "cursor-none"
-              }`}
+                } ${showControls ? "cursor-default" : "cursor-none"
+                }`}
             >
               <video
                 ref={videoRef}
@@ -1237,11 +1218,10 @@ export default function IPTVPlayer() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className={`absolute inset-y-0 w-1/3 flex items-center justify-center pointer-events-none z-30 bg-white/5 ${
-                      activeSeekIndicator.side === "left"
+                    className={`absolute inset-y-0 w-1/3 flex items-center justify-center pointer-events-none z-30 bg-white/5 ${activeSeekIndicator.side === "left"
                         ? "left-0 rounded-r-full"
                         : "right-0 rounded-l-full"
-                    }`}
+                      }`}
                   >
                     {activeSeekIndicator.side === "left" ? (
                       <motion.div
@@ -1346,11 +1326,10 @@ export default function IPTVPlayer() {
               {/* Custom Controls Overlay */}
               {playerStatus === "playing" && (
                 <div
-                  className={`player-controls absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-center justify-between transition-all duration-300 z-20 ${
-                    showControls
+                  className={`player-controls absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-center justify-between transition-all duration-300 z-20 ${showControls
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-2 pointer-events-none"
-                  }`}
+                    }`}
                 >
                   {/* Left controls */}
                   <div className="flex items-center gap-3">
@@ -1384,11 +1363,9 @@ export default function IPTVPlayer() {
                         onChange={handleVolumeChangeSlider}
                         className="w-16 sm:w-20 h-1.5 rounded-lg appearance-none cursor-pointer outline-none transition-all [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-md"
                         style={{
-                          background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${
-                            (isMuted ? 0 : volume) * 100
-                          }%, rgba(255, 255, 255, 0.25) ${
-                            (isMuted ? 0 : volume) * 100
-                          }%, rgba(255, 255, 255, 0.25) 100%)`,
+                          background: `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${(isMuted ? 0 : volume) * 100
+                            }%, rgba(255, 255, 255, 0.25) ${(isMuted ? 0 : volume) * 100
+                            }%, rgba(255, 255, 255, 0.25) 100%)`,
                         }}
                       />
                     </div>
@@ -1405,9 +1382,8 @@ export default function IPTVPlayer() {
                     {isPipSupported && (
                       <button
                         onClick={handlePip}
-                        className={`p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors ${
-                          isPip ? "text-primary bg-white/10" : ""
-                        }`}
+                        className={`p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors ${isPip ? "text-primary bg-white/10" : ""
+                          }`}
                         title="Picture in Picture"
                       >
                         <PictureInPicture size={18} />
@@ -1415,9 +1391,8 @@ export default function IPTVPlayer() {
                     )}
                     <button
                       onClick={handleToggleOrientation}
-                      className={`p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors ${
-                        isRotated ? "text-primary bg-white/10" : ""
-                      }`}
+                      className={`p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors ${isRotated ? "text-primary bg-white/10" : ""
+                        }`}
                       title="Rotate Screen"
                     >
                       <RotateCw size={18} />
@@ -1446,9 +1421,8 @@ export default function IPTVPlayer() {
                 key={selectedChannel.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${
-                  playerStatus === "loading" ? "animate-pulse" : ""
-                }`}
+                className={`md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${playerStatus === "loading" ? "animate-pulse" : ""
+                  }`}
               >
                 {selectedChannel.logo ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
@@ -1513,7 +1487,7 @@ export default function IPTVPlayer() {
                       className="text-gray-400 hover:text-white transition-colors"
                       title="GitHub"
                     >
-                      <GithubIcon size={18} />
+                      <FaGithub size={18} />
                     </a>
                     <a
                       href="https://t.me/SHAJON"
@@ -1522,7 +1496,7 @@ export default function IPTVPlayer() {
                       className="text-gray-400 hover:text-[#26A5E4] transition-colors"
                       title="Telegram"
                     >
-                      <TelegramIcon size={16} />
+                      <FaTelegram size={18} />
                     </a>
                     <a
                       href="https://www.facebook.com/shahmakhdumshajonofficial"
@@ -1531,7 +1505,16 @@ export default function IPTVPlayer() {
                       className="text-gray-400 hover:text-[#1877F2] transition-colors"
                       title="Facebook"
                     >
-                      <FacebookIcon size={18} />
+                      <FaFacebook size={18} />
+                    </a>
+                    <a
+                      href="https://youtube.com/@SHAJON-404"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 hover:text-[#FF0000] transition-colors"
+                      title="YouTube"
+                    >
+                      <FaYoutube size={18} />
                     </a>
                   </div>
                 </div>
@@ -1569,22 +1552,20 @@ export default function IPTVPlayer() {
               <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/5">
                 <button
                   onClick={() => setPlaylistTab("browse")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
-                    playlistTab === "browse"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${playlistTab === "browse"
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
                       : "text-gray-400 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Tv size={14} />
                   <span>Browse Channels</span>
                 </button>
                 <button
                   onClick={() => setPlaylistTab("manage")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${
-                    playlistTab === "manage"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${playlistTab === "manage"
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
                       : "text-gray-400 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Upload size={14} />
                   <span>Playlists Manager</span>
@@ -1621,11 +1602,10 @@ export default function IPTVPlayer() {
                       <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
-                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${
-                          selectedCategory === cat
+                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${selectedCategory === cat
                             ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                             : "bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-                        }`}
+                          }`}
                       >
                         {cat}
                       </button>
@@ -1662,11 +1642,10 @@ export default function IPTVPlayer() {
                           <button
                             key={chan.id}
                             onClick={() => handleChannelSelect(chan)}
-                            className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group ${
-                              isSelected
+                            className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group ${isSelected
                                 ? "bg-primary/10 border-primary text-primary"
                                 : "bg-white/[0.02] border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
-                            }`}
+                              }`}
                           >
                             {chan.logo ? (
                               /* eslint-disable-next-line @next/next/no-img-element */
@@ -1686,9 +1665,8 @@ export default function IPTVPlayer() {
 
                             <div className="flex-1 min-w-0">
                               <p
-                                className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
-                                  isSelected ? "text-primary/75" : "text-gray-500"
-                                }`}
+                                className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${isSelected ? "text-primary/75" : "text-gray-500"
+                                  }`}
                               >
                                 {chan.group}
                               </p>
@@ -1723,7 +1701,7 @@ export default function IPTVPlayer() {
                         </div>
                         <h4 className="font-bold text-sm sm:text-base">Load from URL</h4>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <input
                           type="text"
@@ -1775,7 +1753,7 @@ export default function IPTVPlayer() {
                         Upload local .m3u, .m3u8, or .json playlist files. Stored securely in your browser cache.
                       </p>
                     </div>
-                    
+
                     <div className="mt-4">
                       <input
                         type="file"
@@ -1816,16 +1794,14 @@ export default function IPTVPlayer() {
                             setActivePlaylistId(pl.id);
                             setPlaylistTab("browse");
                           }}
-                          className={`flex items-center justify-between p-4 sm:p-5 rounded-2xl border text-left transition-all cursor-pointer group/item ${
-                            isActive
+                          className={`flex items-center justify-between p-4 sm:p-5 rounded-2xl border text-left transition-all cursor-pointer group/item ${isActive
                               ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
                               : "bg-white/[0.02] border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className={`p-2.5 rounded-xl border flex-shrink-0 ${
-                              isActive ? "bg-primary/20 border-primary/20" : "bg-white/5 border-white/10"
-                            }`}>
+                            <div className={`p-2.5 rounded-xl border flex-shrink-0 ${isActive ? "bg-primary/20 border-primary/20" : "bg-white/5 border-white/10"
+                              }`}>
                               {pl.type === "default" ? (
                                 <Tv size={16} />
                               ) : pl.type === "url" ? (
@@ -1834,7 +1810,7 @@ export default function IPTVPlayer() {
                                 <FileText size={16} />
                               )}
                             </div>
-                            
+
                             <div className="min-w-0">
                               <h5 className="font-bold text-xs sm:text-sm truncate pr-2">{pl.name}</h5>
                               <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
@@ -1888,7 +1864,7 @@ export default function IPTVPlayer() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.08] hover:border-white/[0.18] text-[10px] sm:text-xs text-gray-300 hover:text-white font-semibold transition-all duration-300 shadow-sm whitespace-nowrap"
                 >
-                  <GithubIcon size={12} className="opacity-80" />
+                  <FaGithub size={12} className="opacity-80" />
                   <span>GitHub Repository</span>
                 </a>
               </div>

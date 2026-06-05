@@ -71,14 +71,6 @@ export const metadata: Metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "IPTV Player — Watch 6500+ Live TV Channels Free",
-    description:
-      "Stream 6500+ live TV channels free. Premium web player with HLS streaming and custom playlist support.",
-    images: ["/og-image.png"],
-    creator: "@shajon404",
-  },
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-icon.png",
