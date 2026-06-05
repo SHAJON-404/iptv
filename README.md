@@ -2,9 +2,7 @@
 
 A modern, high-performance, and premium web-based IPTV player built with **Next.js 16**, **React 19**, and **Tailwind CSS v4**. Stream high-quality live TV channels directly from official broadcast sources with a cinematic user interface.
 
-Web Players:
-- **Dedicated Web Player**: https://tv.shajon.dev
-- **Tools Web Player**: https://tools.shajon.dev/iptv
+**Web Player**: https://tv.shajon.dev
 
 ---
 
