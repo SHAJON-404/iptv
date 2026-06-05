@@ -354,44 +354,6 @@ export default function IPTVPlayer() {
     resetControlsTimeout();
   };
 
-  const handleToggleOrientation = useCallback(async () => {
-    const container = playerContainerRef.current;
-    if (!container) return;
-
-    const orientation = window.screen?.orientation as unknown as {
-      type: string;
-      angle: number;
-      lock?: (orientation: "portrait" | "landscape" | "portrait-primary" | "portrait-secondary" | "landscape-primary" | "landscape-secondary" | "any" | "natural") => Promise<void>;
-      unlock?: () => void;
-    };
-    if (
-      window.screen &&
-      orientation &&
-      typeof orientation.lock === "function"
-    ) {
-      try {
-        if (!document.fullscreenElement) {
-          await container.requestFullscreen();
-          await orientation.lock("landscape");
-        } else {
-          const type = orientation.type;
-          if (type.startsWith("landscape")) {
-            await orientation.lock("portrait");
-          } else {
-            await orientation.lock("landscape");
-          }
-        }
-        setIsRotated(false);
-      } catch (err) {
-        console.warn("Screen orientation lock failed, falling back to CSS rotation:", err);
-        setIsRotated((prev) => !prev);
-      }
-    } else {
-      setIsRotated((prev) => !prev);
-    }
-    resetControlsTimeout();
-  }, [resetControlsTimeout]);
-
   const handleSeek = (seconds: number) => {
     const video = videoRef.current;
     if (!video) return;
@@ -1437,10 +1399,9 @@ export default function IPTVPlayer() {
                       </button>
                     )}
                     <button
-                      onClick={handleToggleOrientation}
-                      className={`p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors ${isRotated ? "text-primary bg-white/10" : ""
-                        }`}
-                      title="Rotate Screen"
+                      onClick={handleReload}
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors"
+                      title="Reload Stream"
                     >
                       <RotateCw size={18} />
                     </button>
