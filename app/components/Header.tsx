@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [viewerCount, setViewerCount] = useState<number | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -13,6 +14,49 @@ export default function Header() {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    // Generate or retrieve session ID from sessionStorage
+    const getOrCreateSessionId = (): string => {
+      if (typeof window === "undefined") return "";
+      let id = sessionStorage.getItem("iptv_viewer_session_id");
+      if (!id) {
+        id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem("iptv_viewer_session_id", id);
+      }
+      return id;
+    };
+
+    const sessionId = getOrCreateSessionId();
+
+    const sendHeartbeat = async () => {
+      try {
+        const response = await fetch("/api/iptv/viewers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ sessionId }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (typeof data.count === "number") {
+            setViewerCount(data.count);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to send heartbeat:", error);
+      }
+    };
+
+    // Send initial heartbeat
+    sendHeartbeat();
+
+    // Send heartbeat every 15 seconds
+    const interval = setInterval(sendHeartbeat, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -50,11 +94,24 @@ export default function Header() {
                   TV Player
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-emerald-400">
-                  LIVE BROADCAST
-                </span>
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-emerald-400">
+                    LIVE BROADCAST
+                  </span>
+                </div>
+                {viewerCount !== null && (
+                  <>
+                    <span className="text-white/20 text-[9px] sm:text-[10px] select-none">•</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                      <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-blue-400">
+                        {viewerCount} {viewerCount === 1 ? "Watcher" : "Watchers"}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
