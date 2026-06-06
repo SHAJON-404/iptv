@@ -24,8 +24,7 @@ import {
   ShieldAlert,
   PictureInPicture,
   ChevronsLeft,
-  ChevronsRight,
-  Smartphone
+  ChevronsRight
 } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 
@@ -93,7 +92,6 @@ export default function IPTVPlayer() {
   const isFullscreenRef = useRef(false);
   const [isPip, setIsPip] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [isRotated, setIsRotated] = useState(false);
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unmuteCleanupRef = useRef<(() => void) | null>(null);
 
@@ -235,8 +233,7 @@ export default function IPTVPlayer() {
     };
   }, []);
 
-  // Detect mobile device
-  const isMobile = typeof window !== "undefined" && /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -249,7 +246,6 @@ export default function IPTVPlayer() {
       // Batch state updates
       setIsFullscreen(isFs);
       if (!isFs) {
-        setIsRotated(false);
         // Delay orientation unlock to avoid layout thrashing during exit animation
         setTimeout(() => {
           try {
@@ -274,28 +270,7 @@ export default function IPTVPlayer() {
     };
   }, []);
 
-  useEffect(() => {
-    if (isRotated) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isRotated]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsRotated(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -381,11 +356,7 @@ export default function IPTVPlayer() {
     resetControlsTimeout();
   };
 
-  // Mobile rotate: toggles CSS-based landscape rotation (no Fullscreen API)
-  const handleMobileRotate = () => {
-    setIsRotated(prev => !prev);
-    resetControlsTimeout();
-  };
+
 
   const handleFullscreen = () => {
     const container = playerContainerRef.current;
@@ -1316,9 +1287,7 @@ export default function IPTVPlayer() {
               onMouseMove={handleMouseMove}
               onClick={handlePlayerClick}
               onDoubleClick={handlePlayerDoubleClick}
-              className={`bg-black shadow-2xl group transition-[width,height] duration-200 ${isRotated
-                  ? "fixed z-[9999] top-1/2 left-1/2 w-[100vh] h-[100vw] -translate-x-1/2 -translate-y-1/2 rotate-90 origin-center"
-                  : isFullscreen
+              className={`bg-black shadow-2xl group transition-[width,height] duration-200 ${isFullscreen
                     ? "relative w-full h-full bg-black"
                     : "relative aspect-video rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/5 w-full"
                 } ${showControls ? "cursor-default" : "cursor-none"
@@ -1569,16 +1538,7 @@ export default function IPTVPlayer() {
                     >
                       <RotateCw size={18} />
                     </button>
-                    {/* Mobile-only rotate button for CSS-based landscape mode */}
-                    {isMobile && (
-                      <button
-                        onClick={handleMobileRotate}
-                        className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors ${isRotated ? "text-primary bg-white/10" : "text-white"}`}
-                        title={isRotated ? "Exit Landscape" : "Rotate to Landscape"}
-                      >
-                        <Smartphone size={18} className={isRotated ? "rotate-0" : "rotate-90"} />
-                      </button>
-                    )}
+
                     <button
                       onClick={handleFullscreen}
                       className="p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors"
