@@ -24,8 +24,7 @@ import {
   ShieldAlert,
   PictureInPicture,
   ChevronsLeft,
-  ChevronsRight,
-  Users
+  ChevronsRight
 } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 
@@ -101,28 +100,6 @@ export default function IPTVPlayer() {
   const isMutedRef = useRef(isMuted);
   const volumeRef = useRef(volume);
   const loadedUrlRef = useRef<string | null>(null);
-
-  const [viewerCount, setViewerCount] = useState<number>(1);
-
-  useEffect(() => {
-    const fetchViewerCount = async () => {
-      try {
-        const response = await fetch("/api/iptv/viewers");
-        if (response.ok) {
-          const data = await response.json();
-          if (typeof data.count === "number") {
-            setViewerCount(data.count);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch viewer count:", error);
-      }
-    };
-
-    fetchViewerCount();
-    const interval = setInterval(fetchViewerCount, 15000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
@@ -1133,21 +1110,12 @@ export default function IPTVPlayer() {
               </div>
             </div>
 
-            {/* Card 3: Stats Skeleton Block */}
-            <div className="grid grid-cols-2 gap-4 w-full md:col-span-1">
-              <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center gap-3 bg-white/[0.01] w-full animate-pulse">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 border border-white/10 flex-shrink-0" />
-                <div className="space-y-2 flex-1 min-w-0">
-                  <div className="h-3 bg-white/10 rounded w-2/3 animate-pulse" />
-                  <div className="h-4 bg-white/10 rounded w-1/2 animate-pulse" />
-                </div>
-              </div>
-              <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center gap-3 bg-white/[0.01] w-full animate-pulse">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/10 border border-white/10 flex-shrink-0" />
-                <div className="space-y-2 flex-1 min-w-0">
-                  <div className="h-3 bg-white/10 rounded w-2/3 animate-pulse" />
-                  <div className="h-4 bg-white/10 rounded w-1/2 animate-pulse" />
-                </div>
+            {/* Card 3: Total Channels Count Skeleton */}
+            <div className="glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center gap-4 bg-white/[0.01] w-full animate-pulse">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 border border-white/10 flex-shrink-0" />
+              <div className="space-y-2 flex-1">
+                <div className="h-4 bg-white/10 rounded w-1/3 animate-pulse" />
+                <div className="h-5 bg-white/10 rounded w-1/2 animate-pulse" />
               </div>
             </div>
           </div>
@@ -1463,14 +1431,14 @@ export default function IPTVPlayer() {
           </div>
 
           {/* 2. Grid for Channel Details & Channel Count Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
             {/* Channel Details Card / Skeleton */}
             {selectedChannel ? (
               <motion.div
                 key={selectedChannel.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${playerStatus === "loading" ? "animate-pulse" : ""
+                className={`col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${playerStatus === "loading" ? "animate-pulse" : ""
                   }`}
               >
                 {selectedChannel.logo ? (
@@ -1489,6 +1457,9 @@ export default function IPTVPlayer() {
                   </div>
                 )}
                 <div className="space-y-1 min-w-0">
+                  <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500">
+                    Currently Watching
+                  </p>
                   <h2 className="text-base sm:text-lg md:text-xl font-bold truncate">
                     {selectedChannel.name}
                   </h2>
@@ -1498,19 +1469,52 @@ export default function IPTVPlayer() {
                 </div>
               </motion.div>
             ) : (
-              <div className="md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
+              <div className="col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
                 <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex-shrink-0 flex items-center justify-center">
                   <Tv size={20} className="text-primary" />
                 </div>
                 <div className="space-y-1 min-w-0">
+                  <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500">
+                    Currently Watching
+                  </p>
                   <h2 className="text-base sm:text-lg font-bold text-gray-300">Select a Channel</h2>
                   <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500">Choose from the list below</span>
                 </div>
               </div>
             )}
 
+            {/* Playlist Card */}
+            <div className="col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                <FileText size={20} />
+              </div>
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500 truncate">
+                  Playlist
+                </p>
+                <h3 className="text-base sm:text-lg font-bold text-white truncate" title={playlists.find((p) => p.id === activePlaylistId)?.name}>
+                  {playlists.find((p) => p.id === activePlaylistId)?.name || "Default"}
+                </h3>
+              </div>
+            </div>
+
+            {/* Channel Count Card */}
+            <div className="col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                <Tv size={20} className="animate-pulse" />
+              </div>
+              <div className="space-y-0.5 min-w-0">
+                <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500 truncate">
+                  Total Channels
+                </p>
+                <h3 className="text-base sm:text-lg font-bold text-emerald-400 truncate">
+                  {channels.length} Channels
+                </h3>
+              </div>
+            </div>
+
             {/* Developer Info Card */}
-            <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-between gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
+            <div className="col-span-1 glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-between gap-4 text-left bg-white/[0.01] w-full">
               {/* Left block: Avatar & Name/Socials */}
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className="relative">
@@ -1577,39 +1581,6 @@ export default function IPTVPlayer() {
                 For any support, contact via <a href="https://t.me/SHAJON" target="_blank" rel="noopener noreferrer" className="text-[#26A5E4] font-bold hover:underline">Telegram only</a>. Follow GitHub for updates!
               </p>
             </div>
-
-            {/* Stats Block: Total Channels & Currently Watching */}
-            <div className="grid grid-cols-2 gap-4 w-full md:col-span-1">
-              {/* Card 3a: Total Channels */}
-              <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-3 text-left bg-white/[0.01] w-full">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
-                  <Tv size={18} className="animate-pulse" />
-                </div>
-                <div className="space-y-0.5 min-w-0">
-                  <p className="text-[9px] uppercase font-bold tracking-widest text-gray-500 truncate">
-                    Total Channels
-                  </p>
-                  <h3 className="text-sm sm:text-base font-bold text-emerald-400 truncate">
-                    {channels.length}
-                  </h3>
-                </div>
-              </div>
-
-              {/* Card 3b: Currently Watching */}
-              <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-3 text-left bg-white/[0.01] w-full">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0">
-                  <Users size={18} className="animate-pulse" />
-                </div>
-                <div className="space-y-0.5 min-w-0">
-                  <p className="text-[9px] uppercase font-bold tracking-widest text-gray-500 truncate">
-                    Watching Now
-                  </p>
-                  <h3 className="text-sm sm:text-base font-bold text-blue-400 truncate">
-                    {viewerCount}
-                  </h3>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* 3. Channel List Card */}
@@ -1637,14 +1608,6 @@ export default function IPTVPlayer() {
                   <Upload size={14} />
                   <span>Playlists Manager</span>
                 </button>
-              </div>
-
-              {/* Display active playlist name */}
-              <div className="text-[10px] sm:text-xs text-gray-400 bg-white/5 border border-white/5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl max-w-[180px] sm:max-w-[260px] truncate select-none flex items-center gap-1.5 sm:gap-2">
-                <span className="font-semibold shrink-0">Playlist:</span>
-                <span className="text-white font-bold truncate">
-                  {playlists.find((p) => p.id === activePlaylistId)?.name}
-                </span>
               </div>
             </div>
 
