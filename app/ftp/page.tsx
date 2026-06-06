@@ -2,7 +2,6 @@
 
 import { motion } from "motion/react";
 import {
-  ExternalLink,
   Database,
   Network,
   Server,
