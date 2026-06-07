@@ -163,8 +163,10 @@ export async function GET(request: NextRequest) {
       );
     }
     console.error("Proxy error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to fetch from target URL";
+    const errorCause = error instanceof Error && error.cause ? String(error.cause) : undefined;
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch from target URL" },
+      { error: errorMessage, cause: errorCause },
       { status: 500 }
     );
   }
