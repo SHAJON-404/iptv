@@ -89,12 +89,6 @@ export default function RootLayout({
 
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <head>
-        <link rel="preconnect" href="https://s3.aynaott.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://static.wikia.nocookie.net" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://tvsen7.aynaott.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://avatars.githubusercontent.com" crossOrigin="anonymous" />
-      </head>
       <body className="min-h-full flex flex-col">
         {children}
         <ClientPopupWrapper showPopup={showPopup} />

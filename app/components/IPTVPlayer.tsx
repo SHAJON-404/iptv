@@ -1188,7 +1188,7 @@ export default function IPTVPlayer() {
         <div className="glass-card p-12 text-center space-y-6 border border-rose-500/20 max-w-2xl mx-auto rounded-3xl bg-rose-500/5">
           <ShieldAlert className="text-rose-500 mx-auto" size={48} />
           <h3 className="text-2xl font-bold">Something went wrong</h3>
-          <p className="text-gray-400 font-medium">{error}</p>
+          <p className="text-zinc-300 font-medium">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-primary hover:bg-primary-dark font-bold rounded-2xl transition-all shadow-lg shadow-primary/20"
@@ -1250,23 +1250,38 @@ export default function IPTVPlayer() {
           </div>
 
           {/* 3. Channels List Skeleton Card */}
-          <div className="w-full glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px] gap-4">
-            <div className="space-y-3 pb-3 border-b border-white/5">
-              <div className="h-10 bg-white/5 rounded-xl sm:rounded-2xl w-full" />
-              <div className="flex gap-2">
-                <div className="h-8 bg-white/5 rounded-lg w-16" />
+          <div className="w-full glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">
+            {/* Mock Playlist Header & Tab Bar */}
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/5 flex-wrap gap-2 animate-pulse">
+              <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto gap-2">
+                <div className="h-8 bg-white/10 rounded-lg w-28 sm:w-32" />
+                <div className="h-8 bg-white/5 rounded-lg w-28 sm:w-32" />
+              </div>
+              <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto gap-2">
                 <div className="h-8 bg-white/5 rounded-lg w-20" />
-                <div className="h-8 bg-white/5 rounded-lg w-20" />
+                <div className="h-8 bg-white/10 rounded-lg w-32" />
               </div>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 h-full">
+
+            {/* Mock Search and Filters */}
+            <div className="space-y-3 sm:space-y-4 py-3 sm:py-4 border-b border-white/5 animate-pulse">
+              <div className="h-10 bg-white/5 rounded-xl sm:rounded-2xl w-full" />
+              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={idx} className="h-8 bg-white/5 rounded-lg sm:rounded-xl w-16 sm:w-20 flex-shrink-0" />
+                ))}
+              </div>
+            </div>
+
+            {/* Mock Channels Grid */}
+            <div className="flex-1 min-h-0 overflow-y-auto pt-3 sm:pt-4 pr-1 custom-scrollbar">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {Array.from({ length: 12 }).map((_, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5"
+                    className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 animate-pulse"
                   >
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10" />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10 flex-shrink-0" />
                     <div className="flex-1 space-y-1.5 sm:space-y-2">
                       <div className="h-2.5 sm:h-3 w-1/3 bg-white/10 rounded" />
                       <div className="h-3.5 sm:h-4 w-2/3 bg-white/10 rounded" />
@@ -1440,7 +1455,7 @@ export default function IPTVPlayer() {
                   <span className="text-base font-bold text-white">
                     Stream Currently Unavailable
                   </span>
-                  <span className="text-xs text-gray-500 max-w-sm">
+                  <span className="text-xs text-zinc-400 max-w-sm">
                     This live TV link might be offline, or blocked by the
                     original broadcaster.
                   </span>
@@ -1459,9 +1474,9 @@ export default function IPTVPlayer() {
                 <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-4 z-10">
                   <Radio
                     size={40}
-                    className="text-gray-600 animate-pulse"
+                    className="text-zinc-500 animate-pulse"
                   />
-                  <span className="text-sm text-gray-400 font-medium">
+                  <span className="text-sm text-zinc-300 font-medium">
                     Select a channel to play
                   </span>
                 </div>
@@ -1600,7 +1615,7 @@ export default function IPTVPlayer() {
                 </div>
                 <div className="space-y-1 min-w-0">
                   <h2 className="text-base sm:text-lg font-bold text-gray-300">Select a Channel</h2>
-                  <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500">Choose from the list below</span>
+                  <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400">Choose from the list below</span>
                 </div>
               </div>
             )}
@@ -1630,7 +1645,7 @@ export default function IPTVPlayer() {
                       href="https://github.com/SHAJON-404"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="text-zinc-300 hover:text-white transition-colors"
                       title="GitHub"
                     >
                       <FaGithub size={18} />
@@ -1639,7 +1654,7 @@ export default function IPTVPlayer() {
                       href="https://t.me/SHAJON"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-[#26A5E4] transition-colors"
+                      className="text-zinc-300 hover:text-[#26A5E4] transition-colors"
                       title="Telegram"
                     >
                       <FaTelegram size={18} />
@@ -1648,7 +1663,7 @@ export default function IPTVPlayer() {
                       href="https://www.facebook.com/shahmakhdumshajonofficial"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-[#1877F2] transition-colors"
+                      className="text-zinc-300 hover:text-[#1877F2] transition-colors"
                       title="Facebook"
                     >
                       <FaFacebook size={18} />
@@ -1657,7 +1672,7 @@ export default function IPTVPlayer() {
                       href="https://youtube.com/@SHAJON-404"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-[#FF0000] transition-colors"
+                      className="text-zinc-300 hover:text-[#FF0000] transition-colors"
                       title="YouTube"
                     >
                       <FaYoutube size={18} />
@@ -1670,7 +1685,7 @@ export default function IPTVPlayer() {
               <div className="hidden xs:block h-10 w-[1px] bg-white/10 flex-shrink-0" />
 
               {/* Right block: Support details */}
-              <p className="text-[10px] sm:text-[10.5px] leading-normal text-gray-500 font-medium select-text flex-1 pl-1 min-w-[120px]">
+              <p className="text-[10px] sm:text-[10.5px] leading-normal text-zinc-400 font-medium select-text flex-1 pl-1 min-w-[120px]">
                 For any support, contact via <a href="https://t.me/SHAJON" target="_blank" rel="noopener noreferrer" className="text-[#26A5E4] font-bold hover:underline">Telegram only</a>. Follow GitHub for updates!
               </p>
             </div>
@@ -1681,7 +1696,7 @@ export default function IPTVPlayer() {
                 <Tv size={20} className="animate-pulse" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-gray-500 truncate">
+                <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400 truncate">
                   Total Channels
                 </p>
                 <h3 className="text-base sm:text-lg font-bold text-emerald-400 truncate">
@@ -1700,7 +1715,7 @@ export default function IPTVPlayer() {
                   onClick={() => setPlaylistTab("browse")}
                   className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${playlistTab === "browse"
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
-                      : "text-gray-400 hover:text-white"
+                      : "text-zinc-300 hover:text-white"
                     }`}
                 >
                   <Tv size={14} />
@@ -1710,7 +1725,7 @@ export default function IPTVPlayer() {
                   onClick={() => setPlaylistTab("manage")}
                   className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${playlistTab === "manage"
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
-                      : "text-gray-400 hover:text-white"
+                      : "text-zinc-300 hover:text-white"
                     }`}
                 >
                   <Upload size={14} />
@@ -1722,7 +1737,7 @@ export default function IPTVPlayer() {
               <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto justify-between sm:justify-start">
                 {viewerCount !== null && (
                   <>
-                    <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-gray-400 select-none">
+                    <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none">
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
                       <span className="text-white font-bold whitespace-nowrap">
                         {viewerCount} {viewerCount === 1 ? "Watcher" : "Watchers"}
@@ -1732,7 +1747,7 @@ export default function IPTVPlayer() {
                   </>
                 )}
 
-                <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-gray-400 select-none max-w-[180px] sm:max-w-[260px] truncate">
+                <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none max-w-[180px] sm:max-w-[260px] truncate">
                   <span className="font-semibold shrink-0">Playlist:</span>
                   <span className="text-white font-bold truncate">
                     {playlists.find((p) => p.id === activePlaylistId)?.name}
@@ -1746,13 +1761,13 @@ export default function IPTVPlayer() {
                 {/* Search and Filters */}
                 <div className="space-y-3 sm:space-y-4 py-3 sm:py-4 border-b border-white/5">
                   <div className="relative flex items-center bg-white/5 border border-white/5 focus-within:border-primary/50 rounded-xl sm:rounded-2xl p-1 transition-colors">
-                    <Search className="text-gray-500 ml-2.5 sm:ml-3" size={15} />
+                    <Search className="text-zinc-400 ml-2.5 sm:ml-3" size={15} />
                     <input
                       type="text"
                       placeholder="Search live TV..."
                       value={searchQuery}
                       onChange={(e) => { setSearchQuery(e.target.value); setDisplayCount(80); }}
-                      className="flex-1 bg-transparent border-none outline-none py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white placeholder:text-gray-500"
+                      className="flex-1 bg-transparent border-none outline-none py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white placeholder:text-zinc-400"
                     />
                   </div>
 
@@ -1764,7 +1779,7 @@ export default function IPTVPlayer() {
                         onClick={() => { setSelectedCategory(cat); setDisplayCount(80); }}
                         className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${selectedCategory === cat
                             ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                            : "bg-white/5 border-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                            : "bg-white/5 border-white/5 text-zinc-300 hover:text-white hover:bg-white/10"
                           }`}
                       >
                         {cat}
@@ -1791,7 +1806,7 @@ export default function IPTVPlayer() {
                       ))}
                     </div>
                   ) : filteredChannels.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 text-sm font-medium">
+                    <div className="text-center py-12 text-zinc-400 text-sm font-medium">
                       No channels found match your filters.
                     </div>
                   ) : (
@@ -1820,14 +1835,14 @@ export default function IPTVPlayer() {
                                 className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-lg sm:rounded-xl bg-white/5 p-0.5 border border-white/10 group-hover:scale-105 transition-transform"
                               />
                             ) : (
-                              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-bold text-xs border border-white/10 text-gray-400 group-hover:text-white transition-colors">
+                              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-bold text-xs border border-white/10 text-zinc-300 group-hover:text-white transition-colors">
                                 {getInitials(chan.name)}
                               </div>
                             )}
 
                             <div className="flex-1 min-w-0">
                               <p
-                                className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${isSelected ? "text-primary/75" : "text-gray-500"
+                                className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${isSelected ? "text-primary/75" : "text-zinc-400"
                                   }`}
                               >
                                 {chan.group}
@@ -1853,7 +1868,7 @@ export default function IPTVPlayer() {
                       <div className="flex justify-center pt-4 pb-2">
                         <button
                           onClick={() => setDisplayCount(prev => prev + 80)}
-                          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-xs sm:text-sm font-bold text-gray-400 hover:text-white hover:bg-white/[0.08] hover:border-white/10 transition-all active:scale-95"
+                          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-xs sm:text-sm font-bold text-zinc-300 hover:text-white hover:bg-white/[0.08] hover:border-white/10 transition-all active:scale-95"
                         >
                           <ChevronsRight size={14} className="rotate-90" />
                           <span>Load More ({filteredChannels.length - displayCount} remaining)</span>
@@ -1884,7 +1899,7 @@ export default function IPTVPlayer() {
                           placeholder="Playlist Name (e.g. My IPTV)"
                           value={playlistName}
                           onChange={(e) => setPlaylistName(e.target.value)}
-                          className="w-full bg-white/5 border border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-gray-500 outline-none transition-colors"
+                          className="w-full bg-white/5 border border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
                         />
                         <input
                           type="url"
@@ -1892,7 +1907,7 @@ export default function IPTVPlayer() {
                           value={importUrl}
                           onChange={(e) => setImportUrl(e.target.value)}
                           required
-                          className="w-full bg-white/5 border border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-gray-500 outline-none transition-colors"
+                          className="w-full bg-white/5 border border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1925,7 +1940,7 @@ export default function IPTVPlayer() {
                         </div>
                         <h4 className="font-bold text-sm sm:text-base">Upload Playlist File</h4>
                       </div>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-zinc-300">
                         Upload local .m3u, .m3u8, or .json playlist files. Stored securely in your browser cache.
                       </p>
                     </div>
@@ -1989,7 +2004,7 @@ export default function IPTVPlayer() {
 
                             <div className="min-w-0">
                               <h5 className="font-bold text-xs sm:text-sm truncate pr-2">{pl.name}</h5>
-                              <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">
+                              <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">
                                 {pl.channels.length} Channels • {pl.type === "default" ? "Built-in" : pl.type === "url" ? "URL" : "Uploaded File"}
                               </p>
                             </div>
@@ -2004,7 +2019,7 @@ export default function IPTVPlayer() {
                             {pl.id !== "default" && (
                               <button
                                 onClick={(e) => handleDeletePlaylist(pl.id, e)}
-                                className="p-2 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-0 group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
+                                className="p-2 rounded-xl text-zinc-300 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-0 group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
                                 title="Delete Playlist"
                               >
                                 <Trash2 size={14} />
@@ -2024,13 +2039,13 @@ export default function IPTVPlayer() {
           <div className="w-full pt-4 md:pt-6 pb-2">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
               <div className="flex items-center gap-2">
-                <p className="text-gray-500 text-[10px] sm:text-xs font-medium">
+                <p className="text-zinc-400 text-[10px] sm:text-xs font-medium">
                   Watch premium live TV channels directly from official stream
                   sources.
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="flex items-center px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-[10px] sm:text-xs text-gray-400 font-medium whitespace-nowrap shadow-sm">
+                <span className="flex items-center px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-[10px] sm:text-xs text-zinc-300 font-medium whitespace-nowrap shadow-sm">
                   Developed by{" "}
                   <span className="text-white font-bold ml-1">S. SHAJON</span>
                 </span>

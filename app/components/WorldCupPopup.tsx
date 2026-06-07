@@ -170,7 +170,7 @@ export default function WorldCupPopup({ showPopup }: WorldCupPopupProps) {
               </button>
             </div>
 
-            <p className="mt-3 text-center text-[9px] font-medium text-zinc-500">
+            <p className="mt-3 text-center text-[9px] font-medium text-zinc-400">
               *Matches will stream live once the tournament begins.
             </p>
           </motion.div>
