@@ -1,4 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetch as undiciFetch, Agent } from "undici";
+
+// Create a custom Undici Agent to handle legacy IPTV servers
+// that use older TLS versions or legacy cipher suites.
+const sslAgent = new Agent({
+  connect: {
+    rejectUnauthorized: false,
+    ciphers: "DEFAULT:@SECLEVEL=0",
+    minVersion: "TLSv1",
+  },
+});
 
 function resolveUrl(relative: string, base: string): string {
   try {
@@ -45,10 +56,11 @@ export async function GET(request: NextRequest) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
 
-    const response = await fetch(targetUrl, {
+    const response = await undiciFetch(targetUrl, {
       headers: upstreamHeaders,
       signal: controller.signal,
       redirect: "follow",
+      dispatcher: sslAgent,
     });
     clearTimeout(timeout);
 
@@ -137,7 +149,7 @@ export async function GET(request: NextRequest) {
         headers["Cache-Control"] = "public, max-age=3600";
       }
 
-      return new Response(response.body, {
+      return new Response(response.body as unknown as ReadableStream, {
         status: response.status, // Preserves 206 Partial Content for Range requests
         headers,
       });
