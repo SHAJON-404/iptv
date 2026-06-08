@@ -27,7 +27,8 @@ import {
   PictureInPicture,
   ChevronsLeft,
   ChevronsRight,
-  List
+  List,
+  X
 } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 
@@ -1880,6 +1881,18 @@ export default function IPTVPlayer() {
                       onChange={(e) => { setSearchQuery(e.target.value); setDisplayCount(80); }}
                       className="flex-1 bg-transparent border-none outline-none py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white placeholder:text-zinc-400"
                     />
+                    {searchQuery && (
+                      <button
+                        onClick={() => {
+                          setSearchQuery("");
+                          setDisplayCount(80);
+                        }}
+                        className="p-1 mr-1.5 sm:mr-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                        title="Clear Search"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
                   </div>
 
                   {/* Categories horizontally scrollable */}
