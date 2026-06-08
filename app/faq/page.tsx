@@ -174,7 +174,7 @@ export default function FAQPage() {
           >
             <h3 className="text-base sm:text-lg font-bold">Still have questions?</h3>
             <p className="text-xs sm:text-sm text-zinc-400 font-medium">
-              If you couldn't find your answer here, feel free to reach out for direct support.
+              If you couldn&apos;t find your answer here, feel free to reach out for direct support.
               We are active on Telegram.
             </p>
             <div className="pt-2">

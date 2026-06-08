@@ -66,9 +66,11 @@ export default function IPTVPlayer() {
 
   // Playlist Management States
   const [playlists, setPlaylists] = useState<Playlist[]>([
-    { id: "default", name: "Default TV", type: "default", channels: [] },
+    { id: "sports", name: "Sports", type: "default", channels: [] },
+    { id: "universal", name: "Universal", type: "default", channels: [] },
+    { id: "bangla", name: "Bangla", type: "default", channels: [] },
   ]);
-  const [activePlaylistId, setActivePlaylistId] = useState<string>("default");
+  const [activePlaylistId, setActivePlaylistId] = useState<string>("sports");
 
   // Custom playlist loading states
   const [playlistTab, setPlaylistTab] = useState<"browse" | "manage">("browse");
@@ -552,19 +554,25 @@ export default function IPTVPlayer() {
 
       if (saved) {
         const parsedSaved = JSON.parse(saved) as Playlist[];
-        const customPlaylists = parsedSaved.filter(p => p.id !== "default");
+        const customPlaylists = parsedSaved.filter(p => 
+          p.id !== "default" && p.id !== "sports" && p.id !== "universal" && p.id !== "bangla"
+        );
 
         setTimeout(() => {
-          setPlaylists(prev => [
-            prev[0], // Keep default
-            ...customPlaylists
-          ]);
+          setPlaylists(prev => {
+            const defaults = prev.filter(p => p.type === "default");
+            return [
+              ...defaults,
+              ...customPlaylists
+            ];
+          });
         }, 0);
       }
 
       if (savedActiveId) {
         setTimeout(() => {
-          setActivePlaylistId(savedActiveId);
+          const resolvedActiveId = savedActiveId === "default" ? "sports" : savedActiveId;
+          setActivePlaylistId(resolvedActiveId);
         }, 0);
       }
     } catch (e) {
@@ -574,9 +582,10 @@ export default function IPTVPlayer() {
 
   // Save custom playlists to localStorage whenever they change
   useEffect(() => {
-    if (playlists.length <= 1 && playlists[0].channels.length === 0) return;
+    const customPlaylists = playlists.filter(p => 
+      p.id !== "default" && p.id !== "sports" && p.id !== "universal" && p.id !== "bangla"
+    );
     try {
-      const customPlaylists = playlists.filter(p => p.id !== "default");
       localStorage.setItem("iptv_saved_playlists", JSON.stringify(customPlaylists));
     } catch (e) {
       console.error("Failed to save playlists to localStorage:", e);
@@ -590,7 +599,7 @@ export default function IPTVPlayer() {
     }
   }, [activePlaylistId]);
 
-  // --- IndexedDB Cache Helpers for channels.json ---
+  // --- IndexedDB Cache Helpers for default playlists ---
   const openCacheDB = useCallback((): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("iptv-cache", 1);
@@ -605,13 +614,13 @@ export default function IPTVPlayer() {
     });
   }, []);
 
-  const getCachedChannels = useCallback(async (): Promise<{ channels: Channel[]; hash: string } | null> => {
+  const getCachedChannels = useCallback(async (playlistId: string): Promise<{ channels: Channel[]; hash: string } | null> => {
     try {
       const db = await openCacheDB();
       return new Promise((resolve) => {
         const tx = db.transaction("channels", "readonly");
         const store = tx.objectStore("channels");
-        const req = store.get("cached-data");
+        const req = store.get(`cached-data-${playlistId}`);
         req.onsuccess = () => resolve(req.result || null);
         req.onerror = () => resolve(null);
       });
@@ -620,85 +629,110 @@ export default function IPTVPlayer() {
     }
   }, [openCacheDB]);
 
-  const setCachedChannels = useCallback(async (channels: Channel[], hash: string) => {
+  const setCachedChannels = useCallback(async (playlistId: string, channels: Channel[], hash: string) => {
     try {
       const db = await openCacheDB();
       const tx = db.transaction("channels", "readwrite");
       const store = tx.objectStore("channels");
-      store.put({ channels, hash }, "cached-data");
+      store.put({ channels, hash }, `cached-data-${playlistId}`);
     } catch (e) {
       console.warn("Failed to cache channels in IndexedDB:", e);
     }
   }, [openCacheDB]);
 
-  // 1. Fetch channel metadata with IndexedDB cache + SHA-256 hash validation
+  // 1. Fetch channel metadata with IndexedDB cache + SHA-256 hash validation for all default playlists
   useEffect(() => {
-    async function loadChannels() {
+    const defaultPlaylistsToLoad = playlists.filter(
+      (p) => p.type === "default" && p.channels.length === 0
+    );
+
+    if (defaultPlaylistsToLoad.length === 0) {
+      setTimeout(() => setLoading(false), 0);
+      return;
+    }
+
+    // Show loading spinner only if the active playlist is empty and needs to load
+    const activePlaylist = playlists.find((p) => p.id === activePlaylistId);
+    if (activePlaylist && activePlaylist.type === "default" && activePlaylist.channels.length === 0) {
+      setTimeout(() => setLoading(true), 0);
+    }
+
+    async function loadAll() {
       try {
-        setLoading(true);
+        await Promise.all(
+          defaultPlaylistsToLoad.map(async (pl) => {
+            const playlistId = pl.id;
 
-        // Step 1: Check IndexedDB for cached channels
-        const cached = await getCachedChannels();
+            // Step 1: Check IndexedDB cache
+            const cached = await getCachedChannels(playlistId);
+            if (cached && cached.channels.length > 0) {
+              setPlaylists((prev) =>
+                prev.map((p) =>
+                  p.id === playlistId ? { ...p, channels: cached.channels } : p
+                )
+              );
 
-        if (cached && cached.channels.length > 0) {
-          // Show cached data immediately for instant UI
-          setPlaylists(prev =>
-            prev.map(p => p.id === "default" ? { ...p, channels: cached.channels } : p)
-          );
-          setLoading(false);
+              // If this is the active playlist, we can hide the loading spinner now
+              if (playlistId === activePlaylistId) {
+                setTimeout(() => setLoading(false), 0);
+              }
 
-          // Step 2: Fetch only the hash to check for updates (~80 bytes)
-          try {
-            const hashResponse = await fetch("/api/iptv/channels/hash");
-            if (hashResponse.ok) {
-              const { hash: serverHash } = await hashResponse.json();
-              if (serverHash === cached.hash) {
-                // Hash matches — cache is fresh, no re-download needed
-                return;
+              // Step 2: Fetch only the hash to verify freshness
+              try {
+                const hashResponse = await fetch(`/api/iptv/channels/hash?type=${playlistId}`);
+                if (hashResponse.ok) {
+                  const { hash: serverHash } = await hashResponse.json();
+                  if (serverHash === cached.hash) {
+                    return; // Cache is fresh
+                  }
+                }
+              } catch {
+                // Ignore failure, fall through to reload
               }
             }
-          } catch {
-            // Hash check failed — fall through to full fetch
-          }
 
-          // Step 3: Hash mismatch or check failed — re-download full data
-          setLoading(true);
-        }
-
-        // Step 4: Full fetch (first load or cache invalidated)
-        const response = await fetch("/api/iptv/channels");
-        if (!response.ok) {
-          throw new Error(`Failed to load channels (Status ${response.status})`);
-        }
-        const data = await response.json();
-        const serverHash = response.headers.get("X-Channels-Hash") || "";
-
-        setPlaylists(prev => {
-          return prev.map(p => {
-            if (p.id === "default") {
-              return { ...p, channels: data };
+            // Step 3: Fetch full data
+            const response = await fetch(`/api/iptv/channels?type=${playlistId}`);
+            if (!response.ok) {
+              throw new Error(`Failed to load channels for ${playlistId} (Status ${response.status})`);
             }
-            return p;
-          });
-        });
+            const data = await response.json();
+            const serverHash = response.headers.get("X-Channels-Hash") || "";
 
-        // Store in IndexedDB for next load
-        if (serverHash) {
-          await setCachedChannels(data, serverHash);
-        }
+            setPlaylists((prev) =>
+              prev.map((p) =>
+                p.id === playlistId ? { ...p, channels: data } : p
+              )
+            );
+
+            // Store in IndexedDB for next load
+            if (serverHash) {
+              await setCachedChannels(playlistId, data, serverHash);
+            }
+          })
+        );
       } catch (err: unknown) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "Failed to load channel list. Please try again.";
-        console.error("Error fetching channels:", err);
-        setError(message);
+        console.error("Error loading default playlists:", err);
+        // Only set error state if it affects the active playlist
+        const activePlaylistAfter = playlists.find((p) => p.id === activePlaylistId);
+        if (
+          activePlaylistAfter &&
+          activePlaylistAfter.type === "default" &&
+          activePlaylistAfter.channels.length === 0
+        ) {
+          const message =
+            err instanceof Error
+              ? err.message
+              : "Failed to load channel list. Please try again.";
+          setError(message);
+        }
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 0);
       }
     }
-    loadChannels();
-  }, [getCachedChannels, setCachedChannels]);
+
+    loadAll();
+  }, [activePlaylistId, playlists, getCachedChannels, setCachedChannels]);
 
   // Sync active playlist channels to standard list representation
   useEffect(() => {
@@ -722,11 +756,13 @@ export default function IPTVPlayer() {
             setSelectedChannel(defaultChan || currentPlaylist.channels[0]);
           }
         } else {
-          setSelectedChannel(null);
+          if (!loading) {
+            setSelectedChannel(null);
+          }
         }
       }, 0);
     }
-  }, [activePlaylistId, playlists, selectedChannel?.id, selectedChannel?.url]);
+  }, [activePlaylistId, playlists, selectedChannel?.id, selectedChannel?.url, loading]);
 
   // M3U & JSON Parsing Helpers
   const parseM3U = (text: string): Channel[] => {
@@ -921,12 +957,12 @@ export default function IPTVPlayer() {
 
   const handleDeletePlaylist = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (id === "default") return;
+    if (id === "default" || id === "sports" || id === "universal" || id === "bangla") return;
 
     setPlaylists(prev => {
       const updated = prev.filter(p => p.id !== id);
       if (activePlaylistId === id) {
-        setActivePlaylistId("default");
+        setActivePlaylistId("sports");
       }
       return updated;
     });

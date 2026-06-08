@@ -16,10 +16,12 @@ export default function WorldCupPopup({ showPopup }: WorldCupPopupProps) {
     if (!showPopup) return;
 
     // Check if user has already dismissed the popup in this session
+    // In development mode, bypass the dismissal check so it shows up for testing
     const isDismissed = sessionStorage.getItem("dismissed_world_cup_popup_2026");
-    if (isDismissed !== "true") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsOpen(true);
+    if (isDismissed !== "true" || process.env.NODE_ENV === "development") {
+      setTimeout(() => {
+        setIsOpen(true);
+      }, 0);
     }
   }, [showPopup]);
 

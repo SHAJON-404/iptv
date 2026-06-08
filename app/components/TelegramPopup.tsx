@@ -15,9 +15,12 @@ export default function TelegramPopup({ showPopup }: TelegramPopupProps) {
     if (!showPopup) return;
 
     // Check if user has already dismissed the Telegram popup in this session
+    // In development mode, bypass the dismissal check so it shows up for testing
     const isDismissed = sessionStorage.getItem("dismissed_telegram_popup");
-    if (isDismissed !== "true") {
-      setIsOpen(true);
+    if (isDismissed !== "true" || process.env.NODE_ENV === "development") {
+      setTimeout(() => {
+        setIsOpen(true);
+      }, 0);
     }
   }, [showPopup]);
 
