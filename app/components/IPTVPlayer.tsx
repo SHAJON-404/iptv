@@ -1797,7 +1797,7 @@ export default function IPTVPlayer() {
                             <Check size={10} className="sm:w-3 sm:h-3 stroke-[3]" />
                           </span>
                         )}
-                        {pl.id !== "default" && (
+                        {pl.type !== "default" && (
                           <button
                             onClick={(e) => handleDeletePlaylist(pl.id, e)}
                             className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
