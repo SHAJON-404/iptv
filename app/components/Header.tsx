@@ -5,12 +5,13 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Server, Tv } from "lucide-react";
+import { Server, Tv, HelpCircle } from "lucide-react";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const isFtpPage = pathname === "/ftp";
+  const isFaqPage = pathname === "/faq";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,9 +23,9 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-500 ${scrolled
-          ? "bg-[#070414]/85 backdrop-blur-2xl border-b border-white/[0.08] shadow-2xl shadow-black/40"
-          : "bg-transparent"
+      className={`sticky top-0 z-50 w-full border-b transition-all duration-500 ${scrolled
+          ? "bg-[#070414]/85 backdrop-blur-2xl border-white/[0.08] shadow-2xl shadow-black/40"
+          : "bg-transparent border-transparent"
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -68,26 +69,40 @@ export default function Header() {
             </motion.div>
           </Link>
 
-          {/* Right side navigation / FTP Server Button */}
+          {/* Right side navigation / FAQ & FTP Buttons */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex items-center"
+            className="flex items-center gap-2 sm:gap-3"
           >
             <Link
+              href="/faq"
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
+                isFaqPage
+                  ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                  : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+              } font-bold text-xs sm:text-sm`}
+            >
+              <HelpCircle size={15} className="text-primary" />
+              <span>FAQ</span>
+            </Link>
+
+            <Link
               href={isFtpPage ? "/" : "/ftp"}
-              className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl border border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
             >
               {isFtpPage ? (
                 <>
                   <Tv size={15} className="text-primary" />
-                  <span>Watch Live TV</span>
+                  <span className="hidden sm:inline">Watch Live TV</span>
+                  <span className="sm:hidden">Live TV</span>
                 </>
               ) : (
                 <>
                   <Server size={15} className="text-primary" />
-                  <span>FTP Servers</span>
+                  <span className="hidden sm:inline">FTP Servers</span>
+                  <span className="sm:hidden">FTP</span>
                 </>
               )}
             </Link>
