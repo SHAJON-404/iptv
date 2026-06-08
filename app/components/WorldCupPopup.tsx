@@ -104,7 +104,7 @@ export default function WorldCupPopup({ showPopup }: WorldCupPopupProps) {
             </div>
 
             {/* Announcement text */}
-            <div className="mt-4 sm:mt-6 rounded-2xl border border-white/5 bg-white/[0.02] p-3.5 sm:p-4.5 relative overflow-hidden">
+            <div className="mt-4 sm:mt-6 rounded-2xl border border-white/10 sm:border-white/5 bg-white/[0.02] p-3.5 sm:p-4.5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1.5 h-full bg-linear-to-b from-yellow-500 to-orange-500" />
               <p className="text-center sm:text-left text-xs sm:text-sm leading-relaxed text-zinc-300">
                 Bangladesh Television <span className="font-extrabold text-white">BTV</span>,{" "}
@@ -117,7 +117,7 @@ export default function WorldCupPopup({ showPopup }: WorldCupPopupProps) {
             {/* Broadcaster Logo Cards */}
             <div className="mt-4 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-3">
               {/* BTV */}
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02] p-2 sm:p-3 text-center transition-all duration-300 hover:bg-white/[0.06] hover:border-yellow-500/20 hover:-translate-y-1 group">
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 sm:border-white/5 bg-white/[0.02] p-2 sm:p-3 text-center transition-all duration-300 hover:bg-white/[0.06] hover:border-yellow-500/20 hover:-translate-y-1 group">
                 <div className="relative flex h-11 sm:h-14 w-full items-center justify-center rounded-xl bg-white p-1.5 sm:p-2 shadow-md border border-white/10 group-hover:scale-105 transition-transform duration-300">
                   <Image
                     src="https://tstatic.akash-go.com/cms-ui/images/custom-content/1778082545894.png"
@@ -131,7 +131,7 @@ export default function WorldCupPopup({ showPopup }: WorldCupPopupProps) {
               </div>
 
               {/* T Sports */}
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02] p-2 sm:p-3 text-center transition-all duration-300 hover:bg-white/[0.06] hover:border-yellow-500/20 hover:-translate-y-1 group">
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 sm:border-white/5 bg-white/[0.02] p-2 sm:p-3 text-center transition-all duration-300 hover:bg-white/[0.06] hover:border-yellow-500/20 hover:-translate-y-1 group">
                 <div className="relative flex h-11 sm:h-14 w-full items-center justify-center rounded-xl bg-white p-1.5 sm:p-2 shadow-md border border-white/10 group-hover:scale-105 transition-transform duration-300">
                   <Image
                     src="https://s3.aynaott.com/storage/dbc585f70a60b9855b6e13a8ce4cb6f4"
@@ -145,7 +145,7 @@ export default function WorldCupPopup({ showPopup }: WorldCupPopupProps) {
               </div>
 
               {/* Somoy TV */}
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02] p-2 sm:p-3 text-center transition-all duration-300 hover:bg-white/[0.06] hover:border-yellow-500/20 hover:-translate-y-1 group">
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 sm:border-white/5 bg-white/[0.02] p-2 sm:p-3 text-center transition-all duration-300 hover:bg-white/[0.06] hover:border-yellow-500/20 hover:-translate-y-1 group">
                 <div className="relative flex h-11 sm:h-14 w-full items-center justify-center rounded-xl bg-white p-1.5 sm:p-2 shadow-md border border-white/10 group-hover:scale-105 transition-transform duration-300">
                   <Image
                     src="https://i.postimg.cc/Qxn4JFNV/20250529-071147.png"

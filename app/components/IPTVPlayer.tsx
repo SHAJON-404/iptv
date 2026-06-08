@@ -26,7 +26,8 @@ import {
   ShieldAlert,
   PictureInPicture,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  List
 } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 
@@ -1199,7 +1200,7 @@ export default function IPTVPlayer() {
       ) : loading ? (
         <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full items-center animate-pulse">
           {/* 1. Player Card Skeleton */}
-          <div className="w-full aspect-video rounded-2xl md:rounded-3xl bg-white/[0.01] border border-white/5 flex items-center justify-center">
+          <div className="w-full aspect-video rounded-2xl md:rounded-3xl bg-white/[0.01] border border-white/10 sm:border-white/5 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
               <Radio size={32} className="text-white/20 animate-pulse" />
             </div>
@@ -1208,7 +1209,7 @@ export default function IPTVPlayer() {
           {/* 2. Middle Cards Skeletons */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
             {/* Card 1: Channel Details Skeleton */}
-            <div className="glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center gap-4 bg-white/[0.01] w-full animate-pulse">
+            <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center gap-4 bg-white/[0.01] w-full animate-pulse">
               <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/10 border border-white/10 flex-shrink-0" />
               <div className="space-y-2 flex-1">
                 <div className="h-4 sm:h-5 bg-white/10 rounded w-2/3 animate-pulse" />
@@ -1217,7 +1218,7 @@ export default function IPTVPlayer() {
             </div>
 
             {/* Card 2: Developer Info Skeleton */}
-            <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-between gap-4 bg-white/[0.01] w-full animate-pulse">
+            <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-between gap-4 bg-white/[0.01] w-full animate-pulse">
               {/* Left block skeleton */}
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 border border-white/10 flex-shrink-0" />
@@ -1240,7 +1241,7 @@ export default function IPTVPlayer() {
             </div>
 
             {/* Card 3: Total Channels Count Skeleton */}
-            <div className="glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center gap-4 bg-white/[0.01] w-full animate-pulse">
+            <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center gap-4 bg-white/[0.01] w-full animate-pulse">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 border border-white/10 flex-shrink-0" />
               <div className="space-y-2 flex-1">
                 <div className="h-4 bg-white/10 rounded w-1/3 animate-pulse" />
@@ -1250,21 +1251,21 @@ export default function IPTVPlayer() {
           </div>
 
           {/* 3. Channels List Skeleton Card */}
-          <div className="w-full glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">
+          <div className="w-full glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">
             {/* Mock Playlist Header & Tab Bar */}
-            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/5 flex-wrap gap-2 animate-pulse">
-              <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto gap-2">
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-wrap gap-2 animate-pulse">
+              <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto gap-2">
                 <div className="h-8 bg-white/10 rounded-lg w-28 sm:w-32" />
                 <div className="h-8 bg-white/5 rounded-lg w-28 sm:w-32" />
               </div>
-              <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto gap-2">
+              <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto gap-2">
                 <div className="h-8 bg-white/5 rounded-lg w-20" />
                 <div className="h-8 bg-white/10 rounded-lg w-32" />
               </div>
             </div>
 
             {/* Mock Search and Filters */}
-            <div className="space-y-3 sm:space-y-4 py-3 sm:py-4 border-b border-white/5 animate-pulse">
+            <div className="space-y-3 sm:space-y-4 pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 animate-pulse">
               <div className="h-10 bg-white/5 rounded-xl sm:rounded-2xl w-full" />
               <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                 {Array.from({ length: 6 }).map((_, idx) => (
@@ -1279,7 +1280,7 @@ export default function IPTVPlayer() {
                 {Array.from({ length: 12 }).map((_, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 animate-pulse"
+                    className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/10 sm:border-white/5 animate-pulse"
                   >
                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10 flex-shrink-0" />
                     <div className="flex-1 space-y-1.5 sm:space-y-2">
@@ -1306,7 +1307,7 @@ export default function IPTVPlayer() {
               onDoubleClick={handlePlayerDoubleClick}
               className={`bg-black shadow-2xl group transition-[width,height] duration-200 ${isFullscreen
                     ? "relative w-full h-full bg-black"
-                    : "relative aspect-video rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/5 w-full"
+                    : "relative aspect-video rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/10 sm:border-white/5 w-full"
                 } ${showControls ? "cursor-default" : "cursor-none"
                 }`}
             >
@@ -1580,7 +1581,7 @@ export default function IPTVPlayer() {
                 key={selectedChannel.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${playerStatus === "loading" ? "animate-pulse" : ""
+                className={`md:col-span-1 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${playerStatus === "loading" ? "animate-pulse" : ""
                   }`}
               >
                 {selectedChannel.logo ? (
@@ -1609,7 +1610,7 @@ export default function IPTVPlayer() {
                 </div>
               </motion.div>
             ) : (
-              <div className="md:col-span-1 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
+              <div className="md:col-span-1 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
                 <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex-shrink-0 flex items-center justify-center">
                   <Tv size={20} className="text-primary" />
                 </div>
@@ -1621,7 +1622,7 @@ export default function IPTVPlayer() {
             )}
 
             {/* Developer Info Card */}
-            <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-between gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
+            <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-between gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
               {/* Left block: Avatar & Name/Socials */}
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className="relative">
@@ -1691,7 +1692,7 @@ export default function IPTVPlayer() {
             </div>
 
             {/* Channel Count Card */}
-            <div className="glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
+            <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
                 <Tv size={20} className="animate-pulse" />
               </div>
@@ -1710,8 +1711,15 @@ export default function IPTVPlayer() {
           <div className="flex flex-col lg:flex-row gap-6 w-full">
             
             {/* Sidebar: Your Playlists */}
-            <div className="w-full lg:w-1/3 xl:w-1/4 glass-card p-4 sm:p-5 border border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col max-h-[280px] lg:max-h-none lg:h-[600px] xl:h-[700px]">
-              <h4 className="font-bold text-sm sm:text-base text-white mb-3">Your Playlists</h4>
+            <div className="w-full lg:w-1/3 xl:w-1/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col max-h-[280px] lg:max-h-none lg:h-[600px] xl:h-[700px]">
+              <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4">
+                <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full">
+                  <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold w-full bg-primary text-white shadow-lg shadow-primary/20 cursor-default">
+                    <List size={14} />
+                    <span className="whitespace-nowrap">Your Playlists</span>
+                  </div>
+                </div>
+              </div>
               <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2.5">
                 {playlists.map((pl) => {
                   const isActive = pl.id === activePlaylistId;
@@ -1724,7 +1732,7 @@ export default function IPTVPlayer() {
                       }}
                       className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item ${isActive
                           ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
-                          : "bg-white/[0.02] border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
+                          : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
                         }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -1770,10 +1778,10 @@ export default function IPTVPlayer() {
             </div>
 
             {/* Channel List Card */}
-            <div className="w-full lg:w-2/3 xl:w-3/4 glass-card p-4 sm:p-6 border border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">
+            <div className="w-full lg:w-2/3 xl:w-3/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">
             {/* Playlist Header & Tab Bar */}
-            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/5 flex-wrap gap-2">
-              <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto">
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-wrap gap-2">
+              <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto">
                 <button
                   onClick={() => setPlaylistTab("browse")}
                   className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${playlistTab === "browse"
@@ -1797,7 +1805,7 @@ export default function IPTVPlayer() {
               </div>
 
               {/* Display active playlist name & watcher count */}
-              <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/5 w-full sm:w-auto justify-between sm:justify-start">
+              <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto justify-between sm:justify-start">
                 {viewerCount !== null && (
                   <>
                     <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none">
@@ -1822,8 +1830,8 @@ export default function IPTVPlayer() {
             {playlistTab === "browse" ? (
               <>
                 {/* Search and Filters */}
-                <div className="space-y-3 sm:space-y-4 py-3 sm:py-4 border-b border-white/5">
-                  <div className="relative flex items-center bg-white/5 border border-white/5 focus-within:border-primary/50 rounded-xl sm:rounded-2xl p-1 transition-colors">
+                <div className="space-y-3 sm:space-y-4 pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5">
+                  <div className="relative flex items-center bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/50 rounded-xl sm:rounded-2xl p-1 transition-colors">
                     <Search className="text-zinc-400 ml-2.5 sm:ml-3" size={15} />
                     <input
                       type="text"
@@ -1842,7 +1850,7 @@ export default function IPTVPlayer() {
                         onClick={() => { setSelectedCategory(cat); setDisplayCount(80); }}
                         className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${selectedCategory === cat
                             ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                            : "bg-white/5 border-white/5 text-zinc-300 hover:text-white hover:bg-white/10"
+                            : "bg-white/5 border-white/10 sm:border-white/5 text-zinc-300 hover:text-white hover:bg-white/10"
                           }`}
                       >
                         {cat}
@@ -1858,7 +1866,7 @@ export default function IPTVPlayer() {
                       {Array.from({ length: 12 }).map((_, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 animate-pulse"
+                          className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/10 sm:border-white/5 animate-pulse"
                         >
                           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10" />
                           <div className="flex-1 space-y-1.5 sm:space-y-2">
@@ -1883,7 +1891,7 @@ export default function IPTVPlayer() {
                             onClick={() => handleChannelSelect(chan)}
                             className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group ${isSelected
                                 ? "bg-primary/10 border-primary text-primary"
-                                : "bg-white/[0.02] border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
+                                : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
                               }`}
                           >
                             {chan.logo ? (
@@ -1943,11 +1951,11 @@ export default function IPTVPlayer() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 overflow-y-auto pt-4 pr-1 space-y-6 custom-scrollbar text-left">
+              <div className="flex-1 overflow-y-auto pr-1 space-y-6 custom-scrollbar text-left">
                 {/* Import Playlist Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* URL Import Box */}
-                  <form onSubmit={handleUrlImport} className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl bg-white/[0.01] flex flex-col justify-between min-h-[180px] hover:border-primary/20 transition-colors">
+                  <form onSubmit={handleUrlImport} className="glass-card p-4 sm:p-5 border border-white/10 sm:border-white/5 rounded-2xl bg-white/[0.01] flex flex-col justify-between min-h-[180px] hover:border-primary/20 transition-colors">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -1962,7 +1970,7 @@ export default function IPTVPlayer() {
                           placeholder="Playlist Name (e.g. My IPTV)"
                           value={playlistName}
                           onChange={(e) => setPlaylistName(e.target.value)}
-                          className="w-full bg-white/5 border border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
+                          className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
                         />
                         <input
                           type="url"
@@ -1970,7 +1978,7 @@ export default function IPTVPlayer() {
                           value={importUrl}
                           onChange={(e) => setImportUrl(e.target.value)}
                           required
-                          className="w-full bg-white/5 border border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
+                          className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -1995,7 +2003,7 @@ export default function IPTVPlayer() {
                   </form>
 
                   {/* File Upload Box */}
-                  <div className="glass-card p-4 sm:p-5 border border-white/5 rounded-2xl bg-white/[0.01] flex flex-col justify-between min-h-[180px] hover:border-primary/20 transition-colors">
+                  <div className="glass-card p-4 sm:p-5 border border-white/10 sm:border-white/5 rounded-2xl bg-white/[0.01] flex flex-col justify-between min-h-[180px] hover:border-primary/20 transition-colors">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className="p-2 rounded-lg bg-primary/10 text-primary">
