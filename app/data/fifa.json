@@ -6,6 +6,24 @@
         "url": "https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8"
     },
     {
+        "name": "Ptv Sports",
+        "logo": "https://wapka-img.zuna.id/785a58ff.png",
+        "group": "Sports",
+        "url": "https://cdn.dadocric.st/embed2.php?id=ptvsp"
+    },
+    {
+        "name": "P Tv Sports",
+        "logo": "https://i.postimg.cc/sXpJqtm3/Ptv.png",
+        "group": "Sports",
+        "url": "https://tvsen5.aynaott.com/PtvSports/tracks-v1a1/mono.ts.m3u8"
+    },
+    {
+        "name": "PTV Sports",
+        "logo": "https://s3.aynaott.com/storage/9d9d7cbfba5a8ceea648bbd963ad1014",
+        "group": "Sports",
+        "url": "https://tvsen5.aynaott.com/PtvSports/index.m3u8?e=1779283784&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=db1789e36c278bf538489fac263e0ffb"
+    },
+    {
         "name": "Somoy TV",
         "logo": "https://i.postimg.cc/Qxn4JFNV/20250529-071147.png",
         "group": "FIFA",

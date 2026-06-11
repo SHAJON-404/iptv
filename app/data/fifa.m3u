@@ -1,6 +1,12 @@
 #EXTM3U
 #EXTINF:-1 tvg-logo="https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png" group-title="FIFA",CAZE TV
 https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8
+#EXTINF:-1 tvg-logo="https://wapka-img.zuna.id/785a58ff.png" group-title="Sports",Ptv Sports
+https://cdn.dadocric.st/embed2.php?id=ptvsp
+#EXTINF:-1 tvg-logo="https://i.postimg.cc/sXpJqtm3/Ptv.png" group-title="Sports",P Tv Sports
+https://tvsen5.aynaott.com/PtvSports/tracks-v1a1/mono.ts.m3u8
+#EXTINF:-1 tvg-logo="https://s3.aynaott.com/storage/9d9d7cbfba5a8ceea648bbd963ad1014" group-title="Sports",PTV Sports
+https://tvsen5.aynaott.com/PtvSports/index.m3u8?e=1779283784&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=db1789e36c278bf538489fac263e0ffb
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/Qxn4JFNV/20250529-071147.png" group-title="FIFA",Somoy TV
 https://sm-monirul.top/toffee/play/somoy_tv.m3u8
 #EXTINF:-1 group-title="FIFA",BTV HD 1
