@@ -12,11 +12,22 @@
         "url": "https://sm-monirul.top/toffee/play/somoy_tv.m3u8"
     },
     {
-        "name": "BTV HD",
+        "name": "BTV HD 1",
+        "image": "https://s3.aynaott.com/storage/b0e705f4efb6a71a2b058ae0893c0396",
+        "url": "https://tvsen6.aynaott.com/btvhd/index.m3u8?e=1780827046&u=3eb1295b-5452-470f-8568-18bbbf5b8b94&token=72ca034ee29969196e6da1592c3b5217",
+        "group": "FIFA"
+    },
+    {
+        "name": "BTV HD 2",
         "logo": "https://static.wikia.nocookie.net/logopedia/images/1/12/BTV_HD_Logo.svg",
         "group": "FIFA",
-        "url": "https://owrcovcrpy.gpcdn.net/bpk-tv/1709/output/index.m3u8",
-        "id": "btvhd-9"
+        "url": "https://owrcovcrpy.gpcdn.net/bpk-tv/1709/output/index.m3u8"
+    },
+    {
+        "name": "BTV HD 3",
+        "image": "https://s3.aynaott.com/storage/b0e705f4efb6a71a2b058ae0893c0396",
+        "url": "https://tvsen6.aynaott.com/btv_world/index.m3u8?e=1780827046&u=3eb1295b-5452-470f-8568-18bbbf5b8b94&token=51a77fcaea225e9d88e97e81ea9541a8",
+        "group": "FIFA"
     },
     {
         "name": "BTV CTG",
