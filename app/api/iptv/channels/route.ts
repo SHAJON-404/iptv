@@ -99,7 +99,7 @@ export async function GET(request: Request) {
   return NextResponse.json(channels, {
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
       "X-Channels-Hash": hash,
     },
   });

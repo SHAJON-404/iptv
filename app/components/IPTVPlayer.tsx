@@ -609,6 +609,9 @@ export default function IPTVPlayer() {
     });
   }, []);
 
+  // Cache expires after 15 minutes — forces a full re-fetch
+  const CACHE_MAX_AGE_MS = 15 * 60 * 1000;
+
   const getCachedChannels = useCallback(async (playlistId: string): Promise<{ channels: Channel[]; hash: string } | null> => {
     try {
       const db = await openCacheDB();
@@ -616,7 +619,21 @@ export default function IPTVPlayer() {
         const tx = db.transaction("channels", "readonly");
         const store = tx.objectStore("channels");
         const req = store.get(`cached-data-${playlistId}`);
-        req.onsuccess = () => resolve(req.result || null);
+        req.onsuccess = () => {
+          const result = req.result;
+          if (!result) return resolve(null);
+          // Expire cache after CACHE_MAX_AGE_MS
+          const cachedAt = result.cachedAt || 0;
+          if (Date.now() - cachedAt > CACHE_MAX_AGE_MS) {
+            // Cache expired — delete and return null
+            try {
+              const delTx = db.transaction("channels", "readwrite");
+              delTx.objectStore("channels").delete(`cached-data-${playlistId}`);
+            } catch { /* ignore cleanup errors */ }
+            return resolve(null);
+          }
+          resolve({ channels: result.channels, hash: result.hash });
+        };
         req.onerror = () => resolve(null);
       });
     } catch {
@@ -624,16 +641,47 @@ export default function IPTVPlayer() {
     }
   }, [openCacheDB]);
 
+  const clearCachedChannels = useCallback(async (playlistId: string) => {
+    try {
+      const db = await openCacheDB();
+      const tx = db.transaction("channels", "readwrite");
+      tx.objectStore("channels").delete(`cached-data-${playlistId}`);
+    } catch { /* ignore */ }
+  }, [openCacheDB]);
+
   const setCachedChannels = useCallback(async (playlistId: string, channels: Channel[], hash: string) => {
     try {
       const db = await openCacheDB();
       const tx = db.transaction("channels", "readwrite");
       const store = tx.objectStore("channels");
-      store.put({ channels, hash }, `cached-data-${playlistId}`);
+      store.put({ channels, hash, cachedAt: Date.now() }, `cached-data-${playlistId}`);
     } catch (e) {
       console.warn("Failed to cache channels in IndexedDB:", e);
     }
   }, [openCacheDB]);
+
+  // Helper: fetch fresh channels from server and update state + cache
+  const fetchAndUpdatePlaylist = useCallback(async (playlistId: string) => {
+    const response = await fetch(`/api/iptv/channels?type=${playlistId}`, {
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to load channels for ${playlistId} (Status ${response.status})`);
+    }
+    const data = await response.json();
+    const serverHash = response.headers.get("X-Channels-Hash") || "";
+
+    setPlaylists((prev) =>
+      prev.map((p) =>
+        p.id === playlistId ? { ...p, channels: data } : p
+      )
+    );
+
+    // Store in IndexedDB for next load
+    if (serverHash) {
+      await setCachedChannels(playlistId, data, serverHash);
+    }
+  }, [setCachedChannels]);
 
   // 1. Fetch channel metadata with IndexedDB cache + SHA-256 hash validation for all default playlists
   useEffect(() => {
@@ -658,7 +706,7 @@ export default function IPTVPlayer() {
           defaultPlaylistsToLoad.map(async (pl) => {
             const playlistId = pl.id;
 
-            // Step 1: Check IndexedDB cache
+            // Step 1: Check IndexedDB cache (auto-expires after 15 min)
             const cached = await getCachedChannels(playlistId);
             if (cached && cached.channels.length > 0) {
               setPlaylists((prev) =>
@@ -674,12 +722,16 @@ export default function IPTVPlayer() {
 
               // Step 2: Fetch only the hash to verify freshness
               try {
-                const hashResponse = await fetch(`/api/iptv/channels/hash?type=${playlistId}`);
+                const hashResponse = await fetch(`/api/iptv/channels/hash?type=${playlistId}`, {
+                  cache: "no-store",
+                });
                 if (hashResponse.ok) {
                   const { hash: serverHash } = await hashResponse.json();
                   if (serverHash === cached.hash) {
                     return; // Cache is fresh
                   }
+                  // Hash mismatch — clear stale cache and fetch fresh data
+                  await clearCachedChannels(playlistId);
                 }
               } catch {
                 // Ignore failure, fall through to reload
@@ -687,23 +739,7 @@ export default function IPTVPlayer() {
             }
 
             // Step 3: Fetch full data
-            const response = await fetch(`/api/iptv/channels?type=${playlistId}`);
-            if (!response.ok) {
-              throw new Error(`Failed to load channels for ${playlistId} (Status ${response.status})`);
-            }
-            const data = await response.json();
-            const serverHash = response.headers.get("X-Channels-Hash") || "";
-
-            setPlaylists((prev) =>
-              prev.map((p) =>
-                p.id === playlistId ? { ...p, channels: data } : p
-              )
-            );
-
-            // Store in IndexedDB for next load
-            if (serverHash) {
-              await setCachedChannels(playlistId, data, serverHash);
-            }
+            await fetchAndUpdatePlaylist(playlistId);
           })
         );
       } catch (err: unknown) {
@@ -727,7 +763,41 @@ export default function IPTVPlayer() {
     }
 
     loadAll();
-  }, [activePlaylistId, playlists, getCachedChannels, setCachedChannels]);
+  }, [activePlaylistId, playlists, getCachedChannels, setCachedChannels, clearCachedChannels, fetchAndUpdatePlaylist]);
+
+  // Periodic background hash check — every 15 minutes, verify all default playlists and refresh if stale
+  useEffect(() => {
+    const REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+
+    const checkAndRefresh = async () => {
+      const defaultPlaylists = playlists.filter((p) => p.type === "default" && p.channels.length > 0);
+      for (const pl of defaultPlaylists) {
+        try {
+          // Clear expired cache entries
+          await clearCachedChannels(pl.id);
+
+          // Check server hash
+          const hashResponse = await fetch(`/api/iptv/channels/hash?type=${pl.id}`, {
+            cache: "no-store",
+          });
+          if (!hashResponse.ok) continue;
+          const { hash: serverHash } = await hashResponse.json();
+
+          // Check current cached hash
+          const cached = await getCachedChannels(pl.id);
+          if (cached && cached.hash === serverHash) continue;
+
+          // Hash mismatch or no cache — fetch fresh data
+          await fetchAndUpdatePlaylist(pl.id);
+        } catch {
+          // Silently ignore per-playlist refresh errors
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkAndRefresh, REFRESH_INTERVAL_MS);
+    return () => clearInterval(intervalId);
+  }, [playlists, getCachedChannels, clearCachedChannels, fetchAndUpdatePlaylist]);
 
   // Sync active playlist channels to standard list representation
   useEffect(() => {
