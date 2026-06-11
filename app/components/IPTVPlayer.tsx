@@ -33,7 +33,7 @@ import {
   List,
   X
 } from "lucide-react";
-import { FaGithub, FaTelegram } from "react-icons/fa6";
+import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 
 interface Channel {
   id: string;
@@ -1875,8 +1875,7 @@ export default function IPTVPlayer() {
               </div>
             )}
 
-            {/* Developer Info Card (Hidden for now) */}
-            {/*
+            {/* Developer Info Card */}
             <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-between gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className="relative">
@@ -1941,22 +1940,6 @@ export default function IPTVPlayer() {
               <p className="text-[10px] sm:text-[10.5px] leading-normal text-zinc-400 font-medium select-text flex-1 pl-1 min-w-[120px]">
                 For any support, contact via <a href="https://t.me/SHAJON" target="_blank" rel="noopener noreferrer" className="text-[#26A5E4] font-bold hover:underline">Telegram only</a>. Follow GitHub for updates!
               </p>
-            </div>
-            */}
-
-            {/* Notice Card */}
-            <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#26A5E4]/10 border border-[#26A5E4]/25 flex items-center justify-center text-[#26A5E4] flex-shrink-0">
-                <FaTelegram size={22} className="animate-pulse" />
-              </div>
-              <div className="space-y-1 min-w-0">
-                <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-[#26A5E4]">
-                  গুরুত্বপূর্ণ নোটিশ / Notice
-                </p>
-                <p className="text-[11px] sm:text-xs leading-normal text-zinc-300 font-medium select-text">
-                  আইনি নোটিশের কারণে ওয়েবসাইট থেকে নির্দিষ্ট কিছু চ্যানেল সরিয়ে ফেলা হয়েছে। তবে আপনি চাইলে এখনও সেই চ্যানেলগুলো দেখতে পারেন, তার জন্য এখনই আমাদের <a href="https://t.me/shajonOTT" target="_blank" rel="noopener noreferrer" className="text-[#26A5E4] font-bold hover:underline">টেলিগ্রাম চ্যানেলে জয়েন করুন</a>।
-                </p>
-              </div>
             </div>
 
             {/* Channel Count Card */}
