@@ -90,9 +90,8 @@ export default function TelegramPopup({ showPopup }: TelegramPopupProps) {
             {/* Description Card */}
             <div className="mt-4 sm:mt-5 rounded-2xl border border-white/10 sm:border-white/5 bg-white/[0.015] p-4 sm:p-5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1.5 h-full bg-[#26A5E4]" />
-              <p className="text-center sm:text-left text-xs sm:text-sm leading-relaxed text-zinc-300">
-                Join our official Telegram community for real-time notifications, 
-                stream status updates, channel list modifications, feature announcements, and direct requests.
+              <p className="text-center sm:text-left text-xs sm:text-sm leading-relaxed text-zinc-300 font-medium">
+                আইনি নোটিশের কারণে ওয়েবসাইট থেকে নির্দিষ্ট কিছু চ্যানেল সরিয়ে ফেলা হয়েছে। তবে আপনি চাইলে এখনও সেই চ্যানেলগুলো দেখতে পারেন, তার জন্য এখনই আমাদের টেলিগ্রাম চ্যানেলে জয়েন করুন।
               </p>
             </div>
 
