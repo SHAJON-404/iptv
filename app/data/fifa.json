@@ -124,5 +124,21 @@
         "type": "dash",
         "kid": "433ffba670963e70857859a9dff4be04",
         "key": "51ede3a821229fe81e71282c8eff80e3"
+    },
+    {
+        "name": "Zee5 Bangla FiFa 2026",
+        "logo": "",
+        "group": "FIFA",
+        "url": "https://d1g8wgjurz8via.cloudfront.net/bpk-tv/Zeebanglacinema/default/manifest.mpd",
+        "type": "dash",
+        "kid": "fbbfd9ce4bbe4d818b16df7dfe89f05b",
+        "key": "1e96d0f88ef740e982d6f6105721c8bc"
+    },
+    {
+        "name": "beIN Sports 1 MAX (Arabic)",
+        "logo": "https://i.imgur.com/FjWQjdy.png",
+        "group": "FIFA",
+        "url": "https://cdn.yallashooot.pp.ua/hls/ch1.m3u8",
+        "type": "hls"
     }
 ]
