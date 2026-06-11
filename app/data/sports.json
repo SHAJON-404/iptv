@@ -1,15 +1,5 @@
 [
     {
-        "name": "T Sports HD",
-        "logo": "https://s3.aynaott.com/storage/dbc585f70a60b9855b6e13a8ce4cb6f4",
-        "group": "Sports",
-        "url": "https://tvsen7.aynaott.com/tsports-hd/index.m3u8?e=1779283784&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=3b4c5a2cfa872fa7f91ffbfb4aa0f658",
-        "status": "live",
-        "verified_at": "2026-06-04T15:05:55.822476",
-        "status_code": 200,
-        "content_type": "application/vnd.apple.mpegurl"
-    },
-    {
         "name": "CAZE TV",
         "logo": "https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png",
         "group": "Sports",
@@ -1660,17 +1650,6 @@
         "tvg_id": "SwerveSports.us@SD",
         "status": "live",
         "verified_at": "2026-06-04T15:23:42.601139",
-        "status_code": 200,
-        "content_type": "application/vnd.apple.mpegurl"
-    },
-    {
-        "name": "T Sports (720p)",
-        "logo": "https://i.imgur.com/2JzlorD.png",
-        "group": "Sports",
-        "url": "https://tvsen7.aynaott.com/tsportsfhd/index.m3u8",
-        "tvg_id": "TSports.bd@SD",
-        "status": "live",
-        "verified_at": "2026-06-04T15:23:43.414331",
         "status_code": 200,
         "content_type": "application/vnd.apple.mpegurl"
     },

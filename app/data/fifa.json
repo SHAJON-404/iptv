@@ -6,24 +6,6 @@
         "url": "https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8"
     },
     {
-        "name": "T Sports HD",
-        "logo": "https://s3.aynaott.com/storage/dbc585f70a60b9855b6e13a8ce4cb6f4",
-        "group": "FIFA",
-        "url": "https://tvsen7.aynaott.com/tsports-hd/index.m3u8?e=1779283784&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=3b4c5a2cfa872fa7f91ffbfb4aa0f658"
-    },
-    {
-        "name": "T Sports HD 2",
-        "logo": "https://i.imgur.com/2JzlorD.png",
-        "group": "FIFA",
-        "url": "https://tvsen7.aynaott.com/tsportsfhd/index.m3u8"
-    },
-    {
-        "name": "T Sports HD 3",
-        "logo": "https://i.imgur.com/2JzlorD.png",
-        "group": "FIFA",
-        "url": "https://tvsen7.aynaott.com/tsports-hd/index.m3u8"
-    },
-    {
         "name": "Somoy TV",
         "logo": "https://i.postimg.cc/Qxn4JFNV/20250529-071147.png",
         "group": "FIFA",
