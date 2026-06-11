@@ -4,6 +4,9 @@ import Image from "next/image";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Hls from "hls.js";
+// dashjs is loaded dynamically because it requires `window` (browser-only)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DashMediaPlayer = any;
 import { motion, AnimatePresence } from "motion/react";
 import {
   Tv,
@@ -38,6 +41,9 @@ interface Channel {
   logo: string;
   group: string;
   url: string;
+  type?: "dash" | "hls";
+  kid?: string;
+  key?: string;
 }
 
 interface Playlist {
@@ -109,6 +115,7 @@ export default function IPTVPlayer() {
   const unmuteCleanupRef = useRef<(() => void) | null>(null);
 
   const hlsRef = useRef<Hls | null>(null);
+  const dashRef = useRef<DashMediaPlayer | null>(null);
   const userMutedRef = useRef(false);
   const isMutedRef = useRef(isMuted);
   const volumeRef = useRef(volume);
@@ -906,6 +913,9 @@ export default function IPTVPlayer() {
     url?: string;
     streamUrl?: string;
     link?: string;
+    type?: "dash" | "hls";
+    kid?: string;
+    key?: string;
   }
 
   const parseJSON = (text: string): Channel[] => {
@@ -923,6 +933,9 @@ export default function IPTVPlayer() {
         logo: ch.logo || ch.logoUrl || ch.image || "",
         group: ch.group || ch.category || "Custom",
         url: url,
+        ...(ch.type && { type: ch.type }),
+        ...(ch.kid && { kid: ch.kid }),
+        ...(ch.key && { key: ch.key }),
       };
     });
   };
@@ -1112,6 +1125,11 @@ export default function IPTVPlayer() {
         hlsRef.current = null;
       }
 
+      if (dashRef.current) {
+        dashRef.current.destroy();
+        dashRef.current = null;
+      }
+
       // Helper: attempt play with muted fallback chain (handles Firefox strict autoplay)
       const attemptPlay = () => {
         video
@@ -1150,7 +1168,94 @@ export default function IPTVPlayer() {
           });
       };
 
-      if (Hls.isSupported()) {
+      // Detect if this is a DASH stream
+      const isDash = chan.type === "dash" || chan.url.endsWith(".mpd");
+
+      if (isDash) {
+        // --- DASH playback via dash.js with ClearKey DRM ---
+        // Dynamic import since dashjs requires browser `window`
+        import("dashjs").then((dashjsModule) => {
+          // Guard: if user switched channels before import resolved, bail out
+          if (loadedUrlRef.current !== chan.url) return;
+
+          // Pre-check EME availability (required for ClearKey DRM)
+          const hasEME = typeof navigator !== "undefined" && "requestMediaKeySystemAccess" in navigator;
+          if (!hasEME && chan.kid && chan.key) {
+            console.warn(
+              "[DASH] EME not available — DRM-protected streams require HTTPS or localhost. " +
+              "Stream may fail to decrypt. Access via http://localhost:3000 instead of a LAN IP."
+            );
+          }
+
+          // Convert hex string to base64url (ClearKey spec requires base64url encoding, no padding)
+          const hexToBase64Url = (hex: string): string => {
+            const bytes = new Uint8Array(
+              hex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+            );
+            const base64 = btoa(String.fromCharCode(...bytes));
+            return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+          };
+
+          const player = dashjsModule.MediaPlayer().create();
+          dashRef.current = player;
+
+          // Apply settings before initialize (per dashjs docs)
+          player.updateSettings({
+            streaming: {
+              capabilities: {
+                useMediaCapabilitiesApi: false,
+              },
+            },
+          });
+
+          // Per official dashjs ClearKey sample: initialize() FIRST, then setProtectionData()
+          player.initialize(video, chan.url, false);
+
+          // Set ClearKey protection data AFTER initialize (official API order)
+          if (chan.kid && chan.key) {
+            player.setProtectionData({
+              "org.w3.clearkey": {
+                clearkeys: {
+                  [hexToBase64Url(chan.kid)]: hexToBase64Url(chan.key),
+                },
+              },
+            });
+          }
+
+          player.on("canPlay", () => {
+            if (!video.paused) {
+              setPlayerStatus("playing");
+              setIsPaused(false);
+              return;
+            }
+            attemptPlay();
+          });
+
+          player.on("error", (e: { error?: { code?: number; message?: string } | string; type?: string }) => {
+            // Inspect nested error — dashjs wraps error objects as strings sometimes
+            const errStr = typeof e.error === "string" ? e.error : JSON.stringify(e.error || "");
+            // EME errors are non-fatal on HTTP (expected in dev over LAN IP)
+            if (errStr.includes("EME") || errStr.includes("mediakeys") || errStr.includes("MediaKeys")) {
+              console.warn("[DASH] DRM/EME warning (use localhost or HTTPS for encrypted streams):", errStr);
+              return;
+            }
+            console.error("[DASH] Player error:", e);
+            // Only fatal errors with a code should mark the player as failed
+            const errObj = typeof e.error === "object" ? e.error : null;
+            if (errObj && errObj.code) {
+              setPlayerStatus("error");
+            }
+          });
+
+          player.on("playbackError", (e: { error?: string }) => {
+            console.error("[DASH] Playback error:", e);
+            setPlayerStatus("error");
+          });
+        }).catch((err) => {
+          console.error("Failed to load dashjs:", err);
+          setPlayerStatus("error");
+        });
+      } else if (Hls.isSupported()) {
         const hls = new Hls({
           enableWorker: true,
           lowLatencyMode: true,
@@ -1216,7 +1321,7 @@ export default function IPTVPlayer() {
         });
         video.addEventListener("error", onError, { once: true });
       } else {
-        setError("Your browser does not support HLS stream playback.");
+        setError("Your browser does not support stream playback.");
         setPlayerStatus("error");
       }
 
@@ -1242,6 +1347,10 @@ export default function IPTVPlayer() {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
+      }
+      if (dashRef.current) {
+        dashRef.current.destroy();
+        dashRef.current = null;
       }
       if (video) {
         video.src = "";

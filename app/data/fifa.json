@@ -52,5 +52,77 @@
         "logo": "https://s3.aynaott.com/storage/00da8a07fb26b2fb79359ee535e4c7bc",
         "group": "FIFA",
         "url": "https://tvsen6.aynaott.com/btvctg/index.m3u8?e=1779283747&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=9bca925fbdfe526b29d41ab7802348ec"
+    },
+    {
+        "name": "TSN Sports 4 - English",
+        "logo": "https://i.imgur.com/qJyAWU8.png",
+        "group": "FIFA",
+        "url": "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/h9urpo3cwb/out/v1/fde190f369484bc6b6117cc16cd82a9f/cenc.mpd",
+        "type": "dash",
+        "kid": "c4088f5f265f9de50cffd80bf89308b7",
+        "key": "2c4d2239d96d532b4ec2050653611003"
+    },
+    {
+        "name": "WORLD CUP TV (ENG)",
+        "logo": "https://upload.wikimedia.org/wikipedia/commons/4/4b/FIFA_WorldCup_logo.svg",
+        "group": "FIFA",
+        "url": "https://qp-pldt-live-bpk-ucd-prod.akamaized.net/bpk-tv/ch299/default/index.mpd",
+        "type": "dash",
+        "kid": "549ab7cd35a64bb6bb479ecead04d69d",
+        "key": "829799ed534d11fcadeb4b192467e050"
+    },
+    {
+        "name": "D Sports",
+        "logo": "https://upload.wikimedia.org/wikipedia/commons/5/5a/DSports.png",
+        "group": "FIFA",
+        "url": "https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/ubehitlwzo/out/v1/8e09c381a51f4366a19e979418112e8f/cenc.mpd",
+        "type": "dash",
+        "kid": "a7d11d37a1f7611ee88d4db880171f32",
+        "key": "68f96d618b0b956b008c445896a25a79"
+    },
+    {
+        "name": "TUDN",
+        "logo": "https://i.imgur.com/oT5CAvd.png",
+        "group": "FIFA",
+        "url": "https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/8u9cregwlt/out/v1/687f6b2a559943549be271504a948ffd/cenc.mpd",
+        "type": "dash",
+        "kid": "1710ac2bbfcd3032d0f6533850968f47",
+        "key": "d2548dacc8efcd1cd0af0373060c82dc"
+    },
+    {
+        "name": "SporTV",
+        "logo": "https://i.postimg.cc/gr9x3z71/Spor-TV-2021.png",
+        "group": "FIFA",
+        "url": "https://a151aivottlinear-a.akamaihd.net/OTTB/sin-nitro/live/dash/enc/m7duvnk2bu/out/v1/d1ad69118b5647309b1eb7213affdb3d/cenc.mpd",
+        "type": "dash",
+        "kid": "4bbcff3289d457b4dd5dbdd21221de9a",
+        "key": "c4906b9a9f8dda3c0725bddb8c497733"
+    },
+    {
+        "name": "TSN Sports 1",
+        "logo": "https://i.imgur.com/eRFE0jZ.png",
+        "group": "FIFA",
+        "url": "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/7janu55dwc/out/v1/69a2a7041395406b970598f61680e7cf/cenc.mpd?Null",
+        "type": "dash",
+        "kid": "e51aa21f2a0fef9aabc120dfb655b52f",
+        "key": "a12a987fe725a40b6be95cd84b15f689"
+    },
+    {
+        "name": "Telemundo",
+        "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Telemundo_logo_2018.svg/960px-Telemundo_logo_2018.svg.png",
+        "group": "FIFA",
+        "url": "https://live-oneapp-prd-news.akamaized.net/Content/CMAF_OL2-CTR-4s-v2/Live/channel(kvea)/master.mpd",
+        "type": "dash",
+        "kid": "ce7ab3022e753307997f58afe001bac4",
+        "key": "72d631a66e635c60829a0fe7705516c1"
+    },
+    {
+        "name": "M6 Direct TV",
+        "logo": "https://i.imgur.com/7GVp3fW.png",
+        "group": "FIFA",
+        "url": "https://origin-m6web.live.6cloud.fr/out/v1/6play/6play-m6/cmaf_cenc00/dash-short-hd.mpd",
+        "type": "dash",
+        "kid": "433ffba670963e70857859a9dff4be04",
+        "key": "51ede3a821229fe81e71282c8eff80e3"
     }
 ]

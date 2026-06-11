@@ -67,7 +67,7 @@ export function getChannelsWithHash(rawType: string = "universal") {
         // Add IDs if not present and deduplicate
         const channels = raw.map(
           (
-            ch: { name: string; logo: string; group: string; url: string },
+            ch: { name: string; logo: string; group: string; url: string; type?: string; kid?: string; key?: string },
             idx: number
           ) => ({
             id: `ch-${type}-${idx}`,
@@ -75,6 +75,9 @@ export function getChannelsWithHash(rawType: string = "universal") {
             logo: ch.logo || "",
             group: ch.group || "Uncategorized",
             url: ch.url,
+            ...(ch.type && { type: ch.type }),
+            ...(ch.kid && { kid: ch.kid }),
+            ...(ch.key && { key: ch.key }),
           })
         );
         
