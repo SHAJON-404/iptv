@@ -1,5 +1,14 @@
 [
     {
+        "name": "WORLD CUP TV (ENG)",
+        "logo": "https://upload.wikimedia.org/wikipedia/commons/4/4b/FIFA_WorldCup_logo.svg",
+        "group": "FIFA",
+        "url": "https://qp-pldt-live-bpk-ucd-prod.akamaized.net/bpk-tv/ch299/default/index.mpd",
+        "type": "dash",
+        "kid": "549ab7cd35a64bb6bb479ecead04d69d",
+        "key": "829799ed534d11fcadeb4b192467e050"
+    },
+    {
         "name": "CAZE TV",
         "logo": "https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png",
         "group": "FIFA",
@@ -52,24 +61,6 @@
         "logo": "https://s3.aynaott.com/storage/00da8a07fb26b2fb79359ee535e4c7bc",
         "group": "FIFA",
         "url": "https://tvsen6.aynaott.com/btvctg/index.m3u8?e=1779283747&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=9bca925fbdfe526b29d41ab7802348ec"
-    },
-    {
-        "name": "TSN Sports 4 - English",
-        "logo": "https://i.imgur.com/qJyAWU8.png",
-        "group": "FIFA",
-        "url": "https://otte.cache.aiv-cdn.net/bom-nitro/live/clients/dash/enc/h9urpo3cwb/out/v1/fde190f369484bc6b6117cc16cd82a9f/cenc.mpd",
-        "type": "dash",
-        "kid": "c4088f5f265f9de50cffd80bf89308b7",
-        "key": "2c4d2239d96d532b4ec2050653611003"
-    },
-    {
-        "name": "WORLD CUP TV (ENG)",
-        "logo": "https://upload.wikimedia.org/wikipedia/commons/4/4b/FIFA_WorldCup_logo.svg",
-        "group": "FIFA",
-        "url": "https://qp-pldt-live-bpk-ucd-prod.akamaized.net/bpk-tv/ch299/default/index.mpd",
-        "type": "dash",
-        "kid": "549ab7cd35a64bb6bb479ecead04d69d",
-        "key": "829799ed534d11fcadeb4b192467e050"
     },
     {
         "name": "D Sports",
