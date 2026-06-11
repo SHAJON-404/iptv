@@ -1199,6 +1199,7 @@ export default function IPTVPlayer() {
             player.configure({
               manifest: {
                 defaultPresentationDelay: 8,
+                ignoreDrmInfo: true,
                 dash: { ignoreMinBufferTime: true, ignoreSuggestedPresentationDelay: true, autoCorrectDrift: true },
               },
               streaming: {
@@ -1238,8 +1239,12 @@ export default function IPTVPlayer() {
               const detail = event?.detail;
               console.error("[SHAKA] DASH error detail:", JSON.stringify(detail));
               const code = detail?.code ?? "";
+              let errorMsg = "DASH stream error" + (code ? " • Code: " + code : "");
+              if (code === 6020) {
+                errorMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
+              }
               setPlayerStatus("error");
-              setError("DASH stream error" + (code ? " • Code: " + code : ""));
+              setError(errorMsg);
             });
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1269,6 +1274,9 @@ export default function IPTVPlayer() {
               if (errObj.category) errMsg += ` (Category: ${errObj.category})`;
               if (errObj.severity) errMsg += ` (Severity: ${errObj.severity})`;
               if (errObj.message) errMsg += ` - ${errObj.message}`;
+              if (errObj.code === 6020) {
+                errMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
+              }
             }
             console.error("[SHAKA] Load error detail:", JSON.stringify(errObj), errMsg);
             setError(errMsg);
