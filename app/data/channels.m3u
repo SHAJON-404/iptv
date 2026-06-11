@@ -497,10 +497,8 @@ http://cdntv.online/low/9mlxywika2/57.m3u8
 https://jmp2.uk/stvp-ATAJ0500433A
 #EXTINF:-1 group-title="Other",REAL MADRID TV 🇪🇸
 https://rmtv.akamaized.net/hls/live/2043153/rmtv-es-web/bitrate_3.m3u8
-#EXTINF:-1 group-title="Other",CAZE TV 1 🇧🇷
+#EXTINF:-1 tvg-logo="https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png" group-title="Sports",CAZE TV
 https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8
-#EXTINF:-1 group-title="Other",ORF+ 🇦🇹
-http://212.186.45.34:9981/stream/channelid/906723447
 #EXTINF:-1 group-title="Other",ZIGGO SPORT 2 HD 🇳🇱
 http://wo0dyefk.dienalt.org/iptv/DV3AC2Q6YSR9XE/2561/index.m3u8
 #EXTINF:-1 group-title="Other",2TV Sport 🇳🇴
@@ -2105,7 +2103,7 @@ https://tvsen7.aynaott.com/tsports-hd/index.m3u8
 https://tvsen5.aynaott.com/willowhd/index.m3u8
 #EXTINF:-1 tvg-logo="https://ctgiptv.com/assets/images/channels/starselect1hd.jpg" group-title="Sports",Star Select 1
 https://tvsen7.aynaott.com/sspts1/index.m3u8
-#EXTINF:-1 tvg-logo="https://dl.dropbox.com/s/leielj83em5kg7h/somoy_news.png" group-title="News",Somoy Tv
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/subirkumarpaul/Logo/refs/heads/main/Channel%201.png" group-title="News",Channel 1
 https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/1702-audio_113322_eng=113200-video=1692000.m3u8
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/sXpJqtm3/Ptv.png" group-title="Sports",P Tv Sports
 https://tvsen5.aynaott.com/PtvSports/tracks-v1a1/mono.ts.m3u8
@@ -2219,8 +2217,6 @@ https://cdn.dadocric.st/embed2.php?id=asports
 https://cdn.dadocric.st/embed2.php?id=tensp
 #EXTINF:-1 tvg-logo="https://wapka-img.zuna.id/785a58ff.png" group-title="PSL-2026",GeooSuper
 https://cdn.dadocric.st/embed2.php?id=geosuper
-#EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/logopedia/images/8/8e/Somoy_Television.svg" group-title="Bangla News",SOMOY NEWS
-https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/index.m3u8
 #EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/subirkumarpaul/Logo/main/Jamuna%20TV.jpeg" group-title="Bangla News",Jamuna TV
 https://owrcovcrpy.gpcdn.net/bpk-tv/1701/output/index.m3u8
 #EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/logopedia/images/2/2e/ATN_Bangla.svg" group-title="Bangla",ATN BANGLA
@@ -2322,7 +2318,7 @@ https://stream.shariarsuvo.com/hls5/rajdhanicable.m3u8
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/8kmxMkrr/20250529_101852.png" group-title="Bangla",RTV
 https://app24.jagobd.com.bd/c3VydmVyX8RpbEU9Mi8xNy8yMFDEEHGcfRgzQ6NTAgdEoaeFzbF92YWxIZTO0U0ezN1IzMyfvcEdsEfeDeKiNkVN3PTOmdFseWRtaW51aiPhnPTI2/rtv-sg.stream/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/Qxn4JFNV/20250529-071147.png" group-title="Bangla",Somoy TV
-https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/1702-audio_113322_eng=113200-video=2202800.m3u8
+https://sm-monirul.top/toffee/play/somoy_tv.m3u8
 #EXTINF:-1 tvg-logo="https://www.jagobd.com/wp-content/uploads/2024/08/pran-RFL.png" group-title="Bangla",Jago News 24
 https://app.ncare.live/live-orgin/jagonews24.stream/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-I_gjgaJYlqDQGjAj96xh8S-5GZe_CZQK3w&usqp=CAU" group-title="Sports",Redbull TV
@@ -7985,8 +7981,6 @@ https://cdn4.skygo.mn/live/disk1/Lotus/HLSv3-FTA/Lotus.m3u8
 https://aegis-cloudfront-1.tubi.video/6d6d0f24-8445-4b4c-bdf6-44f9e38beaa4/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://xstreamcp-assets-msp.streamready.in/assets/DISTROTV/LIVECHANNEL/666988e3bac4421ebc533621/images/logo_20231219_215208_70.png" group-title="Entertainment",Lone Star (720p)
 https://6b88cde9.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWV1X0xvbmVTdGFyX0hMUw/playlist.m3u8
-#EXTINF:-1 tvg-logo="https://i.imgur.com/bXe7tYE.png" group-title="Shop",Lotte OneTV (720p)
-https://onetvhlslive.lotteimall.com/lotteonetvlive/lotteonetvlive.mp4.m3u8
 #EXTINF:-1 group-title="Undefined",Love 2 Hate TV (1080p)
 https://streams2.sofast.tv/v1/master/611d79b11b77e2f571934fd80ca1413453772ac7/4f3f3fb6-cec9-4a29-bc6c-90685947766e/manifest.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/3qGSAT3.png" group-title="General",Loreto TV (720p)
@@ -9401,8 +9395,6 @@ https://d1xcc1603wntzx.cloudfront.net/nlpo/clr-nlpo/oogtv/index.m3u8
 https://cdn13.crtvnoc.com/ONTV4U-on-DistroTV/index.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/hyPTfxA.png" group-title="Legislative",Orange Government Access TV (Orange CT) (720p)
 https://livestream.telvue.com/ogat1/f7b44cfafd5c52223d5498196c8a2e7b.sdp/playlist.m3u8
-#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/ORF_III_Logo_Monochrom.svg/960px-ORF_III_Logo_Monochrom.svg.png" group-title="Culture",ORF III HD (720p)
-https://orf3.mdn.ors.at/orf/orf3/qxa/manifest.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/o6zAR88.png" group-title="General",ORTB TV (1080i)
 https://strhls.streamakaci.tv/ortb/ortb1-multi/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/logopedia/images/f/f5/Oscar_movies_bhojpuri.png" group-title="India",Bhoj | Oscar Movies Bhojpuri
@@ -9417,8 +9409,6 @@ http://69.64.57.208/ortm/playlist.m3u8
 https://ms7.mx-cd.net/tv/200-1006554/ORTS_TV.smil/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://i.imgur.com/xKXs6ER.png" group-title="Legislative",Ontario Parliamentary Network (720p)
 https://origin-http-delivery.isilive.ca/live/_definst_/ontla/house-en/playlist.m3u8
-#EXTINF:-1 tvg-logo="https://i.imgur.com/Zxuah2b.png" group-title="Kids",ORF Kids (720p)
-https://web12.mdn.ors.at/orf/web12/qxa/manifest.mpd
 #EXTINF:-1 tvg-logo="https://i.imgur.com/j5Vvxd5.png" group-title="General",Oromar TV (720p)
 https://stream.oromar.tv/hls/oromartv_hi/index.m3u8
 #EXTINF:-1 tvg-logo="https://pbs.twimg.com/profile_images/1034118312437919744/emeWo-ag_400x400.jpg" group-title="Entertainment",OTV (720p)
@@ -14967,177 +14957,11 @@ http://103.175.73.12:8080/live/469/469_0.m3u8
 http://103.175.73.12:8080/live/158/158_0.m3u8
 #EXTINF:-1 group-title="English News",CGTN News
 https://app.ncare.live/c3VydmVyX8RpbEU9Mi8xNy8yMDE0GIDU6RgzQ6NTAgdEoaeFzbF92YWxIZTO0U0ezN1IzMyfvcGVMZEJCTEFWeVN3PTOmdFsaWRtaW51aiPhnPTI2/cgtn.stream/playlist.m3u8
-#EXTINF:-1 group-title="Bangla Movies",Jodi Kintu Tobuo
-http://10.16.100.214/iccftps14/iccftps14sasd4/Movies/Bangla/BD/Jodi%20Kintu%20Tobuo%20(2021)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Bangla Movies",Antarjal
-http://103.225.94.27/Infobase/hdd-2/Bangla/Antarjal%20(2023)%201080p%20WEBDL.mp4
 #EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/en/thumb/6/65/FRANCE_24_logo.svg/1200px-FRANCE_24_logo.svg.png" group-title="English News",France 24
 https://app.ncare.live/c3VydmVyX8RpbEU9Mi8xNy8yMDE0GIDU6RgzQ6NTAgdEoaeFzbF92YWxIZTO0U0ezN1IzMyfvcGVMZEJCTEFWeVN3PTOmdFsaWRtaW51aiPhnPTI2/fr24.stream/playlist.m3u8
-#EXTINF:-1 group-title="Bangla Movies",Projapati 2
-http://10.16.100.202/ftps10/iccftps10sasd8/Movies/Bangla%20(Kolkata)/Projapati%202%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Bangla Movies",Jongole Mitin Mashi
-http://10.16.100.214/iccftps14/iccftps14sasd3/Movies/Bangla/Kolkata/Jongole%20Mitin%20Mashi%20(2023)%201080p%20WEBDL.mp4
-#EXTINF:-1 tvg-logo="http://10.16.100.244/files/pradhan.jpg" group-title="Bangla Movies",Habji Gabji
-http://10.16.100.212/iccftps12/iccftps12sasd8/Movies/Bangla/Kolkata/Habji%20Gabji%20(2022)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="English Movies",The Wrecking Crew
-http://10.16.100.212/iccftps12/iccftps12sasd3/Movies/Dual%20Audio/The%20Wrecking%20Crew%20(2026)%20(Hindi%20&%20English)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="English Movies",Heads of State
-http://10.16.100.214/iccftps14/iccftps14sasd2/Movies/Dual%20Audio/Heads%20of%20State%20(2025)%20(Hindi%20&%20English)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="English Movies",Moana 2
-http://10.16.100.213/iccftps13/iccftps13sasd9/Movies/Dual%20Audio/Moana%202%20(2024)%20(Hindi%20&%20English)%201080p%20BluRay.mp4
-#EXTINF:-1 group-title="English Movies",War Machine (2026) (Hindi + English)
-http://10.16.100.212/iccftps12/iccftps12sasd7/Movies/Dual%20Audio/War%20Machine%20(2026)%20(Hindi%20&%20English)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="English Movies",Alienoid
-http://10.16.100.214/iccftps14/iccftps14sasd4/Movies/Dual%20Audio/Alienoid%20(Oegye+in%201bu)%20(2022)%20(Hindi%20&%20Korean)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="English Movies",Toworrowland
-http://10.16.100.202/ftps10/iccftps10sasd8/Movies/English/Tomorrowland%20(2015)%201080p%20BluRay.mp4
-#EXTINF:-1 group-title="English Movies",Dors and the Search for Sol Dorado
-http://10.16.100.213/iccftps13/iccftps13sasd9/Movies/English/Dora%20and%20the%20Search%20for%20Sol%20Dorado%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Web Series",The Bads of Bollywood(S1E1)
-http://10.16.100.202/ftps10/iccftps10sasd6/Tv%20Show/Hindi/The%20Bads%20of%20Bollywood%20Season%2001%20(2025)%20Completed/The%20Bads%20of%20Bollywood%20S01E01.mp4
-#EXTINF:-1 group-title="Web Series",The Bads of Bollywood(S1E2)
-http://10.16.100.202/ftps10/iccftps10sasd6/Tv%20Show/Hindi/The%20Bads%20of%20Bollywood%20Season%2001%20(2025)%20Completed/The%20Bads%20of%20Bollywood%20S01E02.mp4
-#EXTINF:-1 group-title="Web Series",The Bads of Bollywood(S1E3)
-http://10.16.100.202/ftps10/iccftps10sasd6/Tv%20Show/Hindi/The%20Bads%20of%20Bollywood%20Season%2001%20(2025)%20Completed/The%20Bads%20of%20Bollywood%20S01E03.mp4
-#EXTINF:-1 group-title="Web Series",The Bads of Bollywood(S1E4)
-http://10.16.100.202/ftps10/iccftps10sasd6/Tv%20Show/Hindi/The%20Bads%20of%20Bollywood%20Season%2001%20(2025)%20Completed/The%20Bads%20of%20Bollywood%20S01E04.mp4
 #EXTINF:-1 group-title="English Movies",Lotus
 https://cdn1.skygo.mn/live/disk1/Lotus/HLSv3-FTA/Lotus-avc1_2089200=342-mp4a_256000_eng=343.m3u8
-#EXTINF:-1 group-title="Web Series",The Bads of Bollywood(S1E5)
-http://10.16.100.202/ftps10/iccftps10sasd6/Tv%20Show/Hindi/The%20Bads%20of%20Bollywood%20Season%2001%20(2025)%20Completed/The%20Bads%20of%20Bollywood%20S01E05.mp4
-#EXTINF:-1 group-title="Web Series",The Bads of Bollywood(S1E6)
-http://10.16.100.202/ftps10/iccftps10sasd6/Tv%20Show/Hindi/The%20Bads%20of%20Bollywood%20Season%2001%20(2025)%20Completed/The%20Bads%20of%20Bollywood%20S01E06.mp4
-#EXTINF:-1 group-title="Web Series",The Bads of Bollywood(S1E7)
-http://10.16.100.202/ftps10/iccftps10sasd6/Tv%20Show/Hindi/The%20Bads%20of%20Bollywood%20Season%2001%20(2025)%20Completed/The%20Bads%20of%20Bollywood%20S01E07.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E1)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E01.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E2)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E02.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E3)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E03.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E4)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E04.mp4
 #EXTINF:-1 tvg-logo="https://i.postimg.cc/3RxSzVbd/image.jpg" group-title="KIDS",Zoo Moo
 https://amg01553-blueantmediaasi-zoomoonz-samsungnz-rdufn.amagi.tv/playlist/amg01553-blueantmediaasi-zoomoonz-samsungnz/playlist.m3u8
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E5)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E05.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E6)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E06.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E7)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E07.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E8)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E08.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(SE9)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E09.mp4
-#EXTINF:-1 group-title="Web Series",Jazz City(S1E10)
-http://10.16.100.213/iccftps13/iccftps13sasd9/TV%20Show/Hindi/Jazz%20City%20Season%2001%20(2026)%20Completed/Jazz%20City%20S01E10.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E1)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E01.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E2)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E02.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E3)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E03.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E4)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E04.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E6)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E06.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E7)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E07.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E8)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E08.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E5
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E05.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E9)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E09.mp4
-#EXTINF:-1 group-title="Web Series",Muthu Alias Kaattaan (Muthu Engira Kaattaan)(S1E10)
-http://10.16.100.213/iccftps13/iccftps13sasd10/TV%20Show/Serials%20(Hindi)/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20Season%2001%20(2026)%20Completed/Muthu%20Alias%20Kaattaan%20(Muthu%20Engira%20Kaattaan)%20S01E10.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E1)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E01.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E2)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E02.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E3)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E03.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E4)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E04.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E6)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E06.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E5)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E05.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E8)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E08.mp4
-#EXTINF:-1 group-title="Web Series",Maharani(S4E7)
-http://10.16.100.213/iccftps13/iccftps13sasd5/TV%20Show/Serials%20(Hindi)/Maharani%20Season%2004%20(2025)%20Completed/Maharani%20S04E07.mp4
-#EXTINF:-1 group-title="Web Series",The Family Man(S3E2)
-http://10.16.100.214/iccftps14/iccftps14sasd2/Tv%20Show/Serials%20(Hindi)/The%20Family%20Man%20Season%2003%20(2025)%20Completed/The%20Family%20Man%20S03E02.mp4
-#EXTINF:-1 group-title="Web Series",The Family Man(S3E1)
-http://10.16.100.214/iccftps14/iccftps14sasd2/Tv%20Show/Serials%20(Hindi)/The%20Family%20Man%20Season%2003%20(2025)%20Completed/The%20Family%20Man%20S03E01.mp4
-#EXTINF:-1 group-title="Web Series",The Family Man(S3E3)
-http://10.16.100.214/iccftps14/iccftps14sasd2/Tv%20Show/Serials%20(Hindi)/The%20Family%20Man%20Season%2003%20(2025)%20Completed/The%20Family%20Man%20S03E03.mp4
-#EXTINF:-1 group-title="Web Series",The Family Man(S3E4)
-http://10.16.100.214/iccftps14/iccftps14sasd2/Tv%20Show/Serials%20(Hindi)/The%20Family%20Man%20Season%2003%20(2025)%20Completed/The%20Family%20Man%20S03E04.mp4
-#EXTINF:-1 group-title="Web Series",The Family Man(S3E6)
-http://10.16.100.214/iccftps14/iccftps14sasd2/Tv%20Show/Serials%20(Hindi)/The%20Family%20Man%20Season%2003%20(2025)%20Completed/The%20Family%20Man%20S03E06.mp4
-#EXTINF:-1 group-title="Web Series",The Family Man(S3E5)
-http://10.16.100.214/iccftps14/iccftps14sasd2/Tv%20Show/Serials%20(Hindi)/The%20Family%20Man%20Season%2003%20(2025)%20Completed/The%20Family%20Man%20S03E05.mp4
-#EXTINF:-1 group-title="Web Series",The Family Man(S3E7)
-http://10.16.100.214/iccftps14/iccftps14sasd2/Tv%20Show/Serials%20(Hindi)/The%20Family%20Man%20Season%2003%20(2025)%20Completed/The%20Family%20Man%20S03E07.mp4
-#EXTINF:-1 group-title="Movies",The Taj Story
-http://10.16.100.214/iccftps14/iccftps14sasd6/Movies/Hindi/The%20Taj%20Story%20(2025)%201080p%20DVDRip.mp4
-#EXTINF:-1 group-title="Movies",Mardaani 3
-http://103.225.94.27/Infobase/hdd-3/hindi/Mardaani%203%20(2026)%201080p%20DVDRip.mp4
-#EXTINF:-1 group-title="Movies",Tu Jhoothi Main Makkaar(4K)
-http://10.16.100.213/iccftps13/iccftps13sasd2/Movies/Hindi/Tu%20Jhoothi%20Main%20Makkaar%20(2023)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Movies",Tu Jhoothi Main Makkaar(4K)
-http://10.16.100.214/iccftps14/iccftps14sasd6/Movies/4K/Hindi/Tu%20Jhoothi%20Main%20Makkaar%20(2023)%202160p%20WEBRip.mkv
-#EXTINF:-1 group-title="Movies",Accident or onspiracy Godhra
-http://10.16.100.214/iccftps14/iccftps14sasd5/Movies/Hindi/Accident%20or%20Conspiracy%20Godhra%20(2024)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Movies",Tehran
-http://10.16.100.202/ftps10/iccftps10sasd2/Movies/Hindi/Tehran%20(2025)%201080p%20WEBRip.mp4
-#EXTINF:-1 group-title="Movies",Band Baaja Baaraat
-http://10.16.100.206/ftps3/ftps3d2/Movies/Hindi/Band%20Baaja%20Baaraat%20(2010)%201080p%20BluRay.mp4
-#EXTINF:-1 group-title="Movies",Blank
-http://10.16.100.245/ftps2d1/Movies/Hindi/Blank%20(2019)%20Hindi%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Movies",Raat Akeli Hai The Bansal Murders
-http://10.16.100.213/iccftps13/iccftps13sasd2/Movies/Hindi/Raat%20Akeli%20Hai%20The%20Bansal%20Murders%20(2025)%201080p%20WEBRip.mp4
-#EXTINF:-1 group-title="Movies",Kurup
-http://10.16.100.202/ftps10/iccftps10sasd9/Movies/South%20Indian%20(Hindi%20Dubbed)/Kurup%20(2021)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Naari Naari Naduma Murari
-http://10.16.100.213/iccftps13/iccftps13sasd2/Movies/South%20Indian%20(Hindi%20Dubbed)/Naari%20Naari%20Naduma%20Murari%20(2026)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Parasakthi
-http://10.16.100.202/ftps10/iccftps10sasd6/Movies/South%20Indian%20(Hindi%20Dubbed)/Parasakthi%20(2026)%201080p%20CAMRip.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Vaa Vaathiyaar
-http://10.16.100.213/iccftps13/iccftps13sasd5/Movies/South%20Indian%20(Hindi%20Dubbed)/Vaa%20Vaathiyaar%20(2026)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Movies",Test
-http://103.225.94.27/Infobase/hdd-3/Hindi%20Dub/Test%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Movies",Game Changer
-http://103.225.94.27/Infobase/hdd-3/Hindi%20Dub/Game%20Changer%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",House Mates
-http://10.16.100.213/iccftps13/iccftps13sasd6/Movies/South%20Indian%20(Hindi%20Dubbed)/House%20Mates%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Extra Ordinary Man
-http://10.16.100.214/iccftps14/iccftps14sasd7/Movies/South%20Indian%20(Hindi%20Dubbed)/Extra%20Ordinary%20Man%20(2023)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",kaantha
-http://10.16.100.213/iccftps13/iccftps13sasd9/Movies/South%20Indian%20(Hindi%20Dubbed)/Kaantha%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",The Raja Saab
-http://10.16.100.214/iccftps14/iccftps14sasd5/Movies/South%20Indian%20(Hindi%20Dubbed)/The%20Raja%20Saab%20(2026)%201080p%20WEBDL.mp4
 #EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/subirkumarpaul/Logo/main/BBC%20World%20News.png" group-title="English News",BBC World
 http://cdns.jp-primehome.com:8000/zhongying/live/playlist.m3u8?cid=cs15
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Drive
-http://10.16.100.202/ftps10/iccftps10sasd3/Movies/South%20Indian%20(Hindi%20Dubbed)/Drive%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Andhra King
-http://10.16.100.213/iccftps13/iccftps13sasd4/Movies/South%20Indian%20(Hindi%20Dubbed)/Andhra%20King%20Thaluka%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Vrusshabha
-http://10.16.100.212/iccftps12/iccftps12sasd9/Movies/South%20Indian%20(Hindi%20Dubbed)/Vrusshabha%20(2025)%201080p%20HDRip.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Others
-http://10.16.100.214/iccftps14/iccftps14sasd5/Movies/South%20Indian%20(Hindi%20Dubbed)/Others%20(2025)%201080p%20WEBDL.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Gang Leder
-http://10.16.100.250/ftps10d1/Movies/South%20Indian%20(Hindi%20Dubbed)/GANG%20LEADER%20(2019)%20720p%20HDRip.mkv
-#EXTINF:-1 tvg-logo="https://upload.wikimedia.org/wikipedia/en/1/10/Surongo.jpeg" group-title="Bangla Movies",Surongo
-https://pub-d8f5af7f053343ed8295b16a145f6c1c.r2.dev/siam/[FGBDVibes]Surongo.(2023).480p.mkv
-#EXTINF:-1 group-title="English Movies",Freelancer
-http://premimum.online/movie/jen12345/jen54321/353751.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Jana Nayagan (2026) (Hindi)
-http://premimum.online/movie/jen12345/jen54321/724489.mp4
-#EXTINF:-1 group-title="Hindi Dabbing Movies",Bhartha Mahasayulaku Wignyapthi (2026) (Hindi)
-http://premimum.online/movie/jen12345/jen54321/727159.mp4
-#EXTINF:-1 group-title="English Movies",Greenland 2: Migration (2026) (Hindi)
-http://premimum.online/movie/jen12345/jen54321/717746.mp4

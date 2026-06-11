@@ -8,7 +8,7 @@ const config = {
         "color-function": true,
         "nesting-rules": true,
       },
-      browsers: "Chrome >= 80, Safari >= 15, Firefox >= 100, Edge >= 80",
+      browsers: "Chrome >= 80, Safari >= 15, Firefox >= 80, Edge >= 80",
     },
   },
 };

@@ -12079,8 +12079,8 @@
     "url": "https://tvsen7.aynaott.com/sspts1/index.m3u8"
   },
   {
-    "name": "Somoy Tv",
-    "logo": "https://dl.dropbox.com/s/leielj83em5kg7h/somoy_news.png",
+    "name": "Channel 1",
+    "logo": "https://raw.githubusercontent.com/subirkumarpaul/Logo/refs/heads/main/Channel%201.png",
     "group": "News",
     "url": "https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/1702-audio_113322_eng=113200-video=1692000.m3u8"
   },
@@ -12455,13 +12455,6 @@
     "url": "https://cdn.dadocric.st/embed2.php?id=geosuper"
   },
   {
-    "name": "SOMOY NEWS",
-    "logo": "https://static.wikia.nocookie.net/logopedia/images/8/8e/Somoy_Television.svg",
-    "group": "Bangla News",
-    "url": "https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/index.m3u8",
-    "id": "bdsomoynews-18"
-  },
-  {
     "name": "Jamuna TV",
     "logo": "https://raw.githubusercontent.com/subirkumarpaul/Logo/main/Jamuna%20TV.jpeg",
     "group": "Bangla News",
@@ -12810,7 +12803,7 @@
     "name": "Somoy TV",
     "logo": "https://i.postimg.cc/Qxn4JFNV/20250529-071147.png",
     "group": "Bangla",
-    "url": "https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/1702-audio_113322_eng=113200-video=2202800.m3u8"
+    "url": "https://sm-monirul.top/toffee/play/somoy_tv.m3u8"
   },
   {
     "name": "Jago News 24",
