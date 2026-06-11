@@ -1126,7 +1126,7 @@ export default function IPTVPlayer() {
       }
 
       if (dashRef.current) {
-        dashRef.current.destroy();
+        dashRef.current.destroy().catch(() => {});
         dashRef.current = null;
       }
 
@@ -1172,89 +1172,119 @@ export default function IPTVPlayer() {
       const isDash = chan.type === "dash" || chan.url.endsWith(".mpd");
 
       if (isDash) {
-        // --- DASH playback via dash.js with ClearKey DRM ---
-        // Dynamic import since dashjs requires browser `window`
-        import("dashjs").then((dashjsModule) => {
-          // Guard: if user switched channels before import resolved, bail out
-          if (loadedUrlRef.current !== chan.url) return;
+        // --- DASH playback via Shaka Player with ClearKey DRM ---
+        // Mirrors the working implementation in test/1.html exactly
+        (async () => {
+          try {
+            // Dynamically load Shaka (browser-only, needs window)
+            // @ts-expect-error - shaka is loaded via CDN script tag on window
+            if (typeof window.shaka === "undefined") {
+              await new Promise<void>((resolve, reject) => {
+                // Check if already loading
+                if (document.querySelector('script[data-shaka]')) {
+                  const check = setInterval(() => {
+                    // @ts-expect-error - shaka global
+                    if (typeof window.shaka !== "undefined") { clearInterval(check); resolve(); }
+                  }, 50);
+                  return;
+                }
+                const script = document.createElement("script");
+                script.src = "https://unpkg.com/shaka-player@5.0.0/dist/shaka-player.compiled.js";
+                script.setAttribute("data-shaka", "1");
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error("Failed to load Shaka Player"));
+                document.head.appendChild(script);
+              });
+            }
 
-          // Pre-check EME availability (required for ClearKey DRM)
-          const hasEME = typeof navigator !== "undefined" && "requestMediaKeySystemAccess" in navigator;
-          if (!hasEME && chan.kid && chan.key) {
-            console.warn(
-              "[DASH] EME not available — DRM-protected streams require HTTPS or localhost. " +
-              "Stream may fail to decrypt. Access via http://localhost:3000 instead of a LAN IP."
-            );
-          }
+            // Guard: bail if user switched channels while script was loading
+            if (loadedUrlRef.current !== chan.url) return;
 
-          // Convert hex string to base64url (ClearKey spec requires base64url encoding, no padding)
-          const hexToBase64Url = (hex: string): string => {
-            const bytes = new Uint8Array(
-              hex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
-            );
-            const base64 = btoa(String.fromCharCode(...bytes));
-            return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-          };
+            // @ts-expect-error - shaka global
+            const shaka = window.shaka;
+            shaka.polyfill.installAll();
 
-          const player = dashjsModule.MediaPlayer().create();
-          dashRef.current = player;
+            if (!shaka.Player.isBrowserSupported()) {
+              setError("Your browser does not support DASH playback.");
+              setPlayerStatus("error");
+              return;
+            }
 
-          // Apply settings before initialize (per dashjs docs)
-          player.updateSettings({
-            streaming: {
-              capabilities: {
-                useMediaCapabilitiesApi: false,
+            const player = new shaka.Player();
+            dashRef.current = player;
+            await player.attach(video);
+
+            // Live stream tuning — mirrors test/1.html config
+            player.configure({
+              manifest: {
+                defaultPresentationDelay: 8,
+                dash: { ignoreMinBufferTime: true, ignoreSuggestedPresentationDelay: true, autoCorrectDrift: true },
               },
-            },
-          });
-
-          // Per official dashjs ClearKey sample: initialize() FIRST, then setProtectionData()
-          player.initialize(video, chan.url, false);
-
-          // Set ClearKey protection data AFTER initialize (official API order)
-          if (chan.kid && chan.key) {
-            player.setProtectionData({
-              "org.w3.clearkey": {
-                clearkeys: {
-                  [hexToBase64Url(chan.kid)]: hexToBase64Url(chan.key),
-                },
+              streaming: {
+                bufferingGoal: 10,
+                rebufferingGoal: 0.8,
+                bufferBehind: 12,
+                jumpLargeGaps: true,
+                smallGapLimit: 1.5,
+                stallEnabled: true,
+                stallThreshold: 1,
+                stallSkip: 0.15,
+                retryParameters: { maxAttempts: 12, baseDelay: 500, backoffFactor: 1.6, fuzzFactor: 0.35, timeout: 15000 },
+              },
+              abr: {
+                enabled: true,
+                defaultBandwidthEstimate: 4500000,
+                switchInterval: 1,
+                clearBufferSwitch: false,
+                restrictToElementSize: true,
+                restrictToScreenSize: true,
+                bandwidthDowngradeTarget: 0.92,
+                bandwidthUpgradeTarget: 0.72,
               },
             });
-          }
 
-          player.on("canPlay", () => {
-            if (!video.paused) {
-              setPlayerStatus("playing");
-              setIsPaused(false);
-              return;
+            // ClearKey DRM — Shaka takes raw hex kid/key directly (no base64 conversion)
+            if (chan.kid && chan.key) {
+              player.configure({
+                drm: {
+                  clearKeys: {
+                    [String(chan.kid).toLowerCase()]: String(chan.key).toLowerCase(),
+                  },
+                },
+              });
             }
-            attemptPlay();
-          });
 
-          player.on("error", (e: { error?: { code?: number; message?: string } | string; type?: string }) => {
-            // Inspect nested error — dashjs wraps error objects as strings sometimes
-            const errStr = typeof e.error === "string" ? e.error : JSON.stringify(e.error || "");
-            // EME errors are non-fatal on HTTP (expected in dev over LAN IP)
-            if (errStr.includes("EME") || errStr.includes("mediakeys") || errStr.includes("MediaKeys")) {
-              console.warn("[DASH] DRM/EME warning (use localhost or HTTPS for encrypted streams):", errStr);
-              return;
-            }
-            console.error("[DASH] Player error:", e);
-            // Only fatal errors with a code should mark the player as failed
-            const errObj = typeof e.error === "object" ? e.error : null;
-            if (errObj && errObj.code) {
+            player.addEventListener("error", (event: { detail?: { code?: number } }) => {
+              const code = event?.detail?.code ?? "";
+              console.error("[SHAKA] DASH error:", event?.detail);
               setPlayerStatus("error");
-            }
-          });
+              setError("DASH stream error" + (code ? " • Code: " + code : ""));
+            });
 
-          player.on("playbackError", (e: { error?: string }) => {
-            console.error("[DASH] Playback error:", e);
+            player.addEventListener("buffering", (event: { buffering: boolean }) => {
+              if (!event.buffering) {
+                setPlayerStatus("playing");
+                setIsPaused(false);
+              }
+            });
+
+            await player.load(chan.url);
+
+            // Guard again after async load
+            if (loadedUrlRef.current !== chan.url) {
+              await player.destroy();
+              return;
+            }
+
+            attemptPlay();
+          } catch (err: unknown) {
+            if (loadedUrlRef.current !== chan.url) return; // stale, ignore
+            const msg = err instanceof Error ? err.message : "DASH / MPD load failed";
+            console.error("[SHAKA] Load error:", err);
+            setError(msg);
             setPlayerStatus("error");
-          });
-        }).catch((err) => {
-          console.error("Failed to load dashjs:", err);
-          setPlayerStatus("error");
-        });
+          }
+        })();
       } else if (Hls.isSupported()) {
         const hls = new Hls({
           enableWorker: true,
@@ -1349,7 +1379,7 @@ export default function IPTVPlayer() {
         hlsRef.current = null;
       }
       if (dashRef.current) {
-        dashRef.current.destroy();
+        dashRef.current.destroy().catch(() => {});
         dashRef.current = null;
       }
       if (video) {
