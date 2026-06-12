@@ -1,11 +1,5 @@
 [
     {
-        "name": "T Sports HD (4K)",
-        "logo": "https://s3.aynaott.com/storage/dbc585f70a60b9855b6e13a8ce4cb6f4",
-        "group": "FIFA",
-        "url": "http://103.59.176.72:8083/live1/tracks-v1a1/mono.m3u8?token=123"
-    },
-    {
         "name": "CAZE TV",
         "logo": "https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png",
         "group": "FIFA",
