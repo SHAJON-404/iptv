@@ -3,11 +3,5 @@
 https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8
 #EXTINF:-1 tvg-logo="https://images.seeklogo.com/logo-png/25/1/win-sports-logo-png_seeklogo-259337.png" group-title="FIFA",Win Sports
 https://1nyaler.streamhostingcdn.top/stream/32/index.m3u8
-#EXTINF:-1 tvg-logo="https://wapka-img.zuna.id/785a58ff.png" group-title="FIFA",PTV Sports
-https://cdn.dadocric.st/embed2.php?id=ptvsp
-#EXTINF:-1 tvg-logo="https://i.postimg.cc/sXpJqtm3/Ptv.png" group-title="FIFA",PTV Sports
-https://tvsen5.aynaott.com/PtvSports/tracks-v1a1/mono.ts.m3u8
-#EXTINF:-1 tvg-logo="https://s3.aynaott.com/storage/9d9d7cbfba5a8ceea648bbd963ad1014" group-title="FIFA",PTV Sports
-https://tvsen5.aynaott.com/PtvSports/index.m3u8?e=1779283784&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=db1789e36c278bf538489fac263e0ffb
-#EXTINF:-1 tvg-logo="https://s3.aynaott.com/storage/00da8a07fb26b2fb79359ee535e4c7bc" group-title="FIFA",BTV CTG
-https://tvsen6.aynaott.com/btvctg/index.m3u8?e=1779283747&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=9bca925fbdfe526b29d41ab7802348ec
+#EXTINF:-1 tvg-logo="https://tapmad-tv-tapmad-tv.en.aptoide.com/_next/image?url=https%3A%2F%2Fcdn.aptoide.com%2Fimgs%2F1%2F6%2F0%2F1600fc18ab2b5109bfe2cb72fb7af2f5_fgraphic.png&w=3840&q=60" group-title="FIFA",Tapmad (FIFA)
+https://premierleagpl23.akamaized.net/hls/live/2107108/tapmad-P2s6L_FiN@L-UrU/level_0.m3u8

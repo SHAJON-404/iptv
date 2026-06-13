@@ -1,5 +1,14 @@
 [
     {
+        "name": "D Sports",
+        "logo": "https://upload.wikimedia.org/wikipedia/commons/5/5a/DSports.png",
+        "group": "FIFA",
+        "url": "https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/ubehitlwzo/out/v1/8e09c381a51f4366a19e979418112e8f/cenc.mpd",
+        "type": "dash",
+        "kid": "a7d11d37a1f7611ee88d4db880171f32",
+        "key": "68f96d618b0b956b008c445896a25a79"
+    },
+    {
         "name": "CAZE TV",
         "logo": "https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png",
         "group": "FIFA",
@@ -21,37 +30,10 @@
         "key": "829799ed534d11fcadeb4b192467e050"
     },
     {
-        "name": "PTV Sports",
-        "logo": "https://wapka-img.zuna.id/785a58ff.png",
+        "name": "Tapmad (FIFA)",
+        "logo": "https://tapmad-tv-tapmad-tv.en.aptoide.com/_next/image?url=https%3A%2F%2Fcdn.aptoide.com%2Fimgs%2F1%2F6%2F0%2F1600fc18ab2b5109bfe2cb72fb7af2f5_fgraphic.png&w=3840&q=60",
         "group": "FIFA",
-        "url": "https://cdn.dadocric.st/embed2.php?id=ptvsp"
-    },
-    {
-        "name": "PTV Sports",
-        "logo": "https://i.postimg.cc/sXpJqtm3/Ptv.png",
-        "group": "FIFA",
-        "url": "https://tvsen5.aynaott.com/PtvSports/tracks-v1a1/mono.ts.m3u8"
-    },
-    {
-        "name": "PTV Sports",
-        "logo": "https://s3.aynaott.com/storage/9d9d7cbfba5a8ceea648bbd963ad1014",
-        "group": "FIFA",
-        "url": "https://tvsen5.aynaott.com/PtvSports/index.m3u8?e=1779283784&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=db1789e36c278bf538489fac263e0ffb"
-    },
-    {
-        "name": "BTV CTG",
-        "logo": "https://s3.aynaott.com/storage/00da8a07fb26b2fb79359ee535e4c7bc",
-        "group": "FIFA",
-        "url": "https://tvsen6.aynaott.com/btvctg/index.m3u8?e=1779283747&u=78be6644-0a65-48ec-81a4-089ac65a2619&token=9bca925fbdfe526b29d41ab7802348ec"
-    },
-    {
-        "name": "D Sports",
-        "logo": "https://upload.wikimedia.org/wikipedia/commons/5/5a/DSports.png",
-        "group": "FIFA",
-        "url": "https://otte.live.fly.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/ubehitlwzo/out/v1/8e09c381a51f4366a19e979418112e8f/cenc.mpd",
-        "type": "dash",
-        "kid": "a7d11d37a1f7611ee88d4db880171f32",
-        "key": "68f96d618b0b956b008c445896a25a79"
+        "url": "https://premierleagpl23.akamaized.net/hls/live/2107108/tapmad-P2s6L_FiN@L-UrU/level_0.m3u8"
     },
     {
         "name": "TUDN",
@@ -88,14 +70,5 @@
         "type": "dash",
         "kid": "433ffba670963e70857859a9dff4be04",
         "key": "51ede3a821229fe81e71282c8eff80e3"
-    },
-    {
-        "name": "Zee5 Bangla",
-        "logo": "",
-        "group": "FIFA",
-        "url": "https://d1g8wgjurz8via.cloudfront.net/bpk-tv/Zeebanglacinema/default/manifest.mpd",
-        "type": "dash",
-        "kid": "fbbfd9ce4bbe4d818b16df7dfe89f05b",
-        "key": "1e96d0f88ef740e982d6f6105721c8bc"
     }
 ]
