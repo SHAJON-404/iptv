@@ -21021,17 +21021,6 @@
     "content_type": "application/octet-stream"
   },
   {
-    "name": "beIN SPORTS XTRA (1080p)",
-    "logo": "https://i.ibb.co/HT49GPmB/XTRA-2.png",
-    "group": "Sports",
-    "url": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
-    "tvg_id": "beINSPORTSXTRA.us@SD",
-    "status": "live",
-    "verified_at": "2026-06-04T15:11:18.177616",
-    "status_code": 200,
-    "content_type": "application/vnd.apple.mpegurl"
-  },
-  {
     "name": "Bel RTL (1080p)",
     "logo": "https://i.imgur.com/0DUprIW.png",
     "group": "Music",
@@ -21061,16 +21050,6 @@
     "tvg_id": "BeitolAbbasTVChannel.iq@SD",
     "status": "live",
     "verified_at": "2026-06-04T15:11:18.533220",
-    "status_code": 200,
-    "content_type": "application/vnd.apple.mpegurl"
-  },
-  {
-    "name": "beIN SPORTS Xtra en Español (1080p)",
-    "logo": "",
-    "group": "Undefined",
-    "url": "https://d35j504z0x2vu2.cloudfront.net/v1/master/0bc8e8376bd8417a1b6761138aa41c26c7309312/bein-sports-xtra-en-espanol/playlist.m3u8?ads.vf=SylQdpcCl2O",
-    "status": "live",
-    "verified_at": "2026-06-04T15:11:18.610001",
     "status_code": 200,
     "content_type": "application/vnd.apple.mpegurl"
   },
@@ -21106,17 +21085,6 @@
     "verified_at": "2026-06-04T15:11:19.087901",
     "status_code": 200,
     "content_type": "application/x-mpegurl"
-  },
-  {
-    "name": "beIN Sports XTRA en Espanol (1080p)",
-    "logo": "https://i.imgur.com/V562tpO.png",
-    "group": "Sports",
-    "url": "https://dc1644a9jazgj.cloudfront.net/beIN_Sports_Xtra_Espanol.m3u8",
-    "tvg_id": "beINSPORTSXTRAenEspanol.us@SD",
-    "status": "live",
-    "verified_at": "2026-06-04T15:11:19.153903",
-    "status_code": 200,
-    "content_type": "application/vnd.apple.mpegurl"
   },
   {
     "name": "Berita RTM [Geo-blocked]",
@@ -78643,13 +78611,6 @@
     "group": "International",
     "url": "https://i.mjh.nz/.r/c44.m3u8",
     "id": "enchannel44-315"
-  },
-  {
-    "name": "--Live(beIN SPORTS XTRA)--",
-    "logo": "https://static.wikia.nocookie.net/logopedia/images/b/b5/XTRA_2.png",
-    "group": "Sports",
-    "url": "https://bein-esp-xumo.amagi.tv/playlistR720P.m3u8",
-    "id": "livebeinsportsxtra-316"
   },
   {
     "name": "America's Got Talent",
