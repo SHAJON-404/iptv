@@ -1675,7 +1675,7 @@ export default function IPTVPlayer() {
               )}
 
               {/* Center Play/Pause Button Overlay */}
-              {playerStatus === "playing" && (isPaused || showControls) && (
+              {playerStatus === "playing" && (isPaused || showControls) && !isBuffering && (
                 <div
                   className="absolute inset-0 flex items-center justify-center bg-black/35 z-10 pointer-events-none"
                 >
