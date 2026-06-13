@@ -641,7 +641,7 @@ export default function IPTVPlayer() {
 
       if (saved) {
         const parsedSaved = JSON.parse(saved) as Playlist[];
-        const customPlaylists = parsedSaved.filter(p => 
+        const customPlaylists = parsedSaved.filter(p =>
           p.id !== "default" && p.id !== "sports" && p.id !== "universal" && p.id !== "bangla" && p.id !== "fifa"
         );
 
@@ -669,7 +669,7 @@ export default function IPTVPlayer() {
 
   // Save custom playlists to localStorage whenever they change
   useEffect(() => {
-    const customPlaylists = playlists.filter(p => 
+    const customPlaylists = playlists.filter(p =>
       p.id !== "default" && p.id !== "sports" && p.id !== "universal" && p.id !== "bangla" && p.id !== "fifa"
     );
     try {
@@ -1164,7 +1164,18 @@ export default function IPTVPlayer() {
       setIsBuffering(false);
       loadedUrlRef.current = chan.url;
 
-      // Fully reset video element to clear stale state (fixes Firefox)
+      // 1. Destroy and cleanup existing players first to avoid race conditions during detached state
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+
+      if (shakaRef.current) {
+        shakaRef.current.destroy().catch(() => { });
+        shakaRef.current = null;
+      }
+
+      // 2. Fully reset video element to clear stale state (fixes Firefox)
       video.pause();
       video.removeAttribute("src");
       video.load();
@@ -1184,16 +1195,6 @@ export default function IPTVPlayer() {
       } else {
         video.volume = volumeRef.current;
         video.muted = isMutedRef.current;
-      }
-
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-
-      if (shakaRef.current) {
-        shakaRef.current.destroy().catch(() => {});
-        shakaRef.current = null;
       }
 
       // Helper: attempt play with muted fallback chain (handles Firefox strict autoplay)
@@ -1325,7 +1326,7 @@ export default function IPTVPlayer() {
 
             // Guard again after async load
             if (loadedUrlRef.current !== chan.url) {
-              await player.destroy().catch(() => {});
+              await player.destroy().catch(() => { });
               return;
             }
 
@@ -1357,9 +1358,11 @@ export default function IPTVPlayer() {
           startLevel: -1,
         });
         hlsRef.current = hls;
-        hls.attachMedia(video);
-        const playableUrl = getPlayableUrl(chan.url);
-        hls.loadSource(playableUrl);
+
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+          const playableUrl = getPlayableUrl(chan.url);
+          hls.loadSource(playableUrl);
+        });
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           if (!video.paused) {
@@ -1393,6 +1396,8 @@ export default function IPTVPlayer() {
             }
           }
         });
+
+        hls.attachMedia(video);
       } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
         const playableUrl = getPlayableUrl(chan.url);
         video.src = playableUrl;
@@ -1445,7 +1450,7 @@ export default function IPTVPlayer() {
         hlsRef.current = null;
       }
       if (shakaRef.current) {
-        shakaRef.current.destroy().catch(() => {});
+        shakaRef.current.destroy().catch(() => { });
         shakaRef.current = null;
       }
       if (video) {
@@ -1496,10 +1501,10 @@ export default function IPTVPlayer() {
 
     playTimeoutRef.current = setTimeout(() => {
       console.log("Playback failed to start within 10 seconds, switching to next channel...");
-      
+
       setChannels((currentChannels) => {
         if (currentChannels.length <= 1) return currentChannels;
-        
+
         const currentIndex = currentChannels.findIndex(
           (c) => c.id === selectedChannel.id || c.url === selectedChannel.url
         );
@@ -1566,7 +1571,7 @@ export default function IPTVPlayer() {
         <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full items-center animate-pulse">
           {/* 1. Player Card Skeleton */}
           <div className="w-full flex justify-center">
-            <div 
+            <div
               className="w-full aspect-video max-h-[75vh] rounded-2xl md:rounded-3xl bg-white/[0.01] border border-white/10 sm:border-white/5 flex items-center justify-center"
               style={{ maxWidth: "calc(75vh * 16 / 9)" }}
             >
@@ -1676,8 +1681,8 @@ export default function IPTVPlayer() {
               onClick={handlePlayerClick}
               onDoubleClick={handlePlayerDoubleClick}
               className={`bg-black shadow-2xl group transition-[width,height] duration-200 ${isFullscreen
-                    ? "relative w-full h-full bg-black"
-                    : "relative aspect-video max-h-[75vh] mx-auto rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/10 sm:border-white/5 w-full"
+                ? "relative w-full h-full bg-black"
+                : "relative aspect-video max-h-[75vh] mx-auto rounded-2xl md:rounded-3xl overflow-hidden bg-black border border-white/10 sm:border-white/5 w-full"
                 } ${showControls ? "cursor-default" : "cursor-none"
                 }`}
               style={!isFullscreen ? { maxWidth: "calc(75vh * 16 / 9)" } : undefined}
@@ -1775,8 +1780,8 @@ export default function IPTVPlayer() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     className={`absolute inset-y-0 w-1/3 flex items-center justify-center pointer-events-none z-30 bg-white/5 ${activeSeekIndicator.side === "left"
-                        ? "left-0 rounded-r-full"
-                        : "right-0 rounded-l-full"
+                      ? "left-0 rounded-r-full"
+                      : "right-0 rounded-l-full"
                       }`}
                   >
                     {activeSeekIndicator.side === "left" ? (
@@ -1875,8 +1880,8 @@ export default function IPTVPlayer() {
               {playerStatus === "playing" && (
                 <div
                   className={`player-controls absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-center justify-between transition-all duration-300 z-20 ${showControls
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-2 pointer-events-none"
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-2 pointer-events-none"
                     }`}
                 >
                   {/* Left controls */}
@@ -2094,7 +2099,7 @@ export default function IPTVPlayer() {
 
           {/* 3. Main Content Area: Sidebar + Channel List */}
           <div className="flex flex-col lg:flex-row gap-6 w-full">
-            
+
             {/* Sidebar: Your Playlists */}
             <div className="w-full lg:w-1/3 xl:w-1/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col max-h-[280px] lg:max-h-none lg:h-[600px] xl:h-[700px]">
               <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4">
@@ -2116,8 +2121,8 @@ export default function IPTVPlayer() {
                         setPlaylistTab("browse");
                       }}
                       className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item ${isActive
-                          ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
-                          : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
+                        ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
+                        : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
                         }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -2151,14 +2156,14 @@ export default function IPTVPlayer() {
                           pl.id !== "sports" &&
                           pl.id !== "universal" &&
                           pl.id !== "bangla" && (
-                          <button
-                            onClick={(e) => handleDeletePlaylist(pl.id, e)}
-                            className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
-                            title="Delete Playlist"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
+                            <button
+                              onClick={(e) => handleDeletePlaylist(pl.id, e)}
+                              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
+                              title="Delete Playlist"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                       </div>
                     </div>
                   );
@@ -2168,312 +2173,311 @@ export default function IPTVPlayer() {
 
             {/* Channel List Card */}
             <div className="w-full lg:w-2/3 xl:w-3/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">
-            {/* Playlist Header & Tab Bar */}
-            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-wrap gap-2">
-              <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto">
-                <button
-                  onClick={() => setPlaylistTab("browse")}
-                  className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${playlistTab === "browse"
+              {/* Playlist Header & Tab Bar */}
+              <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-wrap gap-2">
+                <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto">
+                  <button
+                    onClick={() => setPlaylistTab("browse")}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${playlistTab === "browse"
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
                       : "text-zinc-300 hover:text-white"
-                    }`}
-                >
-                  <Tv size={14} />
-                  <span className="whitespace-nowrap">Browse Channels</span>
-                </button>
-                <button
-                  onClick={() => setPlaylistTab("manage")}
-                  className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${playlistTab === "manage"
+                      }`}
+                  >
+                    <Tv size={14} />
+                    <span className="whitespace-nowrap">Browse Channels</span>
+                  </button>
+                  <button
+                    onClick={() => setPlaylistTab("manage")}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${playlistTab === "manage"
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
                       : "text-zinc-300 hover:text-white"
-                    }`}
-                >
-                  <Upload size={14} />
-                  <span className="whitespace-nowrap">Playlists Manager</span>
-                </button>
-              </div>
-
-              {/* Display active playlist name & watcher count */}
-              <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto justify-between sm:justify-start">
-                {viewerCount !== null && (
-                  <>
-                    <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none">
-                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
-                      <span className="text-white font-bold whitespace-nowrap">
-                        {viewerCount} {viewerCount === 1 ? "Watcher" : "Watchers"}
-                      </span>
-                    </div>
-                    <div className="hidden sm:block h-4 w-[1px] bg-white/10 mx-1 flex-shrink-0" />
-                  </>
-                )}
-
-                <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none max-w-[180px] sm:max-w-[260px] truncate">
-                  <span className="font-semibold shrink-0">Playlist:</span>
-                  <span className="text-white font-bold truncate">
-                    {playlists.find((p) => p.id === activePlaylistId)?.name}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {playlistTab === "browse" ? (
-              <>
-                {/* Search and Filters */}
-                <div className="space-y-3 sm:space-y-4 pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5">
-                  <div className="relative flex items-center bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/50 rounded-xl sm:rounded-2xl p-1 transition-colors">
-                    <Search className="text-zinc-400 ml-2.5 sm:ml-3" size={15} />
-                    <input
-                      type="text"
-                      placeholder="Search live TV..."
-                      value={searchQuery}
-                      onChange={(e) => { setSearchQuery(e.target.value); setDisplayCount(80); }}
-                      className="flex-1 bg-transparent border-none outline-none py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white placeholder:text-zinc-400"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => {
-                          setSearchQuery("");
-                          setDisplayCount(80);
-                        }}
-                        className="p-1 mr-1.5 sm:mr-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                        title="Clear Search"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Categories horizontally scrollable */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar">
-                    {categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => { setSelectedCategory(cat); setDisplayCount(80); }}
-                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${selectedCategory === cat
-                            ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                            : "bg-white/5 border-white/10 sm:border-white/5 text-zinc-300 hover:text-white hover:bg-white/10"
-                          }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
+                      }`}
+                  >
+                    <Upload size={14} />
+                    <span className="whitespace-nowrap">Playlists Manager</span>
+                  </button>
                 </div>
 
-                {/* List styled as a responsive grid */}
-                <div className="flex-1 min-h-0 overflow-y-auto pt-3 sm:pt-4 pr-1 custom-scrollbar">
-                  {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {Array.from({ length: 12 }).map((_, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/10 sm:border-white/5 animate-pulse"
-                        >
-                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10" />
-                          <div className="flex-1 space-y-1.5 sm:space-y-2">
-                            <div className="h-2.5 sm:h-3 w-1/3 bg-white/10 rounded" />
-                            <div className="h-3.5 sm:h-4 w-2/3 bg-white/10 rounded" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : filteredChannels.length === 0 ? (
-                    <div className="text-center py-12 text-zinc-400 text-sm font-medium">
-                      No channels found match your filters.
-                    </div>
-                  ) : (
+                {/* Display active playlist name & watcher count */}
+                <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto justify-between sm:justify-start">
+                  {viewerCount !== null && (
                     <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {visibleChannels.map((chan) => {
-                        const isSelected = selectedChannel?.id === chan.id;
-                        return (
-                          <button
-                            key={chan.id}
-                            onClick={() => handleChannelSelect(chan)}
-                            className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group ${isSelected
-                                ? "bg-primary/10 border-primary text-primary"
-                                : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
-                              }`}
-                          >
-                            {chan.logo ? (
-                              <Image
-                                src={chan.logo}
-                                alt={chan.name}
-                                width={40}
-                                height={40}
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLElement).style.display = "none";
-                                }}
-                                className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-lg sm:rounded-xl bg-white/5 p-0.5 border border-white/10 group-hover:scale-105 transition-transform"
-                              />
-                            ) : (
-                              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-bold text-xs border border-white/10 text-zinc-300 group-hover:text-white transition-colors">
-                                {getInitials(chan.name)}
-                              </div>
-                            )}
-
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${isSelected ? "text-primary/75" : "text-zinc-400"
-                                  }`}
-                              >
-                                {chan.group}
-                              </p>
-                              <p className="text-[13px] sm:text-sm font-bold truncate">
-                                {chan.name}
-                              </p>
-                            </div>
-
-                            {isSelected && (
-                              <Play
-                                size={13}
-                                className="sm:w-3.5 sm:h-3.5 fill-primary text-primary animate-pulse"
-                              />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Load More Button */}
-                    {hasMore && (
-                      <div className="flex justify-center pt-4 pb-2">
-                        <button
-                          onClick={() => setDisplayCount(prev => prev + 80)}
-                          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-xs sm:text-sm font-bold text-zinc-300 hover:text-white hover:bg-white/[0.08] hover:border-white/10 transition-all active:scale-95"
-                        >
-                          <ChevronsRight size={14} className="rotate-90" />
-                          <span>Load More ({filteredChannels.length - displayCount} remaining)</span>
-                        </button>
+                      <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+                        <span className="text-white font-bold whitespace-nowrap">
+                          {viewerCount} {viewerCount === 1 ? "Watcher" : "Watchers"}
+                        </span>
                       </div>
-                    )}
+                      <div className="hidden sm:block h-4 w-[1px] bg-white/10 mx-1 flex-shrink-0" />
                     </>
                   )}
+
+                  <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none max-w-[180px] sm:max-w-[260px] truncate">
+                    <span className="font-semibold shrink-0">Playlist:</span>
+                    <span className="text-white font-bold truncate">
+                      {playlists.find((p) => p.id === activePlaylistId)?.name}
+                    </span>
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex-1 overflow-y-auto pr-1 space-y-6 custom-scrollbar text-left">
-                {/* Import Playlist Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* URL Import Box */}
-                  <form onSubmit={handleUrlImport} className="glass-card p-4 sm:p-5 border border-white/10 sm:border-white/5 rounded-2xl bg-white/[0.01] flex flex-col justify-between min-h-[180px] hover:border-primary/20 transition-colors">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                          <Link size={18} />
-                        </div>
-                        <h4 className="font-bold text-sm sm:text-base">Load from URL</h4>
-                      </div>
+              </div>
 
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Playlist Name (e.g. My IPTV)"
-                          value={playlistName}
-                          onChange={(e) => setPlaylistName(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
-                        />
-                        <input
-                          type="url"
-                          placeholder="https://example.com/playlist.m3u"
-                          value={importUrl}
-                          onChange={(e) => setImportUrl(e.target.value)}
-                          required
-                          className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isImporting}
-                      className="mt-4 w-full flex items-center justify-center gap-2 py-3 px-4 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-primary/10 disabled:opacity-50 active:scale-95 cursor-pointer"
-                    >
-                      {isImporting ? (
-                        <>
-                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Importing Stream...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Check size={14} />
-                          <span>Import Playlist</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-
-                  {/* File Upload Box */}
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`glass-card p-4 sm:p-5 border rounded-2xl flex flex-col justify-between min-h-[220px] transition-all relative overflow-hidden ${
-                      isDragging
-                        ? "border-dashed border-primary bg-primary/10 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
-                        : "border-white/10 sm:border-white/5 bg-white/[0.01] hover:border-primary/20"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                          <Upload size={18} />
-                        </div>
-                        <h4 className="font-bold text-sm sm:text-base">Upload Playlist File</h4>
-                      </div>
-                      <p className="text-xs text-zinc-300">
-                        Upload local .m3u, .m3u8, or .json playlist files. Stored securely in your browser cache.
-                      </p>
-
-                      <div className="mt-3">
-                        <input
-                          type="text"
-                          placeholder="Playlist Name (Optional)"
-                          value={uploadPlaylistName}
-                          onChange={(e) => setUploadPlaylistName(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
+              {playlistTab === "browse" ? (
+                <>
+                  {/* Search and Filters */}
+                  <div className="space-y-3 sm:space-y-4 pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5">
+                    <div className="relative flex items-center bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/50 rounded-xl sm:rounded-2xl p-1 transition-colors">
+                      <Search className="text-zinc-400 ml-2.5 sm:ml-3" size={15} />
                       <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept=".m3u,.m3u8,.json"
-                        className="hidden"
+                        type="text"
+                        placeholder="Search live TV..."
+                        value={searchQuery}
+                        onChange={(e) => { setSearchQuery(e.target.value); setDisplayCount(80); }}
+                        className="flex-1 bg-transparent border-none outline-none py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white placeholder:text-zinc-400"
                       />
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-                      >
-                        <Upload size={14} />
-                        <span>Choose M3U or JSON File</span>
-                      </button>
+                      {searchQuery && (
+                        <button
+                          onClick={() => {
+                            setSearchQuery("");
+                            setDisplayCount(80);
+                          }}
+                          className="p-1 mr-1.5 sm:mr-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                          title="Clear Search"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
                     </div>
 
-                    {isDragging && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#070414]/90 backdrop-blur-xs pointer-events-none z-10 border-2 border-dashed border-primary m-1 rounded-xl">
-                        <Upload size={28} className="text-primary animate-bounce mb-2" />
-                        <p className="text-xs font-bold text-white">Drop your file here</p>
-                        <p className="text-[9px] text-zinc-400">supports .m3u, .m3u8, .json</p>
+                    {/* Categories horizontally scrollable */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar">
+                      {categories.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => { setSelectedCategory(cat); setDisplayCount(80); }}
+                          className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${selectedCategory === cat
+                            ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
+                            : "bg-white/5 border-white/10 sm:border-white/5 text-zinc-300 hover:text-white hover:bg-white/10"
+                            }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* List styled as a responsive grid */}
+                  <div className="flex-1 min-h-0 overflow-y-auto pt-3 sm:pt-4 pr-1 custom-scrollbar">
+                    {loading ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {Array.from({ length: 12 }).map((_, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/10 sm:border-white/5 animate-pulse"
+                          >
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10" />
+                            <div className="flex-1 space-y-1.5 sm:space-y-2">
+                              <div className="h-2.5 sm:h-3 w-1/3 bg-white/10 rounded" />
+                              <div className="h-3.5 sm:h-4 w-2/3 bg-white/10 rounded" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
+                    ) : filteredChannels.length === 0 ? (
+                      <div className="text-center py-12 text-zinc-400 text-sm font-medium">
+                        No channels found match your filters.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                          {visibleChannels.map((chan) => {
+                            const isSelected = selectedChannel?.id === chan.id;
+                            return (
+                              <button
+                                key={chan.id}
+                                onClick={() => handleChannelSelect(chan)}
+                                className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group ${isSelected
+                                  ? "bg-primary/10 border-primary text-primary"
+                                  : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
+                                  }`}
+                              >
+                                {chan.logo ? (
+                                  <Image
+                                    src={chan.logo}
+                                    alt={chan.name}
+                                    width={40}
+                                    height={40}
+                                    onError={(e) => {
+                                      (e.currentTarget as HTMLElement).style.display = "none";
+                                    }}
+                                    className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-lg sm:rounded-xl bg-white/5 p-0.5 border border-white/10 group-hover:scale-105 transition-transform"
+                                  />
+                                ) : (
+                                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-bold text-xs border border-white/10 text-zinc-300 group-hover:text-white transition-colors">
+                                    {getInitials(chan.name)}
+                                  </div>
+                                )}
+
+                                <div className="flex-1 min-w-0">
+                                  <p
+                                    className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${isSelected ? "text-primary/75" : "text-zinc-400"
+                                      }`}
+                                  >
+                                    {chan.group}
+                                  </p>
+                                  <p className="text-[13px] sm:text-sm font-bold truncate">
+                                    {chan.name}
+                                  </p>
+                                </div>
+
+                                {isSelected && (
+                                  <Play
+                                    size={13}
+                                    className="sm:w-3.5 sm:h-3.5 fill-primary text-primary animate-pulse"
+                                  />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Load More Button */}
+                        {hasMore && (
+                          <div className="flex justify-center pt-4 pb-2">
+                            <button
+                              onClick={() => setDisplayCount(prev => prev + 80)}
+                              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-xs sm:text-sm font-bold text-zinc-300 hover:text-white hover:bg-white/[0.08] hover:border-white/10 transition-all active:scale-95"
+                            >
+                              <ChevronsRight size={14} className="rotate-90" />
+                              <span>Load More ({filteredChannels.length - displayCount} remaining)</span>
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
-                </div>
+                </>
+              ) : (
+                <div className="flex-1 overflow-y-auto pr-1 space-y-6 custom-scrollbar text-left">
+                  {/* Import Playlist Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* URL Import Box */}
+                    <form onSubmit={handleUrlImport} className="glass-card p-4 sm:p-5 border border-white/10 sm:border-white/5 rounded-2xl bg-white/[0.01] flex flex-col justify-between min-h-[180px] hover:border-primary/20 transition-colors">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <Link size={18} />
+                          </div>
+                          <h4 className="font-bold text-sm sm:text-base">Load from URL</h4>
+                        </div>
 
-                {/* Validation Errors */}
-                {importError && (
-                  <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
-                    <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
-                    <span>{importError}</span>
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Playlist Name (e.g. My IPTV)"
+                            value={playlistName}
+                            onChange={(e) => setPlaylistName(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
+                          />
+                          <input
+                            type="url"
+                            placeholder="https://example.com/playlist.m3u"
+                            value={importUrl}
+                            onChange={(e) => setImportUrl(e.target.value)}
+                            required
+                            className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2.5 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isImporting}
+                        className="mt-4 w-full flex items-center justify-center gap-2 py-3 px-4 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-primary/10 disabled:opacity-50 active:scale-95 cursor-pointer"
+                      >
+                        {isImporting ? (
+                          <>
+                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span>Importing Stream...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check size={14} />
+                            <span>Import Playlist</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+
+                    {/* File Upload Box */}
+                    <div
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`glass-card p-4 sm:p-5 border rounded-2xl flex flex-col justify-between min-h-[220px] transition-all relative overflow-hidden ${isDragging
+                          ? "border-dashed border-primary bg-primary/10 shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+                          : "border-white/10 sm:border-white/5 bg-white/[0.01] hover:border-primary/20"
+                        }`}
+                    >
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                            <Upload size={18} />
+                          </div>
+                          <h4 className="font-bold text-sm sm:text-base">Upload Playlist File</h4>
+                        </div>
+                        <p className="text-xs text-zinc-300">
+                          Upload local .m3u, .m3u8, or .json playlist files. Stored securely in your browser cache.
+                        </p>
+
+                        <div className="mt-3">
+                          <input
+                            type="text"
+                            placeholder="Playlist Name (Optional)"
+                            value={uploadPlaylistName}
+                            onChange={(e) => setUploadPlaylistName(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 sm:border-white/5 focus-within:border-primary/40 rounded-xl py-2 px-3 text-xs text-white placeholder:text-zinc-400 outline-none transition-colors"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileUpload}
+                          accept=".m3u,.m3u8,.json"
+                          className="hidden"
+                        />
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                        >
+                          <Upload size={14} />
+                          <span>Choose M3U or JSON File</span>
+                        </button>
+                      </div>
+
+                      {isDragging && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#070414]/90 backdrop-blur-xs pointer-events-none z-10 border-2 border-dashed border-primary m-1 rounded-xl">
+                          <Upload size={28} className="text-primary animate-bounce mb-2" />
+                          <p className="text-xs font-bold text-white">Drop your file here</p>
+                          <p className="text-[9px] text-zinc-400">supports .m3u, .m3u8, .json</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
 
-              </div>
-            )}
-          </div>
+                  {/* Validation Errors */}
+                  {importError && (
+                    <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
+                      <AlertCircle size={15} className="mt-0.5 flex-shrink-0" />
+                      <span>{importError}</span>
+                    </div>
+                  )}
+
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 4. Footer with Developer Info */}
