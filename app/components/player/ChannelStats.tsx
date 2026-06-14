@@ -29,54 +29,79 @@ export function ChannelStats({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-      {/* Channel Details Card */}
-      {selectedChannel ? (
-        <motion.div
-          key={selectedChannel.id}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`md:col-span-1 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${
-            playerStatus === "loading" ? "animate-pulse" : ""
-          }`}
-        >
-          {selectedChannel.logo ? (
-            <Image
-              src={selectedChannel.logo}
-              alt={selectedChannel.name}
-              width={56}
-              height={56}
-              onError={(e) => {
-                (e.currentTarget as HTMLElement).style.display = "none";
-              }}
-              className="w-10 h-10 sm:w-14 sm:h-14 object-contain rounded-xl sm:rounded-2xl bg-white/5 p-0.5 sm:p-1 border border-white/10 flex-shrink-0"
-            />
+      {/* Combined Channel Details & Count Card */}
+      <div className={`md:col-span-2 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+        playerStatus === "loading" ? "animate-pulse" : ""
+      }`}>
+        
+        {/* Left Side: Channel details */}
+        <div className="flex items-center gap-4 min-w-0 flex-1 w-full sm:w-auto">
+          {selectedChannel ? (
+            <motion.div
+              key={selectedChannel.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-4 min-w-0 w-full"
+            >
+              {selectedChannel.logo ? (
+                <Image
+                  src={selectedChannel.logo}
+                  alt={selectedChannel.name}
+                  width={56}
+                  height={56}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                  className="w-10 h-10 sm:w-14 sm:h-14 object-contain rounded-xl sm:rounded-2xl bg-white/5 p-0.5 sm:p-1 border border-white/10 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-primary/30 to-violet-500/30 flex items-center justify-center font-bold text-sm sm:text-base text-primary border border-primary/20 flex-shrink-0">
+                  {getInitials(selectedChannel.name)}
+                </div>
+              )}
+              <div className="space-y-1 min-w-0">
+                <h2 className="text-base sm:text-lg md:text-xl font-bold truncate">
+                  {selectedChannel.name}
+                </h2>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-primary bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded border border-primary/20 hidden sm:block w-fit">
+                  {selectedChannel.group}
+                </span>
+              </div>
+            </motion.div>
           ) : (
-            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-primary/30 to-violet-500/30 flex items-center justify-center font-bold text-sm sm:text-base text-primary border border-primary/20 flex-shrink-0">
-              {getInitials(selectedChannel.name)}
+            <div className="flex items-center gap-4 min-w-0 w-full">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex-shrink-0 flex items-center justify-center">
+                <Tv size={20} className="text-primary" />
+              </div>
+              <div className="space-y-1 min-w-0">
+                <h2 className="text-base sm:text-lg font-bold text-gray-300">Select a Channel</h2>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                  Choose from the list below
+                </span>
+              </div>
             </div>
           )}
-          <div className="space-y-1 min-w-0">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold truncate">
-              {selectedChannel.name}
-            </h2>
-            <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-primary bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded border border-primary/20 hidden sm:block w-fit">
-              {selectedChannel.group}
-            </span>
+        </div>
+
+        {/* Divider */}
+        <div className="hidden sm:block w-[1px] h-10 bg-white/10" />
+        <div className="sm:hidden w-full h-[1px] bg-white/5 my-1" />
+
+        {/* Right Side: Total Channels Count */}
+        <div className="flex items-center gap-3 w-full sm:w-auto sm:justify-end">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+            <Tv size={16} className="animate-pulse" />
           </div>
-        </motion.div>
-      ) : (
-        <div className="md:col-span-1 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full">
-          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20 flex-shrink-0 flex items-center justify-center">
-            <Tv size={20} className="text-primary" />
-          </div>
-          <div className="space-y-1 min-w-0">
-            <h2 className="text-base sm:text-lg font-bold text-gray-300">Select a Channel</h2>
-            <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400">
-              Choose from the list below
-            </span>
+          <div className="space-y-0.5 min-w-0">
+            <p className="text-[8px] sm:text-[9px] uppercase font-bold tracking-widest text-zinc-400 truncate">
+              Total Channels
+            </p>
+            <h3 className="text-xs sm:text-sm md:text-base font-bold text-emerald-400 truncate">
+              {totalChannels} Channels
+            </h3>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Developer Info Card */}
       <div className="hidden md:flex glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex-row items-center justify-between gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
@@ -152,21 +177,6 @@ export function ChannelStats({
           </a>
           . Follow GitHub for updates!
         </p>
-      </div>
-
-      {/* Channel Count Card */}
-      <div className="glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full md:col-span-1">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
-          <Tv size={20} className="animate-pulse" />
-        </div>
-        <div className="space-y-0.5 min-w-0">
-          <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400 truncate">
-            Total Channels
-          </p>
-          <h3 className="text-base sm:text-lg font-bold text-emerald-400 truncate">
-            {totalChannels} Channels
-          </h3>
-        </div>
       </div>
     </div>
   );
