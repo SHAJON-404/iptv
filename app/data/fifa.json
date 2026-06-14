@@ -9,16 +9,7 @@
         "key": "68f96d618b0b956b008c445896a25a79"
     },
     {
-        "name": "FIFA CTV - English (1080p)",
-        "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/CTV_logo_2018.svg/3840px-CTV_logo_2018.svg.png",
-        "group": "Sports",
-        "url": "https://otte-qw.live.pv-cdn.net/lhr-nitro/live/clients/dash/enc/72sjo8hygl/out/v1/3079be34d72a4985852d299a02406a0c/cenc.mpd",
-        "type": "dash",
-        "kid": "d185684e2330de5bea436daa094a5e86",
-        "key": "014f0116154f5bf0050e03a6b0a23157"
-    },
-    {
-        "name": "FOX (ENG) 60Fps",
+        "name": "FOX ONE (ENG)",
         "logo": "https://cdn.broadbandtvnews.com/wp-content/uploads/2025/05/13115423/Fox-One-Logo.jpg",
         "group": "Sports",
         "url": "https://otte-tim.live.pv-cdn.net/pdx-nitro/live/clients/dash/enc/ajfoeddkbz/out/v1/b78800b9b2304879b15843f455836829/cenc.mpd",
@@ -79,6 +70,15 @@
         "type": "dash",
         "kid": "1cb20afcd9d979c833cfd208c7d3eeb2",
         "key": "fef0c15b4a523370892edd5e4133c269"
+    },
+    {
+        "name": "FIFA CTV - English (1080p)",
+        "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/CTV_logo_2018.svg/3840px-CTV_logo_2018.svg.png",
+        "group": "Sports",
+        "url": "https://otte-qw.live.pv-cdn.net/lhr-nitro/live/clients/dash/enc/72sjo8hygl/out/v1/3079be34d72a4985852d299a02406a0c/cenc.mpd",
+        "type": "dash",
+        "kid": "d185684e2330de5bea436daa094a5e86",
+        "key": "014f0116154f5bf0050e03a6b0a23157"
     },
     {
         "name": "M6 Direct TV",
