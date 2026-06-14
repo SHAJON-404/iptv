@@ -232,8 +232,8 @@ export function ChannelStats({
               <Tv size={15} />
             </div>
             <div className="space-y-0.5 min-w-0">
-              <p className="text-[8px] uppercase font-bold tracking-widest text-zinc-400 truncate">
-                Total
+              <p className="text-[9px] font-bold text-zinc-400 truncate">
+                Total Channels
               </p>
               <h3 className="text-xs font-bold text-emerald-400 truncate">
                 {totalChannels}
