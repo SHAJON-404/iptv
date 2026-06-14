@@ -72,10 +72,7 @@ export default function AboutView() {
               </div>
 
               <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium max-w-xl">
-                Hi! I am a self-learned developer and reverse engineer. 
-                I design and develop premium streaming tools with modern UI designs, responsive layouts, 
-                and fast caching pipelines. 
-                For any queries, customized branding options, or technical support, feel free to contact me.
+                Hi! I am a self-learned developer and reverse engineer. I created this open-source IPTV player project, which supports both DASH and HLS streams. Feel free to contact me directly if you face any issues.
               </p>
 
               {/* Social Channels Panel */}
