@@ -72,9 +72,9 @@
         "key": "72d631a66e635c60829a0fe7705516c1"
     },
     {
-        "name": "FIFA WORLDCUP 2026",
+        "name": "FUSSBALL TV",
         "logo": "https://github.com/user-attachments/assets/8ccc2603-16a1-47a6-bd16-2f783da7f28d",
-        "group": "Sports",
+        "group": "FIFA",
         "url": "https://svc45.main.sl.t-online.de/bpk-tv/KID01037_FUSSBALLTV1_hd/DASH/index.mpd",
         "type": "dash",
         "kid": "1cb20afcd9d979c833cfd208c7d3eeb2",
