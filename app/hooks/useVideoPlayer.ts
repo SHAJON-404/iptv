@@ -1,0 +1,947 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Hls from "hls.js";
+import { Channel, getIsIOS } from "./useIPTVPlaylists";
+
+// shaka-player is loaded dynamically because it requires `window` (browser-only)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ShakaPlayer = any;
+
+const getPlayableUrl = (url: string) => {
+  if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+    return `/api/iptv/proxy?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+};
+
+export function useVideoPlayer(
+  selectedChannel: Channel | null,
+  retryKey: number,
+  setRetryKey: React.Dispatch<React.SetStateAction<number>>
+) {
+  const [playerError, setPlayerError] = useState<string | null>(null);
+  const [isBuffering, setIsBuffering] = useState(false);
+
+  const [playerStatus, setPlayerStatus] = useState<
+    "idle" | "loading" | "playing" | "error"
+  >("idle");
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const playerWrapperRef = useRef<HTMLDivElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+
+  // Custom Player controls states
+  const [isPaused, setIsPaused] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [volume, setVolume] = useState(0.8);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const isFullscreenRef = useRef(false);
+  const [isPip, setIsPip] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const unmuteCleanupRef = useRef<(() => void) | null>(null);
+
+  const hlsRef = useRef<Hls | null>(null);
+  const shakaRef = useRef<ShakaPlayer | null>(null);
+  const userMutedRef = useRef(false);
+  const isMutedRef = useRef(isMuted);
+  const volumeRef = useRef(volume);
+  const loadedUrlRef = useRef<string | null>(null);
+  const nativeErrorCleanupRef = useRef<(() => void) | null>(null);
+  const [viewerCount, setViewerCount] = useState<number | null>(null);
+
+  // Sync viewers session
+  useEffect(() => {
+    const getOrCreateSessionId = (): string => {
+      if (typeof window === "undefined") return "";
+      let id = sessionStorage.getItem("iptv_viewer_session_id");
+      if (!id) {
+        id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem("iptv_viewer_session_id", id);
+      }
+      return id;
+    };
+
+    const sessionId = getOrCreateSessionId();
+
+    const sendHeartbeat = async () => {
+      try {
+        const response = await fetch("/api/iptv/viewers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ sessionId }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (typeof data.count === "number") {
+            setViewerCount(data.count);
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to send heartbeat:", error);
+      }
+    };
+
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
+    volumeRef.current = volume;
+  }, [volume]);
+
+  // YouTube-like Double Tap Seek State
+  const [activeSeekIndicator, setActiveSeekIndicator] = useState<{
+    side: "left" | "right";
+    visible: boolean;
+  }>({ side: "left", visible: false });
+  const seekIndicatorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const resetControlsTimeout = useCallback(() => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+    controlsTimeoutRef.current = setTimeout(() => {
+      const video = videoRef.current;
+      if (video && !video.paused) {
+        setShowControls(false);
+      }
+    }, 2000);
+  }, []);
+
+  const setupUnmuteOnInteraction = useCallback(() => {
+    if (unmuteCleanupRef.current) {
+      unmuteCleanupRef.current();
+    }
+
+    const unmute = () => {
+      const v = videoRef.current;
+      if (v && v.muted) {
+        v.muted = false;
+        setIsMuted(false);
+        if (v.volume === 0) {
+          v.volume = 1.0;
+          setVolume(1.0);
+        }
+      }
+      cleanup();
+    };
+
+    const cleanup = () => {
+      document.removeEventListener("click", unmute);
+      document.removeEventListener("touchstart", unmute);
+      document.removeEventListener("keydown", unmute);
+      unmuteCleanupRef.current = null;
+    };
+
+    document.addEventListener("click", unmute);
+    document.addEventListener("touchstart", unmute);
+    document.addEventListener("keydown", unmute);
+    unmuteCleanupRef.current = cleanup;
+  }, []);
+
+  // Auto-hide controls after 2s if video is playing
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const video = videoRef.current;
+      if (video && !video.paused) {
+        setShowControls(false);
+      }
+    }, 2000);
+    controlsTimeoutRef.current = timeout;
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+      if (unmuteCleanupRef.current) {
+        unmuteCleanupRef.current();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = !!document.fullscreenElement;
+      isFullscreenRef.current = isFs;
+      window.dispatchEvent(new CustomEvent("iptv-fullscreen", { detail: { isFullscreen: isFs } }));
+      setIsFullscreen(isFs);
+      if (!isFs) {
+        setTimeout(() => {
+          try {
+            const orientation = window.screen?.orientation as ScreenOrientation & {
+              lock?: (orientation: string) => Promise<void>;
+              unlock?: () => void;
+            };
+            if (orientation && typeof orientation.unlock === "function") {
+              orientation.unlock();
+            }
+          } catch { /* ignore */ }
+        }, 150);
+      }
+    };
+
+    const video = videoRef.current;
+    const handleiOSFullscreenBegin = () => {
+      isFullscreenRef.current = true;
+      window.dispatchEvent(new CustomEvent("iptv-fullscreen", { detail: { isFullscreen: true } }));
+      setIsFullscreen(true);
+    };
+    const handleiOSFullscreenEnd = () => {
+      isFullscreenRef.current = false;
+      window.dispatchEvent(new CustomEvent("iptv-fullscreen", { detail: { isFullscreen: false } }));
+      setIsFullscreen(false);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    if (video) {
+      video.addEventListener("webkitbeginfullscreen", handleiOSFullscreenBegin);
+      video.addEventListener("webkitendfullscreen", handleiOSFullscreenEnd);
+    }
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      if (video) {
+        video.removeEventListener("webkitbeginfullscreen", handleiOSFullscreenBegin);
+        video.removeEventListener("webkitendfullscreen", handleiOSFullscreenEnd);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => setIsPaused(false);
+    const handlePause = () => setIsPaused(true);
+    const handleVolumeChange = () => {
+      setIsMuted(video.muted);
+      setVolume(video.volume);
+    };
+    const handleWaiting = () => setIsBuffering(true);
+    const handlePlayingEvent = () => setIsBuffering(false);
+    const handleSeeking = () => setIsBuffering(true);
+    const handleSeeked = () => setIsBuffering(false);
+    const handleCanPlay = () => setIsBuffering(false);
+
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("volumechange", handleVolumeChange);
+    video.addEventListener("waiting", handleWaiting);
+    video.addEventListener("playing", handlePlayingEvent);
+    video.addEventListener("seeking", handleSeeking);
+    video.addEventListener("seeked", handleSeeked);
+    video.addEventListener("canplay", handleCanPlay);
+
+    setIsPaused(video.paused);
+    setIsMuted(video.muted);
+    setVolume(video.volume);
+
+    return () => {
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("volumechange", handleVolumeChange);
+      video.removeEventListener("waiting", handleWaiting);
+      video.removeEventListener("playing", handlePlayingEvent);
+      video.removeEventListener("seeking", handleSeeking);
+      video.removeEventListener("seeked", handleSeeked);
+      video.removeEventListener("canplay", handleCanPlay);
+    };
+  }, [selectedChannel, retryKey]);
+
+  const handlePlayPause = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      if (video.muted && !userMutedRef.current) {
+        video.muted = false;
+        setIsMuted(false);
+        if (video.volume === 0) {
+          video.volume = 1.0;
+          setVolume(1.0);
+        }
+      }
+      video.play().catch((err) => {
+        if (err.name !== "AbortError") {
+          console.warn("Play failed:", err);
+        }
+      });
+    } else {
+      video.pause();
+    }
+    resetControlsTimeout();
+  };
+
+  const handleMuteUnmute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.muted) {
+      video.muted = false;
+      userMutedRef.current = false;
+      if (video.volume === 0) {
+        video.volume = 1.0;
+        setVolume(1.0);
+      }
+    } else {
+      video.muted = true;
+      userMutedRef.current = true;
+    }
+    resetControlsTimeout();
+  };
+
+  const handleVolumeChangeSlider = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const video = videoRef.current;
+    if (!video) return;
+    const newVol = parseFloat(e.target.value);
+    video.volume = newVol;
+    setVolume(newVol);
+    if (newVol > 0) {
+      video.muted = false;
+      userMutedRef.current = false;
+    } else {
+      video.muted = true;
+      userMutedRef.current = true;
+    }
+    resetControlsTimeout();
+  };
+
+  const handleFullscreen = () => {
+    const container = playerContainerRef.current;
+    const video = videoRef.current;
+    if (!container) return;
+
+    const videoEl = video as HTMLVideoElement & {
+      webkitEnterFullscreen?: () => void;
+      webkitExitFullscreen?: () => void;
+      webkitDisplayingFullscreen?: boolean;
+    };
+
+    const isIOS = getIsIOS();
+    if (isIOS && videoEl) {
+      if (videoEl.webkitDisplayingFullscreen && videoEl.webkitExitFullscreen) {
+        videoEl.webkitExitFullscreen();
+      } else if (videoEl.webkitEnterFullscreen) {
+        videoEl.webkitEnterFullscreen();
+      }
+      resetControlsTimeout();
+      return;
+    }
+
+    if (!document.fullscreenElement) {
+      container
+        .requestFullscreen()
+        .then(() => {
+          setTimeout(() => {
+            try {
+              const orientation = window.screen?.orientation as ScreenOrientation & {
+                lock?: (orientation: string) => Promise<void>;
+                unlock?: () => void;
+              };
+              if (orientation && typeof orientation.lock === "function") {
+                orientation
+                  .lock("landscape")
+                  .catch(() => { /* orientation lock not supported */ });
+              }
+            } catch { /* ignore */ }
+          }, 300);
+        })
+        .catch((err) => console.warn("Fullscreen request failed:", err));
+    } else {
+      document
+        .exitFullscreen()
+        .catch((err) => console.warn("Exit fullscreen failed:", err));
+    }
+    resetControlsTimeout();
+  };
+
+  const handleSeek = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    try {
+      const seekable = video.seekable;
+      let newTime = video.currentTime + seconds;
+
+      if (seekable && seekable.length > 0) {
+        const start = seekable.start(0);
+        const end = seekable.end(seekable.length - 1);
+        if (newTime < start) newTime = start;
+        if (newTime > end) newTime = end;
+      } else if (video.duration) {
+        if (newTime < 0) newTime = 0;
+        if (newTime > video.duration) newTime = video.duration;
+      }
+
+      video.currentTime = newTime;
+    } catch (err) {
+      console.warn("Seeking failed:", err);
+    }
+    resetControlsTimeout();
+  };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleEnterPip = () => setIsPip(true);
+    const handleLeavePip = () => setIsPip(false);
+
+    video.addEventListener("enterpictureinpicture", handleEnterPip);
+    video.addEventListener("leavepictureinpicture", handleLeavePip);
+
+    return () => {
+      video.removeEventListener("enterpictureinpicture", handleEnterPip);
+      video.removeEventListener("leavepictureinpicture", handleLeavePip);
+    };
+  }, [selectedChannel, retryKey]);
+
+  const handlePip = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const videoEl = video as HTMLVideoElement & {
+      webkitSupportsPresentationMode?: (mode: string) => boolean;
+      webkitSetPresentationMode?: (mode: string) => void;
+      webkitPresentationMode?: string;
+    };
+
+    try {
+      if (videoEl.webkitSupportsPresentationMode?.("picture-in-picture")) {
+        const currentMode = videoEl.webkitPresentationMode;
+        videoEl.webkitSetPresentationMode?.(
+          currentMode === "picture-in-picture" ? "inline" : "picture-in-picture"
+        );
+      } else if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (document.pictureInPictureEnabled) {
+        await video.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.warn("Failed to toggle Picture-in-Picture:", err);
+    }
+    resetControlsTimeout();
+  };
+
+  const isPipSupported =
+    typeof document !== "undefined" &&
+    (document.pictureInPictureEnabled ||
+      typeof (HTMLVideoElement.prototype as HTMLVideoElement & { webkitSupportsPresentationMode?: unknown }).webkitSupportsPresentationMode === "function");
+
+  const handlePlayerClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest(".player-controls")) {
+      return;
+    }
+
+    if (playerStatus !== "playing") {
+      return;
+    }
+
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = null;
+      return;
+    }
+
+    clickTimeoutRef.current = setTimeout(() => {
+      setShowControls((prev) => {
+        if (prev) {
+          if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+          }
+          return false;
+        } else {
+          resetControlsTimeout();
+          return true;
+        }
+      });
+      clickTimeoutRef.current = null;
+    }, 250);
+  };
+
+  const handlePlayerDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest(".player-controls")) {
+      return;
+    }
+
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = null;
+    }
+
+    const container = playerContainerRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const isLeft = clickX < width / 2;
+
+    handleSeek(isLeft ? -10 : 10);
+
+    if (seekIndicatorTimeoutRef.current) {
+      clearTimeout(seekIndicatorTimeoutRef.current);
+    }
+    setActiveSeekIndicator({
+      side: isLeft ? "left" : "right",
+      visible: true,
+    });
+
+    seekIndicatorTimeoutRef.current = setTimeout(() => {
+      setActiveSeekIndicator((prev) => ({ ...prev, visible: false }));
+    }, 650);
+  };
+
+  const handleMouseMove = () => {
+    resetControlsTimeout();
+  };
+
+  const initializeStream = useCallback(
+    (chan: Channel, isUserClick: boolean) => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      setPlayerStatus("loading");
+      setPlayerError(null);
+      setIsBuffering(false);
+      loadedUrlRef.current = chan.url;
+
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+
+      if (shakaRef.current) {
+        shakaRef.current.destroy().catch(() => { });
+        shakaRef.current = null;
+      }
+
+      video.pause();
+      if (nativeErrorCleanupRef.current) {
+        nativeErrorCleanupRef.current();
+        nativeErrorCleanupRef.current = null;
+      }
+      video.removeAttribute("src");
+      if (!getIsIOS()) {
+        video.load();
+      }
+
+      // Check if it is a DASH stream and we are on iOS/iPadOS
+      const isDashStream = chan.type === "dash" || chan.url.endsWith(".mpd");
+      if (isDashStream && getIsIOS()) {
+        setPlayerStatus("error");
+        setPlayerError("Not supported in iOS/iPad OS");
+        return;
+      }
+
+      if (isUserClick) {
+        if (!userMutedRef.current) {
+          video.muted = false;
+          setIsMuted(false);
+          if (video.volume === 0) {
+            video.volume = 1.0;
+            setVolume(1.0);
+          }
+        } else {
+          video.muted = true;
+          setIsMuted(true);
+        }
+      } else {
+        video.volume = volumeRef.current;
+        video.muted = isMutedRef.current;
+      }
+
+      const attemptPlay = () => {
+        video
+          .play()
+          .then(() => {
+            setPlayerStatus("playing");
+            setIsPaused(false);
+          })
+          .catch((err) => {
+            if (err.name === "NotAllowedError") {
+              video.muted = true;
+              setIsMuted(true);
+              video
+                .play()
+                .then(() => {
+                  setPlayerStatus("playing");
+                  setIsPaused(false);
+                  setupUnmuteOnInteraction();
+                })
+                .catch((playErr) => {
+                  if (playErr.name !== "AbortError") {
+                    console.error("Muted autoplay also failed:", playErr);
+                  }
+                  setPlayerStatus("playing");
+                  setIsPaused(true);
+                });
+            } else {
+              if (err.name !== "AbortError") {
+                console.warn("Play failed:", err);
+              }
+              setPlayerStatus("playing");
+              setIsPaused(video.paused);
+            }
+          });
+      };
+
+      const isDash = chan.type === "dash" || chan.url.endsWith(".mpd");
+
+      if (isDash) {
+        (async () => {
+          try {
+            const shakaModule = await import("shaka-player");
+            const shaka = shakaModule.default || shakaModule;
+
+            if (loadedUrlRef.current !== chan.url) return;
+
+            shaka.polyfill.installAll();
+
+            if (!shaka.Player.isBrowserSupported()) {
+              setPlayerError("Your browser does not support DASH playback.");
+              setPlayerStatus("error");
+              return;
+            }
+
+            const player = new shaka.Player();
+            shakaRef.current = player;
+            await player.attach(video);
+
+            try {
+              const net = player.getNetworkingEngine?.();
+              if (net?.registerRequestFilter) {
+                net.registerRequestFilter((_type: number, request: { allowCrossSiteCredentials: boolean; headers: Record<string, string> }) => {
+                  request.allowCrossSiteCredentials = false;
+                  request.headers = {};
+                });
+              }
+            } catch { /* ignore */ }
+
+            player.configure({
+              manifest: {
+                defaultPresentationDelay: 10,
+                ignoreDrmInfo: true,
+                dash: {
+                  ignoreMinBufferTime: true,
+                  ignoreSuggestedPresentationDelay: true,
+                  autoCorrectDrift: true,
+                  ignoreEmptyAdaptationSet: true,
+                  ignoreMaxSegmentDuration: true,
+                  initialSegmentLimit: 1000,
+                },
+                retryParameters: { maxAttempts: 10, baseDelay: 450, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 18000 },
+              },
+              streaming: {
+                lowLatencyMode: false,
+                inaccurateManifestTolerance: 3,
+                rebufferingGoal: 0.75,
+                bufferingGoal: 18,
+                bufferBehind: 18,
+                gapDetectionThreshold: 0.4,
+                stallEnabled: true,
+                stallThreshold: 1.2,
+                stallSkip: 0.25,
+                startAtSegmentBoundary: true,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                failureCallback: (_error: any) => {
+                  try { player.retryStreaming(); } catch { /* ignore */ }
+                },
+                retryParameters: { maxAttempts: 15, baseDelay: 450, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 22000 },
+              },
+              abr: {
+                enabled: true,
+                defaultBandwidthEstimate: 12000000,
+                switchInterval: 2,
+                restrictToElementSize: false,
+                restrictToScreenSize: false,
+                clearBufferSwitch: false,
+                bandwidthDowngradeTarget: 0.95,
+                bandwidthUpgradeTarget: 0.68,
+                useNetworkInformation: true,
+              },
+            });
+
+            if (chan.kid && chan.key) {
+              player.configure({
+                drm: {
+                  clearKeys: {
+                    [String(chan.kid).toLowerCase()]: String(chan.key).toLowerCase(),
+                  },
+                  retryParameters: { maxAttempts: 5, baseDelay: 500, backoffFactor: 1.6, fuzzFactor: 0.3, timeout: 12000 },
+                },
+              });
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            player.addEventListener("error", (event: any) => {
+              const detail = event?.detail;
+              console.error("[SHAKA] DASH error detail:", JSON.stringify(detail));
+              const code = detail?.code ?? "";
+              let errorMsg = "DASH stream error" + (code ? " • Code: " + code : "");
+              if (code === 6020) {
+                errorMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
+              }
+              setPlayerStatus("error");
+              setPlayerError(errorMsg);
+            });
+
+            await player.load(chan.url);
+
+            if (loadedUrlRef.current !== chan.url) {
+              await player.destroy().catch(() => { });
+              return;
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            player.addEventListener("buffering", (event: any) => {
+              if (event.buffering) {
+                setIsBuffering(true);
+              } else {
+                setIsBuffering(false);
+                setPlayerStatus("playing");
+                setIsPaused(false);
+              }
+            });
+
+            attemptPlay();
+          } catch (err: unknown) {
+            if (loadedUrlRef.current !== chan.url) return;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const errObj = err as any;
+            let errMsg = "DASH / MPD load failed";
+            if (errObj) {
+              if (errObj.code) errMsg += ` (Code: ${errObj.code})`;
+              if (errObj.category) errMsg += ` (Category: ${errObj.category})`;
+              if (errObj.severity) errMsg += ` (Severity: ${errObj.severity})`;
+              if (errObj.message) errMsg += ` - ${errObj.message}`;
+              if (errObj.code === 6020) {
+                errMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
+              }
+            }
+            console.error("[SHAKA] Load error detail:", JSON.stringify(errObj), errMsg);
+            setPlayerError(errMsg);
+            setPlayerStatus("error");
+          }
+        })();
+      } else if (Hls.isSupported()) {
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 0,
+          startLevel: -1,
+        });
+        hlsRef.current = hls;
+
+        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+          const playableUrl = getPlayableUrl(chan.url);
+          hls.loadSource(playableUrl);
+        });
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (!video.paused) {
+            setPlayerStatus("playing");
+            setIsPaused(false);
+            return;
+          }
+          attemptPlay();
+        });
+
+        hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.warn("Fatal HLS network error, attempting to recover...");
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.warn("Fatal HLS media error, attempting to recover...");
+                hls.recoverMediaError();
+                break;
+              default:
+                console.error("Fatal unrecoverable HLS error:", data);
+                setPlayerError(`Fatal HLS stream error (${data.type})`);
+                setPlayerStatus("error");
+                break;
+            }
+          }
+        });
+
+        hls.attachMedia(video);
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        const isIOS = getIsIOS();
+        const directUrl = chan.url;
+        const proxiedUrl = getPlayableUrl(chan.url);
+
+        video.src = isIOS ? directUrl : proxiedUrl;
+        try {
+          video.load();
+        } catch { /* ignore */ }
+
+        let errorCleanedUp = false;
+
+        const onLoadedMetadata = () => {
+          if (errorCleanedUp) return;
+          video.removeEventListener("error", onError);
+          errorCleanedUp = true;
+          nativeErrorCleanupRef.current = null;
+          if (!video.paused) {
+            setPlayerStatus("playing");
+            setIsPaused(false);
+            return;
+          }
+          attemptPlay();
+        };
+
+        const onError = (e: Event) => {
+          if (errorCleanedUp) return;
+          video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          errorCleanedUp = true;
+          nativeErrorCleanupRef.current = null;
+
+          if (isIOS && video.src !== proxiedUrl && video.src.indexOf("/api/iptv/proxy") === -1) {
+            console.warn("[iOS] Direct stream failed, retrying via proxy...");
+            video.src = proxiedUrl;
+            try {
+              video.load();
+            } catch { /* ignore */ }
+            errorCleanedUp = false;
+
+            const onProxyMetadata = () => {
+              if (errorCleanedUp) return;
+              video.removeEventListener("error", onProxyError);
+              errorCleanedUp = true;
+              nativeErrorCleanupRef.current = null;
+              if (!video.paused) {
+                setPlayerStatus("playing");
+                setIsPaused(false);
+                return;
+              }
+              attemptPlay();
+            };
+
+            const onProxyError = (ev: Event) => {
+              if (errorCleanedUp) return;
+              video.removeEventListener("loadedmetadata", onProxyMetadata);
+              errorCleanedUp = true;
+              nativeErrorCleanupRef.current = null;
+              console.error("Native video player error (proxy fallback):", ev);
+              setPlayerError("Native video player playback error");
+              setPlayerStatus("error");
+            };
+
+            video.addEventListener("loadedmetadata", onProxyMetadata, { once: true });
+            video.addEventListener("error", onProxyError, { once: true });
+            nativeErrorCleanupRef.current = () => {
+              video.removeEventListener("loadedmetadata", onProxyMetadata);
+              video.removeEventListener("error", onProxyError);
+            };
+            return;
+          }
+
+          console.error("Native video player error:", e);
+          setPlayerError("Native video player playback error");
+          setPlayerStatus("error");
+        };
+
+        video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
+        video.addEventListener("error", onError, { once: true });
+        nativeErrorCleanupRef.current = () => {
+          video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          video.removeEventListener("error", onError);
+        };
+      } else {
+        setPlayerError("Your browser does not support stream playback.");
+        setPlayerStatus("error");
+      }
+    },
+    [setupUnmuteOnInteraction]
+  );
+
+  // Auto-play / load stream when selectedChannel or retryKey changes
+  useEffect(() => {
+    if (!selectedChannel) return;
+    if (loadedUrlRef.current !== selectedChannel.url) {
+      initializeStream(selectedChannel, false);
+    }
+  }, [selectedChannel, retryKey, initializeStream]);
+
+  // Clean up Hls and video elements on component unmount
+  useEffect(() => {
+    const video = videoRef.current;
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      if (shakaRef.current) {
+        shakaRef.current.destroy().catch(() => { });
+        shakaRef.current = null;
+      }
+      if (video) {
+        video.removeAttribute("src");
+        try { video.load(); } catch { /* ignore */ }
+      }
+      if (unmuteCleanupRef.current) {
+        unmuteCleanupRef.current();
+      }
+      if (nativeErrorCleanupRef.current) {
+        nativeErrorCleanupRef.current();
+        nativeErrorCleanupRef.current = null;
+      }
+      loadedUrlRef.current = null;
+    };
+  }, []);
+
+  const handleReload = () => {
+    loadedUrlRef.current = null;
+    setRetryKey((prev) => prev + 1);
+  };
+
+  return {
+    videoRef,
+    playerWrapperRef,
+    playerContainerRef,
+    playerStatus,
+    playerError,
+    isBuffering,
+    isPaused,
+    isMuted,
+    volume,
+    isFullscreen,
+    isPip,
+    showControls,
+    activeSeekIndicator,
+    viewerCount,
+    isPipSupported,
+    handlePlayPause,
+    handleMuteUnmute,
+    handleVolumeChangeSlider,
+    handleFullscreen,
+    handlePip,
+    handlePlayerClick,
+    handlePlayerDoubleClick,
+    handleReload,
+    handleMouseMove,
+    initializeStream,
+  };
+}
