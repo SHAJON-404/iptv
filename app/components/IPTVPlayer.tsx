@@ -1496,6 +1496,9 @@ export default function IPTVPlayer() {
         // Use direct URL on iOS to avoid proxy-rewritten manifests breaking native parser.
         // On macOS Safari, use proxy (same as other desktop browsers).
         video.src = isIOS ? directUrl : proxiedUrl;
+        try {
+          video.load();
+        } catch { /* ignore */ }
 
         let errorCleanedUp = false;
 
@@ -1523,6 +1526,9 @@ export default function IPTVPlayer() {
           if (isIOS && video.src !== proxiedUrl && video.src.indexOf("/api/iptv/proxy") === -1) {
             console.warn("[iOS] Direct stream failed, retrying via proxy...");
             video.src = proxiedUrl;
+            try {
+              video.load();
+            } catch { /* ignore */ }
             errorCleanedUp = false;
 
             const onProxyMetadata = () => {
@@ -1844,6 +1850,7 @@ export default function IPTVPlayer() {
                 autoPlay
                 muted
                 playsInline
+                preload="auto"
                 className="w-full h-full object-contain bg-black cursor-pointer"
               />
 
