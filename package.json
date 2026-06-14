@@ -3,9 +3,9 @@
   "version": "2.0",
   "private": true,
   "scripts": {
-    "dev": "node --no-deprecation node_modules/next/dist/bin/next dev",
-    "build": "node --no-deprecation node_modules/next/dist/bin/next build",
-    "start": "node --no-deprecation node_modules/next/dist/bin/next start",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "eslint",
     "convert-m3u": "node scripts/json-to-m3u.js"
   },

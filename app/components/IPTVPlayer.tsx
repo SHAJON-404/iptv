@@ -61,6 +61,19 @@ const getPlayableUrl = (url: string) => {
   return url;
 };
 
+// Detect iOS/iPadOS — these devices use native HLS and need special handling
+const getIsIOS = (): boolean => {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  if (/iPad|iPhone|iPod/.test(ua)) return true;
+  // iPadOS reports as Mac but has touch — use modern userAgentData API with legacy fallback
+  const platform =
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
+    navigator.platform ??
+    "";
+  return (platform === "macOS" || platform === "MacIntel") && navigator.maxTouchPoints > 1;
+};
+
 // Cache expires after 15 minutes — forces a full re-fetch
 const CACHE_MAX_AGE_MS = 15 * 60 * 1000;
 
@@ -168,6 +181,7 @@ export default function IPTVPlayer() {
   const volumeRef = useRef(volume);
   const loadedUrlRef = useRef<string | null>(null);
   const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nativeErrorCleanupRef = useRef<(() => void) | null>(null);
   const [viewerCount, setViewerCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -330,11 +344,33 @@ export default function IPTVPlayer() {
         }, 150);
       }
     };
+
+    // iOS Safari: fullscreen events fire on the video element, not document
+    const video = videoRef.current;
+    const handleiOSFullscreenBegin = () => {
+      isFullscreenRef.current = true;
+      window.dispatchEvent(new CustomEvent("iptv-fullscreen", { detail: { isFullscreen: true } }));
+      setIsFullscreen(true);
+    };
+    const handleiOSFullscreenEnd = () => {
+      isFullscreenRef.current = false;
+      window.dispatchEvent(new CustomEvent("iptv-fullscreen", { detail: { isFullscreen: false } }));
+      setIsFullscreen(false);
+    };
+
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    if (video) {
+      video.addEventListener("webkitbeginfullscreen", handleiOSFullscreenBegin);
+      video.addEventListener("webkitendfullscreen", handleiOSFullscreenEnd);
+    }
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      if (video) {
+        video.removeEventListener("webkitbeginfullscreen", handleiOSFullscreenBegin);
+        video.removeEventListener("webkitendfullscreen", handleiOSFullscreenEnd);
+      }
     };
   }, []);
 
@@ -446,17 +482,21 @@ export default function IPTVPlayer() {
     const video = videoRef.current;
     if (!container) return;
 
-    // iOS Safari: use video.webkitEnterFullscreen() since div.requestFullscreen() is unsupported
     const videoEl = video as HTMLVideoElement & {
       webkitEnterFullscreen?: () => void;
       webkitExitFullscreen?: () => void;
+      webkitDisplayingFullscreen?: boolean;
     };
-    if (
-      !document.fullscreenElement &&
-      !container.requestFullscreen &&
-      videoEl?.webkitEnterFullscreen
-    ) {
-      videoEl.webkitEnterFullscreen();
+
+    // iOS Safari: div.requestFullscreen() exists but only works on <video>.
+    // Always use video.webkitEnterFullscreen() on iOS to avoid silent failures.
+    const isIOS = getIsIOS();
+    if (isIOS && videoEl) {
+      if (videoEl.webkitDisplayingFullscreen && videoEl.webkitExitFullscreen) {
+        videoEl.webkitExitFullscreen();
+      } else if (videoEl.webkitEnterFullscreen) {
+        videoEl.webkitEnterFullscreen();
+      }
       resetControlsTimeout();
       return;
     }
@@ -537,8 +577,21 @@ export default function IPTVPlayer() {
     const video = videoRef.current;
     if (!video) return;
 
+    // Extended video element type for iOS Safari PiP
+    const videoEl = video as HTMLVideoElement & {
+      webkitSupportsPresentationMode?: (mode: string) => boolean;
+      webkitSetPresentationMode?: (mode: string) => void;
+      webkitPresentationMode?: string;
+    };
+
     try {
-      if (document.pictureInPictureElement) {
+      // iOS Safari PiP uses webkitSetPresentationMode
+      if (videoEl.webkitSupportsPresentationMode?.("picture-in-picture")) {
+        const currentMode = videoEl.webkitPresentationMode;
+        videoEl.webkitSetPresentationMode?.(
+          currentMode === "picture-in-picture" ? "inline" : "picture-in-picture"
+        );
+      } else if (document.pictureInPictureElement) {
         await document.exitPictureInPicture();
       } else if (document.pictureInPictureEnabled) {
         await video.requestPictureInPicture();
@@ -549,8 +602,11 @@ export default function IPTVPlayer() {
     resetControlsTimeout();
   };
 
+  // PiP is supported on standard browsers or iOS Safari with webkitSupportsPresentationMode
   const isPipSupported =
-    typeof document !== "undefined" && document.pictureInPictureEnabled;
+    typeof document !== "undefined" &&
+    (document.pictureInPictureEnabled ||
+      typeof (HTMLVideoElement.prototype as HTMLVideoElement & { webkitSupportsPresentationMode?: unknown }).webkitSupportsPresentationMode === "function");
 
   const handlePlayerClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest(".player-controls")) {
@@ -1165,10 +1221,18 @@ export default function IPTVPlayer() {
         shakaRef.current = null;
       }
 
-      // 2. Fully reset video element to clear stale state (fixes Firefox)
+      // 2. Fully reset video element to clear stale state
+      // Use src="" instead of removeAttribute+load to avoid iOS firing premature error events
       video.pause();
+      if (nativeErrorCleanupRef.current) {
+        nativeErrorCleanupRef.current();
+        nativeErrorCleanupRef.current = null;
+      }
       video.removeAttribute("src");
-      video.load();
+      // Only call load() on non-iOS to reset — iOS treats load() with no source as an error
+      if (!getIsIOS()) {
+        video.load();
+      }
 
       if (isUserClick) {
         if (!userMutedRef.current) {
@@ -1252,31 +1316,60 @@ export default function IPTVPlayer() {
             shakaRef.current = player;
             await player.attach(video);
 
-            // Live stream tuning — mirrors test/1.html config (excluding removed gap configurations in Shaka v4+)
+            // Networking engine: strip browser-added headers (Origin, Referer) that cause
+            // CORS 403s on CDNs that reject cross-origin requests — mirrors 2.html behavior
+            try {
+              const net = player.getNetworkingEngine?.();
+              if (net?.registerRequestFilter) {
+                net.registerRequestFilter((_type: number, request: { allowCrossSiteCredentials: boolean; headers: Record<string, string> }) => {
+                  request.allowCrossSiteCredentials = false;
+                  request.headers = {};
+                });
+              }
+            } catch { /* networking engine not available */ }
+
+            // Live stream tuning — aligned with working 2.html Shaka configuration
             player.configure({
               manifest: {
-                defaultPresentationDelay: 8,
+                defaultPresentationDelay: 10,
                 ignoreDrmInfo: true,
-                dash: { ignoreMinBufferTime: true, ignoreSuggestedPresentationDelay: true, autoCorrectDrift: true },
+                dash: {
+                  ignoreMinBufferTime: true,
+                  ignoreSuggestedPresentationDelay: true,
+                  autoCorrectDrift: true,
+                  ignoreEmptyAdaptationSet: true,
+                  ignoreMaxSegmentDuration: true,
+                  initialSegmentLimit: 1000,
+                },
+                retryParameters: { maxAttempts: 10, baseDelay: 450, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 18000 },
               },
               streaming: {
-                bufferingGoal: 10,
-                rebufferingGoal: 0.8,
-                bufferBehind: 12,
+                lowLatencyMode: false,
+                inaccurateManifestTolerance: 3,
+                rebufferingGoal: 0.75,
+                bufferingGoal: 18,
+                bufferBehind: 18,
+                gapDetectionThreshold: 0.4,
                 stallEnabled: true,
-                stallThreshold: 1,
-                stallSkip: 0.15,
-                retryParameters: { maxAttempts: 12, baseDelay: 500, backoffFactor: 1.6, fuzzFactor: 0.35, timeout: 15000 },
+                stallThreshold: 1.2,
+                stallSkip: 0.25,
+                startAtSegmentBoundary: true,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                failureCallback: (_error: any) => {
+                  try { player.retryStreaming(); } catch { /* ignore */ }
+                },
+                retryParameters: { maxAttempts: 15, baseDelay: 450, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 22000 },
               },
               abr: {
                 enabled: true,
-                defaultBandwidthEstimate: 4500000,
-                switchInterval: 1,
+                defaultBandwidthEstimate: 12000000,
+                switchInterval: 2,
+                restrictToElementSize: false,
+                restrictToScreenSize: false,
                 clearBufferSwitch: false,
-                restrictToElementSize: true,
-                restrictToScreenSize: true,
-                bandwidthDowngradeTarget: 0.92,
-                bandwidthUpgradeTarget: 0.72,
+                bandwidthDowngradeTarget: 0.95,
+                bandwidthUpgradeTarget: 0.68,
+                useNetworkInformation: true,
               },
             });
 
@@ -1287,6 +1380,7 @@ export default function IPTVPlayer() {
                   clearKeys: {
                     [String(chan.kid).toLowerCase()]: String(chan.key).toLowerCase(),
                   },
+                  retryParameters: { maxAttempts: 5, baseDelay: 500, backoffFactor: 1.6, fuzzFactor: 0.3, timeout: 12000 },
                 },
               });
             }
@@ -1304,14 +1398,6 @@ export default function IPTVPlayer() {
               setPlayerError(errorMsg);
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            player.addEventListener("buffering", (event: any) => {
-              if (!event.buffering) {
-                setPlayerStatus("playing");
-                setIsPaused(false);
-              }
-            });
-
             await player.load(chan.url);
 
             // Guard again after async load
@@ -1319,6 +1405,17 @@ export default function IPTVPlayer() {
               await player.destroy().catch(() => { });
               return;
             }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            player.addEventListener("buffering", (event: any) => {
+              if (event.buffering) {
+                setIsBuffering(true);
+              } else {
+                setIsBuffering(false);
+                setPlayerStatus("playing");
+                setIsPaused(false);
+              }
+            });
 
             attemptPlay();
           } catch (err: unknown) {
@@ -1389,10 +1486,25 @@ export default function IPTVPlayer() {
 
         hls.attachMedia(video);
       } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        const playableUrl = getPlayableUrl(chan.url);
-        video.src = playableUrl;
+        // Native HLS path (iOS Safari, macOS Safari)
+        // iOS Safari's native HLS parser is strict — proxy-rewritten manifests break it.
+        // Strategy: try the direct stream URL first; if it fails (CORS etc.), fall back to proxy.
+        const isIOS = getIsIOS();
+        const directUrl = chan.url;
+        const proxiedUrl = getPlayableUrl(chan.url);
+
+        // Use direct URL on iOS to avoid proxy-rewritten manifests breaking native parser.
+        // On macOS Safari, use proxy (same as other desktop browsers).
+        video.src = isIOS ? directUrl : proxiedUrl;
+
+        let errorCleanedUp = false;
 
         const onLoadedMetadata = () => {
+          if (errorCleanedUp) return;
+          // Success — remove error listener since stream loaded fine
+          video.removeEventListener("error", onError);
+          errorCleanedUp = true;
+          nativeErrorCleanupRef.current = null;
           if (!video.paused) {
             setPlayerStatus("playing");
             setIsPaused(false);
@@ -1402,15 +1514,61 @@ export default function IPTVPlayer() {
         };
 
         const onError = (e: Event) => {
+          if (errorCleanedUp) return;
+          video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          errorCleanedUp = true;
+          nativeErrorCleanupRef.current = null;
+
+          // If iOS direct URL failed, retry with proxy as fallback
+          if (isIOS && video.src !== proxiedUrl && video.src.indexOf("/api/iptv/proxy") === -1) {
+            console.warn("[iOS] Direct stream failed, retrying via proxy...");
+            video.src = proxiedUrl;
+            errorCleanedUp = false;
+
+            const onProxyMetadata = () => {
+              if (errorCleanedUp) return;
+              video.removeEventListener("error", onProxyError);
+              errorCleanedUp = true;
+              nativeErrorCleanupRef.current = null;
+              if (!video.paused) {
+                setPlayerStatus("playing");
+                setIsPaused(false);
+                return;
+              }
+              attemptPlay();
+            };
+
+            const onProxyError = (ev: Event) => {
+              if (errorCleanedUp) return;
+              video.removeEventListener("loadedmetadata", onProxyMetadata);
+              errorCleanedUp = true;
+              nativeErrorCleanupRef.current = null;
+              console.error("Native video player error (proxy fallback):", ev);
+              setPlayerError("Native video player playback error");
+              setPlayerStatus("error");
+            };
+
+            video.addEventListener("loadedmetadata", onProxyMetadata, { once: true });
+            video.addEventListener("error", onProxyError, { once: true });
+            nativeErrorCleanupRef.current = () => {
+              video.removeEventListener("loadedmetadata", onProxyMetadata);
+              video.removeEventListener("error", onProxyError);
+            };
+            return;
+          }
+
           console.error("Native video player error:", e);
           setPlayerError("Native video player playback error");
           setPlayerStatus("error");
         };
 
-        video.addEventListener("loadedmetadata", onLoadedMetadata, {
-          once: true,
-        });
+        video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
         video.addEventListener("error", onError, { once: true });
+        // Store cleanup so the next initializeStream call can remove stale listeners
+        nativeErrorCleanupRef.current = () => {
+          video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          video.removeEventListener("error", onError);
+        };
       } else {
         setPlayerError("Your browser does not support stream playback.");
         setPlayerStatus("error");
@@ -1449,6 +1607,10 @@ export default function IPTVPlayer() {
       if (unmuteCleanupRef.current) {
         unmuteCleanupRef.current();
       }
+      if (nativeErrorCleanupRef.current) {
+        nativeErrorCleanupRef.current();
+        nativeErrorCleanupRef.current = null;
+      }
       loadedUrlRef.current = null;
     };
   }, []);
@@ -1475,7 +1637,7 @@ export default function IPTVPlayer() {
     [initializeStream]
   );
 
-  // Automatic channel switch if playback doesn't start in 10 seconds
+  // Automatic channel switch if playback doesn't start in 30 seconds
   useEffect(() => {
     if (!selectedChannel || playerStatus === "playing" || playerStatus === "idle") {
       if (playTimeoutRef.current) {
@@ -1490,7 +1652,7 @@ export default function IPTVPlayer() {
     }
 
     playTimeoutRef.current = setTimeout(() => {
-      console.log("Playback failed to start within 10 seconds, switching to next channel...");
+      console.log("Playback failed to start within 30 seconds, switching to next channel...");
 
       setChannels((currentChannels) => {
         if (currentChannels.length <= 1) return currentChannels;
@@ -1507,7 +1669,7 @@ export default function IPTVPlayer() {
         }
         return currentChannels;
       });
-    }, 10000);
+    }, 30000);
 
     return () => {
       if (playTimeoutRef.current) {
@@ -1784,7 +1946,7 @@ export default function IPTVPlayer() {
               {/* Loader Overlay */}
               {(playerStatus === "loading" || (isBuffering && !isPaused)) && (
                 <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-4 z-10">
-                  <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                  <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                   <span className="text-sm font-semibold tracking-wider text-primary animate-pulse">
                     {playerStatus === "loading" ? "FETCHING IPTV LIVE STREAM..." : "BUFFERING LIVE STREAM..."}
                   </span>
