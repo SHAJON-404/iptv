@@ -728,7 +728,7 @@ export default function FixturesClient({ initialData }: FixturesClientProps) {
   // Filters for fixtures list
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedGroup, setSelectedGroup] = useState<string>("All");
-  const [statusFilter, setStatusFilter] = useState<"all" | "played" | "upcoming">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "played" | "upcoming">("upcoming");
 
   const handleRetry = async () => {
     setLoading(true);
@@ -850,7 +850,7 @@ export default function FixturesClient({ initialData }: FixturesClientProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-xs sm:text-sm text-zinc-400 font-medium max-w-xl mx-auto leading-relaxed"
             >
-              Follow matches live from the USA, Canada, and Mexico. All times are converted to{" "}
+              All times mentioned here are in{" "}
               <span className="text-primary font-bold">Bangladesh Standard Time (Asia/Dhaka)</span>.
             </motion.p>
           </div>
