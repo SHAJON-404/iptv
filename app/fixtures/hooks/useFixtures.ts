@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { WorldCupData, Match } from "../types";
-import { convertTimeToDhaka, calculateGroupStandings } from "../utils/helpers";
+import { convertTimeToDhaka, calculateGroupStandings, resolveTeamName } from "../utils/helpers";
+import { COUNTRY_CODES } from "../utils/constants";
 
 const CACHE_KEY = "worldcup_fixtures_data";
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -94,29 +95,43 @@ export function useFixtures() {
   // Dynamically calculate group standings from matches to resolve placeholders in the bracket
   const groupStandings = calculateGroupStandings(processedMatches);
 
-  // Filter matches based on criteria
-  const filteredMatches = processedMatches.filter((match) => {
-    // Search filter (handles team names, ground, round)
-    const query = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !query ||
-      match.team1.toLowerCase().includes(query) ||
-      match.team2.toLowerCase().includes(query) ||
-      match.ground.toLowerCase().includes(query) ||
-      match.round.toLowerCase().includes(query);
+  // Filter matches based on criteria and map to resolved names
+  const filteredMatches = processedMatches
+    .map((match) => {
+      const resolvedTeam1 = resolveTeamName(match.team1, processedMatches, groupStandings);
+      const resolvedTeam2 = resolveTeamName(match.team2, processedMatches, groupStandings);
+      return {
+        ...match,
+        team1: resolvedTeam1,
+        team2: resolvedTeam2,
+      };
+    })
+    .filter((match) => {
+      // Valid if both teams exist in COUNTRY_CODES
+      const isValidMatch = !!COUNTRY_CODES[match.team1] && !!COUNTRY_CODES[match.team2];
+      if (!isValidMatch) return false;
 
-    // Group filter
-    const matchesGroup = selectedGroup === "All" || match.group === selectedGroup;
+      // Search filter (handles team names, ground, round)
+      const query = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !query ||
+        match.team1.toLowerCase().includes(query) ||
+        match.team2.toLowerCase().includes(query) ||
+        match.ground.toLowerCase().includes(query) ||
+        match.round.toLowerCase().includes(query);
 
-    // Status filter
-    const hasScore = !!match.score;
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "played" && hasScore) ||
-      (statusFilter === "upcoming" && !hasScore);
+      // Group filter
+      const matchesGroup = selectedGroup === "All" || match.group === selectedGroup;
 
-    return matchesSearch && matchesGroup && matchesStatus;
-  });
+      // Status filter
+      const hasScore = !!match.score;
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "played" && hasScore) ||
+        (statusFilter === "upcoming" && !hasScore);
+
+      return matchesSearch && matchesGroup && matchesStatus;
+    });
 
   // Knockout stage matches mapping for the bracket
   const getKnockoutMatch = (num: number) => {
