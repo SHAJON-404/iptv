@@ -70,11 +70,11 @@ export default function Header() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="hidden sm:flex items-center gap-2 sm:gap-3"
+            className="flex items-center gap-2 sm:gap-3"
           >
             <Link
               href="/fixtures"
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
+              className={`hidden sm:flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
                 pathname === "/fixtures"
                   ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
                   : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
@@ -86,7 +86,7 @@ export default function Header() {
 
             <Link
               href="/about"
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
+              className={`hidden sm:flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
                 isAboutPage
                   ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
                   : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
@@ -110,7 +110,7 @@ export default function Header() {
 
             <Link
               href={isFtpPage ? "/" : "/ftp"}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
             >
               {isFtpPage ? (
                 <>

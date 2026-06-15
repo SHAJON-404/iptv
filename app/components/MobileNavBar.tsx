@@ -28,12 +28,6 @@ export default function MobileNavBar() {
       isActive: pathname === "/ftp",
     },
     {
-      label: "FAQ",
-      href: "/faq",
-      icon: HelpCircle,
-      isActive: pathname === "/faq",
-    },
-    {
       label: "Developer",
       href: "/about",
       icon: User,
