@@ -174,11 +174,11 @@ export function ChannelStats({
 
       {/* ─── MOBILE UI LAYOUT (Visible on mobile/tablet screens only) ─── */}
       <div className="grid grid-cols-1 gap-4 w-full md:hidden">
-        <div className={`glass-card p-3 border border-white/10 rounded-2xl bg-white/[0.01] w-full flex items-center justify-between gap-3 ${
+        <div className={`glass-card p-3 border border-white/10 rounded-2xl bg-white/[0.01] w-full flex items-center ${
           playerStatus === "loading" ? "animate-pulse" : ""
         }`}>
-          {/* Left Side: Channel details */}
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Left Side: Channel details (60% width) */}
+          <div className="w-[60%] flex items-center gap-3 min-w-0 border-r border-white/10 pr-3">
             {selectedChannel ? (
               <motion.div
                 key={selectedChannel.id}
@@ -214,20 +214,17 @@ export function ChannelStats({
                   <Tv size={18} className="text-primary" />
                 </div>
                 <div className="space-y-0.5 min-w-0">
-                  <h2 className="text-sm font-bold text-gray-300">Select a Channel</h2>
+                  <h2 className="text-sm font-bold text-gray-300">Select</h2>
                   <span className="text-[8px] uppercase font-bold tracking-widest text-zinc-400">
-                    Choose from the list below
+                    Choose below
                   </span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Vertical Divider */}
-          <div className="w-[1px] h-8 bg-white/10 flex-shrink-0" />
-
-          {/* Right Side: Total Count */}
-          <div className="flex items-center gap-2 flex-shrink-0 pl-1">
+          {/* Right Side: Total Count (40% width) */}
+          <div className="w-[40%] flex items-center gap-2 min-w-0 pl-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
               <Tv size={15} />
             </div>
