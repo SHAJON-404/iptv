@@ -3,13 +3,21 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { User, Heart, ArrowLeft, Coins } from "lucide-react";
+import { User, Heart, ArrowLeft, Coins, Copy, Check } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 import Link from "next/link";
 import BackgroundScene from "./BackgroundScene";
 import Header from "./Header";
 
 export default function AboutView() {
+  const [copiedText, setCopiedText] = React.useState<string | null>(null);
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(id);
+    setTimeout(() => setCopiedText(null), 2000);
+  };
+
   return (
     <main className="relative min-h-screen text-white overflow-hidden pb-20 sm:pb-24">
       <BackgroundScene />
@@ -162,31 +170,87 @@ export default function AboutView() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="glass-card p-6 sm:p-8 border border-white/10 sm:border-white/5 rounded-3xl bg-white/[0.01] backdrop-blur-sm flex flex-col justify-between items-center text-center space-y-4"
+              className="glass-card p-6 sm:p-8 border border-white/10 sm:border-white/5 rounded-3xl bg-white/[0.01] backdrop-blur-sm flex flex-col justify-between items-center text-center space-y-4 relative overflow-hidden"
             >
-              <div className="space-y-3 flex flex-col items-center w-full">
-                <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+              {/* Subtle amber background glow */}
+              <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-amber-500/5 blur-[50px] pointer-events-none" />
+
+              <div className="space-y-4 flex flex-col items-center w-full relative z-10">
+                <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
                   <Coins size={20} className="animate-bounce" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold">Support the Developer</h3>
-                <p className="text-xs sm:text-sm text-zinc-400 font-medium leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-yellow-300">Support the Developer</h3>
+                <p className="text-xs sm:text-sm text-zinc-350 font-medium leading-relaxed max-w-xs">
                   If you want to support the developer&apos;s work, you can donate via cryptocurrency:
                 </p>
 
                 {/* Donation details list */}
-                <div className="w-full text-left space-y-2 pt-1 font-mono text-[10px] sm:text-xs">
-                  <div className="flex flex-col p-2 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Binance UID</span>
-                    <span className="text-zinc-200 font-semibold select-all break-all">839622149</span>
-                  </div>
-                  <div className="flex flex-col p-2 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <span className="text-[9px] font-bold text-[#F3BA2F] uppercase tracking-wider">BEP20 (BNB/USDT)</span>
-                    <span className="text-zinc-200 font-semibold select-all break-all">0x22d4f314acbf6055b0a37df8df68f9cd40ba889a</span>
-                  </div>
-                  <div className="flex flex-col p-2 bg-white/[0.02] border border-white/5 rounded-xl">
-                    <span className="text-[9px] font-bold text-[#EC0627] uppercase tracking-wider">TRC20 (TRX/USDT)</span>
-                    <span className="text-zinc-200 font-semibold select-all break-all">TAsPdCxkX9CeErJ4vw7xBHfZDT6vpdfmwH</span>
-                  </div>
+                <div className="w-full text-left space-y-3 pt-2">
+                  {/* Binance UID */}
+                  <button
+                    onClick={() => handleCopy("839622149", "binance-uid")}
+                    className="w-full flex items-center justify-between p-3.5 bg-amber-500/[0.03] hover:bg-amber-500/[0.08] border border-amber-500/20 hover:border-amber-400 rounded-xl transition-all duration-300 group text-left cursor-pointer hover:shadow-[0_0_15px_rgba(245,158,11,0.15)] active:scale-[0.99] select-none"
+                  >
+                    <div className="flex flex-col min-w-0 pr-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest">Binance UID</span>
+                      </div>
+                      <span className="text-white font-mono text-sm sm:text-base font-bold tracking-wide break-all">839622149</span>
+                    </div>
+                    <div className="flex-shrink-0 flex items-center gap-2">
+                      <span className={`text-[10px] font-bold tracking-wider uppercase transition-opacity duration-300 ${copiedText === "binance-uid" ? "text-emerald-400 opacity-100" : "text-amber-400/60 opacity-0 group-hover:opacity-100"}`}>
+                        {copiedText === "binance-uid" ? "Copied!" : "Copy"}
+                      </span>
+                      <div className={`p-2 rounded-lg transition-all duration-300 ${copiedText === "binance-uid" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 group-hover:scale-105"}`}>
+                        {copiedText === "binance-uid" ? <Check size={14} className="stroke-[3]" /> : <Copy size={14} className="stroke-[2.5]" />}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* BEP20 */}
+                  <button
+                    onClick={() => handleCopy("0x22d4f314acbf6055b0a37df8df68f9cd40ba889a", "bep20")}
+                    className="w-full flex items-center justify-between p-3.5 bg-yellow-500/[0.03] hover:bg-yellow-500/[0.08] border border-yellow-500/20 hover:border-yellow-400 rounded-xl transition-all duration-300 group text-left cursor-pointer hover:shadow-[0_0_15px_rgba(243,186,47,0.15)] active:scale-[0.99] select-none"
+                  >
+                    <div className="flex flex-col min-w-0 pr-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                        <span className="text-[10px] font-extrabold text-yellow-400 uppercase tracking-widest">BEP20 (BNB/USDT)</span>
+                      </div>
+                      <span className="text-white font-mono text-xs sm:text-sm font-bold tracking-wide break-all">0x22d4f314acbf6055b0a37df8df68f9cd40ba889a</span>
+                    </div>
+                    <div className="flex-shrink-0 flex items-center gap-2">
+                      <span className={`text-[10px] font-bold tracking-wider uppercase transition-opacity duration-300 ${copiedText === "bep20" ? "text-emerald-400 opacity-100" : "text-yellow-400/60 opacity-0 group-hover:opacity-100"}`}>
+                        {copiedText === "bep20" ? "Copied!" : "Copy"}
+                      </span>
+                      <div className={`p-2 rounded-lg transition-all duration-300 ${copiedText === "bep20" ? "bg-emerald-500/20 text-emerald-400" : "bg-yellow-500/10 text-yellow-400 group-hover:bg-yellow-500/20 group-hover:scale-105"}`}>
+                        {copiedText === "bep20" ? <Check size={14} className="stroke-[3]" /> : <Copy size={14} className="stroke-[2.5]" />}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* TRC20 */}
+                  <button
+                    onClick={() => handleCopy("TAsPdCxkX9CeErJ4vw7xBHfZDT6vpdfmwH", "trc20")}
+                    className="w-full flex items-center justify-between p-3.5 bg-red-500/[0.03] hover:bg-red-500/[0.08] border border-red-500/20 hover:border-red-400 rounded-xl transition-all duration-300 group text-left cursor-pointer hover:shadow-[0_0_15px_rgba(239,68,68,0.15)] active:scale-[0.99] select-none"
+                  >
+                    <div className="flex flex-col min-w-0 pr-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                        <span className="text-[10px] font-extrabold text-red-400 uppercase tracking-widest">TRC20 (TRX/USDT)</span>
+                      </div>
+                      <span className="text-white font-mono text-xs sm:text-sm font-bold tracking-wide break-all">TAsPdCxkX9CeErJ4vw7xBHfZDT6vpdfmwH</span>
+                    </div>
+                    <div className="flex-shrink-0 flex items-center gap-2">
+                      <span className={`text-[10px] font-bold tracking-wider uppercase transition-opacity duration-300 ${copiedText === "trc20" ? "text-emerald-400 opacity-100" : "text-red-400/60 opacity-0 group-hover:opacity-100"}`}>
+                        {copiedText === "trc20" ? "Copied!" : "Copy"}
+                      </span>
+                      <div className={`p-2 rounded-lg transition-all duration-300 ${copiedText === "trc20" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/10 text-red-400 group-hover:bg-red-500/20 group-hover:scale-105"}`}>
+                        {copiedText === "trc20" ? <Check size={14} className="stroke-[3]" /> : <Copy size={14} className="stroke-[2.5]" />}
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
             </motion.div>
