@@ -51,7 +51,7 @@ export default function MobileNavBar() {
               }`}
             >
               <Icon size={20} className={item.isActive ? "animate-pulse" : ""} />
-              <span className="text-[10px] font-bold tracking-wide uppercase">
+              <span className="text-[10px] font-bold tracking-wide uppercase whitespace-nowrap">
                 {item.label}
               </span>
             </Link>
