@@ -121,7 +121,7 @@ export function useVideoPlayer(
       if (video && !video.paused) {
         setShowControls(false);
       }
-    }, 2000);
+    }, 3000);
   }, []);
 
   const setupUnmuteOnInteraction = useCallback(() => {
@@ -155,14 +155,14 @@ export function useVideoPlayer(
     unmuteCleanupRef.current = cleanup;
   }, []);
 
-  // Auto-hide controls after 2s if video is playing
+  // Auto-hide controls after 3s if video is playing
   useEffect(() => {
     const timeout = setTimeout(() => {
       const video = videoRef.current;
       if (video && !video.paused) {
         setShowControls(false);
       }
-    }, 2000);
+    }, 3000);
     controlsTimeoutRef.current = timeout;
     return () => {
       if (controlsTimeoutRef.current) {
@@ -463,17 +463,9 @@ export function useVideoPlayer(
     }
 
     clickTimeoutRef.current = setTimeout(() => {
-      setShowControls((prev) => {
-        if (prev) {
-          if (controlsTimeoutRef.current) {
-            clearTimeout(controlsTimeoutRef.current);
-          }
-          return false;
-        } else {
-          resetControlsTimeout();
-          return true;
-        }
-      });
+      // Always show controls and reset the 3s auto-hide timer.
+      // If controls are already visible, this just resets the countdown.
+      resetControlsTimeout();
       clickTimeoutRef.current = null;
     }, 250);
   };
