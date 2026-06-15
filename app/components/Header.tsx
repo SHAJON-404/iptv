@@ -4,7 +4,7 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Server, Tv, HelpCircle, User } from "lucide-react";
+import { Server, Tv, HelpCircle, User, Trophy } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
@@ -72,6 +72,18 @@ export default function Header() {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="hidden sm:flex items-center gap-2 sm:gap-3"
           >
+            <Link
+              href="/fixtures"
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
+                pathname === "/fixtures"
+                  ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                  : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+              } font-bold text-xs sm:text-sm`}
+            >
+              <Trophy size={15} className="text-yellow-500 animate-pulse" />
+              <span>World Cup</span>
+            </Link>
+
             <Link
               href="/about"
               className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
