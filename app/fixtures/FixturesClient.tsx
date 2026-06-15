@@ -101,6 +101,22 @@ export default function FixturesClient() {
               All times mentioned here are in{" "}
               <span className="text-primary font-bold">Bangladesh Standard Time (Asia/Dhaka)</span>.
             </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex justify-center pt-2"
+            >
+              <button
+                onClick={handleRetry}
+                disabled={loading}
+                className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/40 transition-all text-xs font-bold text-primary hover:text-white cursor-pointer shadow-[0_0_15px_rgba(139,92,246,0.1)] hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RefreshCw size={14} className={loading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"} />
+                {loading ? "Fetching..." : "Fetch Latest Data"}
+              </button>
+            </motion.div>
           </div>
 
           {/* Error View */}
