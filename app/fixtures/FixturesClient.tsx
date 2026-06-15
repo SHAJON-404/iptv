@@ -13,6 +13,7 @@ import {
   Clock,
   ChevronRight,
   ListFilter,
+  X,
 } from "lucide-react";
 import BackgroundScene from "../components/BackgroundScene";
 import Header from "../components/Header";
@@ -201,8 +202,22 @@ export default function FixturesClient() {
                             placeholder="Search by team, venue, or round..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/10 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary/50 text-white font-medium placeholder-zinc-500"
+                            className="w-full pl-10 pr-10 py-2.5 bg-white/[0.03] border border-white/10 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary/50 text-white font-medium placeholder-zinc-500 transition-colors"
                           />
+                          <AnimatePresence>
+                            {searchQuery && (
+                              <motion.button
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.15 }}
+                                onClick={() => setSearchQuery("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors cursor-pointer p-1 rounded-full hover:bg-white/10"
+                              >
+                                <X size={14} />
+                              </motion.button>
+                            )}
+                          </AnimatePresence>
                         </div>
 
                         {/* Group Selector */}
