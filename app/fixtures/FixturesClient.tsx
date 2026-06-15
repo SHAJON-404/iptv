@@ -352,7 +352,7 @@ export default function FixturesClient() {
                         {/* Round of 32 */}
                         <div className="flex flex-col min-w-[210px]">
                           <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
-                            Round of 32
+                            Round of 32 (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
                             {leftR32.map((num) => (
@@ -375,7 +375,7 @@ export default function FixturesClient() {
                         {/* Round of 16 */}
                         <div className="flex flex-col min-w-[210px]">
                           <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
-                            Round of 16
+                            Round of 16 (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
                             {leftR16.map((num) => (
@@ -396,7 +396,7 @@ export default function FixturesClient() {
                         {/* Quarter-finals */}
                         <div className="flex flex-col min-w-[210px]">
                           <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
-                            Quarter-finals
+                            Quarter-finals (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
                             {leftQF.map((num) => (
@@ -416,7 +416,7 @@ export default function FixturesClient() {
                         {/* Semi-finals */}
                         <div className="flex flex-col min-w-[210px]">
                           <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
-                            Semi-finals
+                            Semi-finals (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
                             <BracketMatchCard matchNum={101} match={getKnockoutMatch(101)} allMatches={processedMatches} standings={groupStandings} />
