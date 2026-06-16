@@ -24,10 +24,34 @@
         "url": "https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8"
     },
     {
+        "name": "Somoy TV",
+        "logo": "https://s3.aynaott.com/storage/ece71c1163a377fbe2d93f9d28c34f60",
+        "group": "FIFA",
+        "url": "https://live.thebosstv.com:30443/dwlive/Somoy-TV/chunks.m3u8"
+    },
+    {
+        "name": "LOL",
+        "logo": "https://i.ibb.co.com/S7tZS6cg/Bein-Sports-1-Direct.png",
+        "group": "FIFA",
+        "url": "https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8"
+    },
+    {
         "name": "Win Sports",
         "logo": "https://images.seeklogo.com/logo-png/25/1/win-sports-logo-png_seeklogo-259337.png",
         "group": "FIFA",
         "url": "https://1nyaler.streamhostingcdn.top/stream/32/index.m3u8"
+    },
+    {
+        "name": "GOLIVE - English",
+        "logo": "https://rtb-images.glueapi.io/320x0/live/GoLiveNew.png",
+        "group": "FIFA",
+        "url": "https://d1211whpimeups.cloudfront.net/smil:rtbgo/chunklist.m3u8"
+    },
+    {
+        "name": "DAZN FIFA",
+        "logo": "https://i.postimg.cc/Kc3mP7Qt/cbimage.png",
+        "group": "FIFA",
+        "url": "https://1nyaler.streamhostingcdn.top/stream/94/index.m3u8"
     },
     {
         "name": "WORLD CUP TV (ENG)",
@@ -37,12 +61,6 @@
         "type": "dash",
         "kid": "549ab7cd35a64bb6bb479ecead04d69d",
         "key": "829799ed534d11fcadeb4b192467e050"
-    },
-    {
-        "name": "Tapmad (FIFA)",
-        "logo": "https://tapmad-tv-tapmad-tv.en.aptoide.com/_next/image?url=https%3A%2F%2Fcdn.aptoide.com%2Fimgs%2F1%2F6%2F0%2F1600fc18ab2b5109bfe2cb72fb7af2f5_fgraphic.png&w=3840&q=60",
-        "group": "FIFA",
-        "url": "https://premierleagpl23.akamaized.net/hls/live/2107108/tapmad-P2s6L_FiN@L-UrU/level_0.m3u8"
     },
     {
         "name": "TUDN",
