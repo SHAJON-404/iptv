@@ -411,7 +411,7 @@ export function VideoPlayerView({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute bottom-full right-0 mb-3 w-56 max-h-72 overflow-y-auto custom-scrollbar bg-[#0f0f0f]/80 backdrop-blur-2xl border border-white/10 rounded-2xl py-2 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
+                      className="absolute bottom-full right-0 mb-3 w-40 sm:w-48 max-h-[160px] sm:max-h-[240px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/80 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
                     >
                       <div className="px-3 py-2 text-sm font-bold text-white flex items-center mb-1 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => setShowSettings(false)}>
                         <ChevronLeft size={16} className="mr-2" />
