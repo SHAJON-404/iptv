@@ -240,7 +240,7 @@ export default function DashboardPage() {
           
           {/* Add Playlist Form (col-span-5) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="glass-card border border-white/10 rounded-3xl bg-white/[0.02] p-6 sm:p-8 shadow-lg backdrop-blur-xl text-left flex flex-col">
+            <div className="glass-card border border-white/10 rounded-3xl bg-white/[0.02] p-6 sm:p-8 shadow-lg backdrop-blur-xl text-left flex flex-col flex-1">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-inner">
                   <Plus size={20} />
