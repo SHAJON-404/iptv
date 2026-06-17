@@ -8,7 +8,7 @@ interface ViewerSession {
 // In-memory sessions map (persists as long as the Node server is running)
 const activeSessions = new Map<string, ViewerSession>();
 
-const HEARTBEAT_TIMEOUT = 30 * 1000; // 30 seconds
+const HEARTBEAT_TIMEOUT = 45 * 1000; // 45 seconds
 
 function cleanExpiredSessions() {
   const now = Date.now();

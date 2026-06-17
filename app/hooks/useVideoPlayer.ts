@@ -61,48 +61,21 @@ export function useVideoPlayer(
   const nativeErrorCleanupRef = useRef<(() => void) | null>(null);
   const [viewerCount, setViewerCount] = useState<number | null>(null);
 
+  // Listen for global viewer count updates from ViewerTracker
+  useEffect(() => {
+    const handleViewerCount = (e: Event) => {
+      const customEvent = e as CustomEvent<{ count: number }>;
+      setViewerCount(customEvent.detail.count);
+    };
+    window.addEventListener("iptv-viewer-count", handleViewerCount);
+    return () => window.removeEventListener("iptv-viewer-count", handleViewerCount);
+  }, []);
+
   // Quality Customization States
   const [availableQualities, setAvailableQualities] = useState<StreamQuality[]>([{ id: "auto", name: "Auto" }]);
   const [currentQuality, setCurrentQuality] = useState<number | "auto">("auto");
 
-  // Sync viewers session
-  useEffect(() => {
-    const getOrCreateSessionId = (): string => {
-      if (typeof window === "undefined") return "";
-      let id = sessionStorage.getItem("iptv_viewer_session_id");
-      if (!id) {
-        id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        sessionStorage.setItem("iptv_viewer_session_id", id);
-      }
-      return id;
-    };
-
-    const sessionId = getOrCreateSessionId();
-
-    const sendHeartbeat = async () => {
-      try {
-        const response = await fetch("/api/iptv/viewers", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ sessionId }),
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (typeof data.count === "number") {
-            setViewerCount(data.count);
-          }
-        }
-      } catch (error) {
-        console.warn("Failed to send heartbeat:", error);
-      }
-    };
-
-    sendHeartbeat();
-    const interval = setInterval(sendHeartbeat, 15000);
-    return () => clearInterval(interval);
-  }, []);
+  // Note: Viewer tracking has been moved to the global ViewerTracker component.
 
   useEffect(() => {
     isMutedRef.current = isMuted;
