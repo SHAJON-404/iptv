@@ -16,11 +16,22 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Radio,
-  Check,
-  ChevronLeft
+  Check
 } from "lucide-react";
 import { FaTelegram } from "react-icons/fa6";
 import { StreamQuality } from "../../hooks/useVideoPlayer";
+
+const formatBandwidth = (bps?: number) => {
+  if (!bps) return "";
+  const mbps = (bps / 1000000).toFixed(2);
+  let mbpsStr = mbps;
+  if (mbps.endsWith(".00")) {
+    mbpsStr = mbps.slice(0, -3);
+  } else if (mbps.endsWith("0")) {
+    mbpsStr = mbps.slice(0, -1);
+  }
+  return `${mbpsStr} Mbps`;
+};
 
 interface VideoPlayerViewProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -400,8 +411,27 @@ export function VideoPlayerView({
                   }`}
                   title="Quality"
                 >
-                  <span className="text-[13px] sm:text-[15px] font-medium tracking-wide drop-shadow-md">
-                    {currentQuality === 'auto' ? 'Auto' : availableQualities.find(q => q.id === currentQuality)?.name || 'Auto'}
+                  <span className="text-[13px] sm:text-[15px] font-medium tracking-wide drop-shadow-md flex items-baseline gap-0.5">
+                    {currentQuality === 'auto' ? 'Auto' : (() => {
+                      const q = availableQualities.find(q => q.id === currentQuality);
+                      if (!q) return 'Auto';
+                      return (
+                        <>
+                          <span>{q.name}</span>
+                          {q.height && q.height >= 2160 && (
+                            <sup className="text-[9px] font-black text-rose-500 select-none">4K</sup>
+                          )}
+                          {q.height && q.height >= 1080 && q.height < 2160 && (
+                            <sup className="text-[9px] font-black text-rose-500 select-none">HD</sup>
+                          )}
+                          {q.bandwidth && (
+                            <span className="text-white/70 text-xs font-normal">
+                              &nbsp;&nbsp;{formatBandwidth(q.bandwidth)}
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
                   </span>
                 </button>
                 
@@ -411,10 +441,9 @@ export function VideoPlayerView({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute bottom-full right-0 mb-3 w-40 sm:w-48 max-h-[160px] sm:max-h-[240px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/80 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
+                      className="absolute bottom-full right-0 mb-3 w-48 sm:w-52 max-h-[160px] sm:max-h-[240px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/80 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
                     >
-                      <div className="px-3 py-2 text-sm font-bold text-white flex items-center mb-1 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => setShowSettings(false)}>
-                        <ChevronLeft size={16} className="mr-2" />
+                      <div className="px-3 py-2 text-sm font-bold text-white flex items-center justify-center mb-1 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => setShowSettings(false)}>
                         Quality
                       </div>
                       {availableQualities.filter(q => q.id !== 'auto').map((q) => (
@@ -433,13 +462,20 @@ export function VideoPlayerView({
                           <div className="flex items-center justify-center w-6 mr-1.5">
                             {currentQuality === q.id && <Check size={16} className="text-white" />}
                           </div>
-                          <span className="flex items-center">
-                            {q.name}
-                            {q.height && q.height >= 2160 && (
-                              <span className="text-[10px] font-black text-rose-500 ml-1.5 leading-none mt-0.5">4K</span>
-                            )}
-                            {q.height && q.height >= 1080 && q.height < 2160 && (
-                              <span className="text-[10px] font-black text-rose-500 ml-1.5 leading-none mt-0.5">HD</span>
+                          <span className="flex items-baseline justify-start flex-1 pr-2">
+                            <span className="flex items-baseline min-w-[62px] shrink-0">
+                              <span>{q.name}</span>
+                              {q.height && q.height >= 2160 && (
+                                <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">4K</sup>
+                              )}
+                              {q.height && q.height >= 1080 && q.height < 2160 && (
+                                <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">HD</sup>
+                              )}
+                            </span>
+                            {q.bandwidth && (
+                              <span className="text-zinc-400 text-xs font-normal ml-2 select-none whitespace-nowrap">
+                                {formatBandwidth(q.bandwidth)}
+                              </span>
                             )}
                           </span>
                         </button>
