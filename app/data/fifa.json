@@ -9,15 +9,6 @@
         "key": "68f96d618b0b956b008c445896a25a79"
     },
     {
-        "name": "FOX ONE (ENG)",
-        "logo": "https://cdn.broadbandtvnews.com/wp-content/uploads/2025/05/13115423/Fox-One-Logo.jpg",
-        "group": "Sports",
-        "url": "https://otte-tim.live.pv-cdn.net/pdx-nitro/live/clients/dash/enc/ajfoeddkbz/out/v1/b78800b9b2304879b15843f455836829/cenc.mpd",
-        "type": "dash",
-        "kid": "f6564ec2aee819046328a0e153be574d",
-        "key": "ff46a8a1031eb27ef22576a077c98ab7"
-    },
-    {
         "name": "CAZE TV",
         "logo": "https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png",
         "group": "FIFA",
@@ -79,15 +70,6 @@
         "type": "dash",
         "kid": "ce7ab3022e753307997f58afe001bac4",
         "key": "72d631a66e635c60829a0fe7705516c1"
-    },
-    {
-        "name": "FUSSBALL TV",
-        "logo": "https://github.com/user-attachments/assets/8ccc2603-16a1-47a6-bd16-2f783da7f28d",
-        "group": "FIFA",
-        "url": "https://svc45.main.sl.t-online.de/bpk-tv/KID01037_FUSSBALLTV1_hd/DASH/index.mpd",
-        "type": "dash",
-        "kid": "1cb20afcd9d979c833cfd208c7d3eeb2",
-        "key": "fef0c15b4a523370892edd5e4133c269"
     },
     {
         "name": "FIFA CTV - English (1080p)",

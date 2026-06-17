@@ -16,7 +16,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Radio,
-  Settings,
   Check,
   ChevronLeft
 } from "lucide-react";
@@ -150,6 +149,7 @@ export function VideoPlayerView({
 
   React.useEffect(() => {
     if (!showControls) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowSettings(false);
     }
   }, [showControls]);

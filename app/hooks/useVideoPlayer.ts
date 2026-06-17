@@ -672,9 +672,33 @@ export function useVideoPlayer(
             try {
               const net = player.getNetworkingEngine?.();
               if (net?.registerRequestFilter) {
-                net.registerRequestFilter((_type: number, request: { allowCrossSiteCredentials: boolean; headers: Record<string, string> }) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                net.registerRequestFilter((_type: number, request: any) => {
                   request.allowCrossSiteCredentials = false;
                   request.headers = {};
+                  if (request.uris && request.uris.length > 0) {
+                    request.uris = request.uris.map((uri: string) => {
+                      if (uri && (uri.startsWith("http://") || uri.startsWith("https://")) && !uri.includes("/api/iptv/proxy")) {
+                        return `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
+                      }
+                      return uri;
+                    });
+                  }
+                });
+              }
+              if (net?.registerResponseFilter) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                net.registerResponseFilter((_type: number, response: any) => {
+                  if (response.uri && response.uri.includes("/api/iptv/proxy")) {
+                    try {
+                      // Use a dummy base if window.location is unavailable, though it usually is
+                      const base = typeof window !== 'undefined' ? window.location.href : 'http://localhost';
+                      const urlParam = new URL(response.uri, base).searchParams.get("url");
+                      if (urlParam) {
+                        response.uri = urlParam;
+                      }
+                    } catch { /* ignore */ }
+                  }
                 });
               }
             } catch { /* ignore */ }
@@ -782,9 +806,10 @@ export function useVideoPlayer(
                   });
                 }
               });
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const extractedQualities = Array.from(qualitiesMap.values())
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((q: any) => q.height > 0)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .sort((a: any, b: any) => b.height - a.height);
               if (extractedQualities.length > 0) {
                 setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
@@ -849,6 +874,7 @@ export function useVideoPlayer(
               bandwidth: l.bitrate
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             })).filter((q: any) => q.height > 0)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .sort((a: any, b: any) => b.height - a.height);
             if (extractedQualities.length > 0) {
               setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
