@@ -9,6 +9,7 @@ interface Channel {
   logo: string;
   group: string;
   url: string;
+  no_proxy?: boolean;
 }
 
 interface PlaylistCache {
@@ -43,8 +44,9 @@ export function getChannelsWithHash(rawType: string = "universal") {
   const now = Date.now();
   const playlistCache = cache[type] || { channels: [], hash: "", lastLoadedTime: 0 };
 
-  // Refresh cache every 60 seconds
-  if (now - playlistCache.lastLoadedTime > 60_000 || playlistCache.channels.length === 0) {
+  // Refresh cache every 60 seconds (always in development)
+  const isDev = process.env.NODE_ENV === "development";
+  if (isDev || now - playlistCache.lastLoadedTime > 60_000 || playlistCache.channels.length === 0) {
     try {
       const filename = getFilename(type);
       const channelsPath = path.join(
@@ -67,7 +69,7 @@ export function getChannelsWithHash(rawType: string = "universal") {
         // Add IDs if not present and deduplicate
         const channels = raw.map(
           (
-            ch: { name: string; logo: string; group: string; url: string; type?: string; kid?: string; key?: string },
+            ch: { name: string; logo: string; group: string; url: string; type?: string; kid?: string; key?: string; no_proxy?: boolean },
             idx: number
           ) => ({
             id: `ch-${type}-${idx}`,
@@ -78,6 +80,7 @@ export function getChannelsWithHash(rawType: string = "universal") {
             ...(ch.type && { type: ch.type }),
             ...(ch.kid && { kid: ch.kid }),
             ...(ch.key && { key: ch.key }),
+            ...(ch.no_proxy !== undefined && { no_proxy: ch.no_proxy }),
           })
         );
         

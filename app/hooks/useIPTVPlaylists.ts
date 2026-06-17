@@ -11,6 +11,7 @@ export interface Channel {
   type?: "dash" | "hls";
   kid?: string;
   key?: string;
+  no_proxy?: boolean;
 }
 
 export interface Playlist {
@@ -284,7 +285,14 @@ export function useIPTVPlaylists() {
           const alreadySelected = filtered.find(
             c => c.id === selectedChannelId || c.url === selectedChannelUrl
           );
-          if (!alreadySelected) {
+          if (alreadySelected) {
+            setSelectedChannel(prev => {
+              if (prev && prev !== alreadySelected) {
+                return alreadySelected;
+              }
+              return prev;
+            });
+          } else {
             const randomIndex = Math.floor(Math.random() * filtered.length);
             setSelectedChannel(filtered[randomIndex]);
           }
@@ -412,6 +420,7 @@ export function useIPTVPlaylists() {
     type?: "dash" | "hls";
     kid?: string;
     key?: string;
+    no_proxy?: boolean;
   }
 
   const parseJSON = (text: string): Channel[] => {
@@ -432,6 +441,7 @@ export function useIPTVPlaylists() {
         ...(ch.type && { type: ch.type }),
         ...(ch.kid && { kid: ch.kid }),
         ...(ch.key && { key: ch.key }),
+        ...(ch.no_proxy !== undefined && { no_proxy: ch.no_proxy }),
       };
     });
   };

@@ -8,8 +8,8 @@ import { Channel, getIsIOS } from "./useIPTVPlaylists";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ShakaPlayer = any;
 
-const getPlayableUrl = (url: string) => {
-  if (url && (url.startsWith("http://") || url.startsWith("https://"))) {
+const getPlayableUrl = (url: string, no_proxy?: boolean) => {
+  if (!no_proxy && url && (url.startsWith("http://") || url.startsWith("https://"))) {
     return `/api/iptv/proxy?url=${encodeURIComponent(url)}`;
   }
   return url;
@@ -55,6 +55,7 @@ export function useVideoPlayer(
   const isMutedRef = useRef(isMuted);
   const volumeRef = useRef(volume);
   const loadedUrlRef = useRef<string | null>(null);
+  const loadedChannelRef = useRef<Channel | null>(null);
   const nativeErrorCleanupRef = useRef<(() => void) | null>(null);
   const [viewerCount, setViewerCount] = useState<number | null>(null);
 
@@ -557,6 +558,7 @@ export function useVideoPlayer(
       setAvailableQualities([{ id: "auto", name: "Auto" }]);
       setCurrentQuality("auto");
       loadedUrlRef.current = chan.url;
+      loadedChannelRef.current = chan;
 
       if (hlsRef.current) {
         hlsRef.current.destroy();
@@ -677,7 +679,7 @@ export function useVideoPlayer(
                   request.allowCrossSiteCredentials = false;
                   if (request.uris && request.uris.length > 0) {
                     request.uris = request.uris.map((uri: string) => {
-                      if (uri && (uri.startsWith("http://") || uri.startsWith("https://")) && !uri.includes("/api/iptv/proxy")) {
+                      if (!chan.no_proxy && uri && (uri.startsWith("http://") || uri.startsWith("https://")) && !uri.includes("/api/iptv/proxy")) {
                         return `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
                       }
                       return uri;
@@ -845,7 +847,7 @@ export function useVideoPlayer(
         hlsRef.current = hls;
 
         hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-          const playableUrl = getPlayableUrl(chan.url);
+          const playableUrl = getPlayableUrl(chan.url, chan.no_proxy);
           hls.loadSource(playableUrl);
         });
 
@@ -901,7 +903,7 @@ export function useVideoPlayer(
       } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
         const isIOS = getIsIOS();
         const directUrl = chan.url;
-        const proxiedUrl = getPlayableUrl(chan.url);
+        const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy);
 
         video.src = isIOS ? directUrl : proxiedUrl;
         try {
@@ -992,7 +994,12 @@ export function useVideoPlayer(
   // Auto-play / load stream when selectedChannel or retryKey changes
   useEffect(() => {
     if (!selectedChannel) return;
-    if (loadedUrlRef.current !== selectedChannel.url) {
+    const hasChannelChanged =
+      loadedChannelRef.current?.id !== selectedChannel.id ||
+      loadedChannelRef.current?.url !== selectedChannel.url ||
+      loadedChannelRef.current?.no_proxy !== selectedChannel.no_proxy;
+
+    if (hasChannelChanged) {
       initializeStream(selectedChannel, false);
     }
   }, [selectedChannel, retryKey, initializeStream]);
