@@ -30,73 +30,83 @@ export function PlaylistSidebarView({
         </div>
       </div>
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2.5">
-        {playlists.map((pl) => {
-          const isActive = pl.id === activePlaylistId;
-          const filteredCount = (
-            getIsIOS()
-              ? pl.channels.filter(c => !(c.type === "dash" || c.url.includes(".mpd") || c.url.endsWith(".mpd")))
-              : pl.channels
-          ).length;
-
-          return (
-            <div
-              key={pl.id}
-              onClick={() => {
-                setActivePlaylistId(pl.id);
-                setPlaylistTab("browse");
-              }}
-              className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item ${
-                isActive
-                  ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
-                  : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
-              }`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div
-                  className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border flex-shrink-0 ${
-                    isActive ? "bg-primary/20 border-primary/20" : "bg-white/5 border-white/10"
-                  }`}
-                >
-                  {pl.type === "default" ? (
-                    <Tv size={14} className="sm:w-4 sm:h-4" />
-                  ) : pl.type === "url" ? (
-                    <LinkIcon size={14} className="sm:w-4 sm:h-4" />
-                  ) : (
-                    <FileText size={14} className="sm:w-4 sm:h-4" />
-                  )}
-                </div>
-
-                <div className="min-w-0">
-                  <h5 className="font-bold text-xs sm:text-sm truncate pr-2">{pl.name}</h5>
-                  <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">
-                    {filteredCount} Channels
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                {isActive && (
-                  <span className="p-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    <Check size={10} className="sm:w-3 sm:h-3 stroke-[3]" />
-                  </span>
-                )}
-                {pl.type !== "default" &&
-                  pl.id !== "default" &&
-                  pl.id !== "sports" &&
-                  pl.id !== "universal" &&
-                  pl.id !== "bangla" && (
-                    <button
-                      onClick={(e) => handleDeletePlaylist(pl.id, e)}
-                      className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
-                      title="Delete Playlist"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-              </div>
+        {playlists.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full min-h-[150px] text-center p-4 gap-3 text-zinc-400">
+            <div className="p-3 rounded-full bg-white/5 border border-white/10 mb-1">
+              <List size={24} className="text-zinc-500" />
             </div>
-          );
-        })}
+            <p className="text-sm font-bold text-zinc-300">You have no playlists added.</p>
+            <p className="text-xs">Please add a playlist first.</p>
+          </div>
+        ) : (
+          playlists.map((pl) => {
+            const isActive = pl.id === activePlaylistId;
+            const filteredCount = (
+              getIsIOS()
+                ? pl.channels.filter(c => !(c.type === "dash" || c.url.includes(".mpd") || c.url.endsWith(".mpd")))
+                : pl.channels
+            ).length;
+
+            return (
+              <div
+                key={pl.id}
+                onClick={() => {
+                  setActivePlaylistId(pl.id);
+                  setPlaylistTab("browse");
+                }}
+                className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item ${
+                  isActive
+                    ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
+                    : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border flex-shrink-0 ${
+                      isActive ? "bg-primary/20 border-primary/20" : "bg-white/5 border-white/10"
+                    }`}
+                  >
+                    {pl.type === "default" ? (
+                      <Tv size={14} className="sm:w-4 sm:h-4" />
+                    ) : pl.type === "url" ? (
+                      <LinkIcon size={14} className="sm:w-4 sm:h-4" />
+                    ) : (
+                      <FileText size={14} className="sm:w-4 sm:h-4" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <h5 className="font-bold text-xs sm:text-sm truncate pr-2">{pl.name}</h5>
+                    <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">
+                      {filteredCount} Channels
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  {isActive && (
+                    <span className="p-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      <Check size={10} className="sm:w-3 sm:h-3 stroke-[3]" />
+                    </span>
+                  )}
+                  {pl.type !== "default" &&
+                    pl.id !== "default" &&
+                    pl.id !== "sports" &&
+                    pl.id !== "universal" &&
+                    pl.id !== "bangla" && (
+                      <button
+                        onClick={(e) => handleDeletePlaylist(pl.id, e)}
+                        className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
+                        title="Delete Playlist"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

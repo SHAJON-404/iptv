@@ -11,6 +11,8 @@ import {
   MessageCircle,
   Globe,
   BookOpen,
+  Scale,
+  Mail,
 } from "lucide-react";
 
 import BackgroundScene from "../components/BackgroundScene";
@@ -18,10 +20,17 @@ import Header from "../components/Header";
 
 const faqs = [
   {
+    id: "faq-dmca",
+    question: "DMCA & Copyright Disclaimer",
+    answer:
+      "This website is strictly an IPTV player. We do not host, provide, distribute, or sell any IPTV links, playlists, or media content. The player solely reads and plays data from the user's own provided M3U or JSON playlist files.",
+    icon: Scale,
+  },
+  {
     id: "faq-1",
     question: "What is IPTV and how does this player work?",
     answer:
-      "IPTV (Internet Protocol Television) delivers television content over the internet instead of traditional terrestrial, satellite, or cable formats. This player is a web-based client that plays live streams (such as HLS .m3u8 files) directly in your browser. You can load our default channel list or import your own custom playlists.",
+      "IPTV (Internet Protocol Television) delivers television content over the internet instead of traditional terrestrial, satellite, or cable formats. This player is a web-based client that plays live streams (such as HLS .m3u8 files) directly in your browser. You can import your own custom playlists to start watching.",
     icon: Tv,
   },
   {
@@ -42,21 +51,21 @@ const faqs = [
     id: "faq-4",
     question: "Do I need to install any app or extensions?",
     answer:
-      "No! This IPTV player runs completely in modern web browsers (Chrome, Safari, Edge, Firefox) on mobile devices, tablets, and computers. It has a built-in custom HLS stream player, so no additional extensions or app installations are required.",
+      "No! This IPTV player runs completely in modern web browsers (Chrome, Safari, Edge, Firefox) on mobile devices, tablets, and computers. It has built-in custom HLS (.m3u8) and DASH (.mpd) stream players, so no additional extensions or app installations are required.",
     icon: Globe,
   },
   {
     id: "faq-5",
     question: "Is this service free and legal?",
     answer:
-      "Yes, this web player is 100% free to use. We do not host any stream files or media databases. The default channel list consists of publicly available free-to-air (FTA) channels. We encourage users to only load playlist links that they have the legal right to stream.",
+      "Yes, this web player is 100% free to use. We do not host any stream files or media databases. We encourage users to only load playlist links that they have the legal right to stream.",
     icon: BookOpen,
   },
   {
     id: "faq-6",
-    question: "How can I contact support or request channels?",
+    question: "How can I contact support or report bugs?",
     answer:
-      "For any queries, suggestions, or technical support, please contact the developer via Telegram only (@SHAJON). You can also follow our official GitHub repository (SHAJON-404/iptv) for code updates, bug reports, and new features.",
+      "For any queries, suggestions, or technical support, please reach out to us via Telegram or Email. You can also follow our official GitHub repository (SHAJON-404/iptv) for code updates, bug reports, and new features.",
     icon: MessageCircle,
   },
 ];
@@ -175,17 +184,24 @@ export default function FAQPage() {
             <h3 className="text-base sm:text-lg font-bold">Still have questions?</h3>
             <p className="text-xs sm:text-sm text-zinc-400 font-medium">
               If you couldn&apos;t find your answer here, feel free to reach out for direct support.
-              We are active on Telegram.
+              We are active on Telegram and Email.
             </p>
-            <div className="pt-2">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
                 href="https://t.me/SHAJON"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-xs sm:text-sm transition-all duration-300 shadow-md shadow-primary/10 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/95 text-white font-extrabold text-xs sm:text-sm transition-all duration-300 shadow-md shadow-primary/10 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
                 <MessageCircle size={15} />
                 <span>Contact via Telegram</span>
+              </a>
+              <a
+                href="mailto:shahmakhdumshajon@gmail.com"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-extrabold text-xs sm:text-sm transition-all duration-300 shadow-md hover:scale-[1.01] active:scale-[0.99] cursor-pointer border border-white/5"
+              >
+                <Mail size={15} />
+                <span>Email Support</span>
               </a>
             </div>
           </motion.div>

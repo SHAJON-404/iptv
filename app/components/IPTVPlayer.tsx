@@ -338,10 +338,13 @@ export default function IPTVPlayer() {
               <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-wrap gap-2">
                 <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto">
                   <button
-                    onClick={() => setPlaylistTab("browse")}
+                    onClick={() => playlists.length > 0 && setPlaylistTab("browse")}
+                    disabled={playlists.length === 0}
                     className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex-1 sm:flex-initial ${
                       playlistTab === "browse"
                         ? "bg-primary text-white shadow-lg shadow-primary/20"
+                        : playlists.length === 0
+                        ? "opacity-40 cursor-not-allowed text-zinc-500"
                         : "text-zinc-300 hover:text-white"
                     }`}
                   >
@@ -377,7 +380,7 @@ export default function IPTVPlayer() {
                   <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg text-[10px] sm:text-xs text-zinc-300 select-none max-w-[180px] sm:max-w-[260px] truncate">
                     <span className="font-semibold shrink-0">Playlist:</span>
                     <span className="text-white font-bold truncate">
-                      {playlists.find((p) => p.id === activePlaylistId)?.name}
+                      {playlists.length === 0 ? "N/A" : (playlists.find((p) => p.id === activePlaylistId)?.name || "N/A")}
                     </span>
                   </div>
                 </div>
