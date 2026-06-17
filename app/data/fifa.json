@@ -9,7 +9,7 @@
         "key": "68f96d618b0b956b008c445896a25a79"
     },
     {
-        "name": "FOX English",
+        "name": "FOX English (Germany VPN)",
         "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/1/17/2026_FIFA_World_Cup_emblem.svg/250px-2026_FIFA_World_Cup_emblem.svg.png",
         "group": "FIFA",
         "type": "dash",
@@ -23,12 +23,6 @@
         "logo": "https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png",
         "group": "FIFA",
         "url": "https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8"
-    },
-    {
-        "name": "Somoy TV",
-        "logo": "https://s3.aynaott.com/storage/ece71c1163a377fbe2d93f9d28c34f60",
-        "group": "FIFA",
-        "url": "https://live.thebosstv.com:30443/dwlive/Somoy-TV/chunks.m3u8"
     },
     {
         "name": "LOL",
