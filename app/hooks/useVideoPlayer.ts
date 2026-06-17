@@ -775,16 +775,13 @@ export function useVideoPlayer(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               videoTracks.forEach((t: any) => {
                 if (t.height) {
-                  // Only add if it's the highest bandwidth for this height, or simply just add one per height
-                  const existing = qualitiesMap.get(t.height);
-                  if (!existing || t.bandwidth > existing.bandwidth) {
-                    qualitiesMap.set(t.height, {
-                      id: t.id,
-                      name: `${t.height}p`,
-                      height: t.height,
-                      bandwidth: t.bandwidth
-                    });
-                  }
+                  const key = `${t.height}_${t.bandwidth}`;
+                  qualitiesMap.set(key, {
+                    id: t.id,
+                    name: `${t.height}p`,
+                    height: t.height,
+                    bandwidth: t.bandwidth
+                  });
                 } else if (t.bandwidth) {
                   qualitiesMap.set(t.bandwidth, {
                     id: t.id,
@@ -798,7 +795,10 @@ export function useVideoPlayer(
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((q: any) => q.height > 0)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .sort((a: any, b: any) => b.height - a.height);
+                .sort((a: any, b: any) => {
+                  if (b.height !== a.height) return b.height - a.height;
+                  return b.bandwidth - a.bandwidth;
+                });
               if (extractedQualities.length > 0) {
                 setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
               }
@@ -863,7 +863,10 @@ export function useVideoPlayer(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             })).filter((q: any) => q.height > 0)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .sort((a: any, b: any) => b.height - a.height);
+            .sort((a: any, b: any) => {
+              if (b.height !== a.height) return b.height - a.height;
+              return b.bandwidth - a.bandwidth;
+            });
             if (extractedQualities.length > 0) {
               setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
             }
