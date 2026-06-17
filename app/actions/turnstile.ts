@@ -1,39 +1,35 @@
-import { NextRequest, NextResponse } from "next/server";
+"use server";
 
-export async function POST(req: NextRequest) {
+import { cookies, headers } from "next/headers";
+
+export async function verifyTurnstileToken(token: string) {
   try {
     const isDisable = process.env.NEXT_PUBLIC_DISABLE_TURNSTILE?.toLowerCase() === "true";
+    const cookieStore = await cookies();
+    
     if (isDisable) {
-      const response = NextResponse.json({ success: true });
-      response.cookies.set("cf_turnstile_verified", "true", {
+      cookieStore.set("cf_turnstile_verified", "true", {
         path: "/",
         maxAge: 30 * 24 * 60 * 60, // 30 days
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
       });
-      return response;
+      return { success: true };
     }
 
-    const { token } = await req.json();
-
     if (!token) {
-      return NextResponse.json(
-        { success: false, error: "Token is required" },
-        { status: 400 }
-      );
+      return { success: false, error: "Token is required" };
     }
 
     const secretKey = process.env.TURNSTILE_SECRET_KEY;
     if (!secretKey) {
       console.error("TURNSTILE_SECRET_KEY is not configured in env variables.");
-      return NextResponse.json(
-        { success: false, error: "Server configuration error" },
-        { status: 500 }
-      );
+      return { success: false, error: "Server configuration error" };
     }
 
     // Get client IP
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined;
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || undefined;
 
     // Validate with Cloudflare Turnstile API
     const verifyUrl = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -57,28 +53,24 @@ export async function POST(req: NextRequest) {
     const outcome = await result.json();
 
     if (outcome.success) {
-      const response = NextResponse.json({ success: true });
-      
       // Set verification cookie for 30 days
-      response.cookies.set("cf_turnstile_verified", "true", {
+      cookieStore.set("cf_turnstile_verified", "true", {
         path: "/",
         maxAge: 30 * 24 * 60 * 60, // 30 days
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
       });
 
-      return response;
+      return { success: true };
     } else {
-      return NextResponse.json(
-        { success: false, error: "Verification failed", details: outcome["error-codes"] },
-        { status: 400 }
-      );
+      return { 
+        success: false, 
+        error: "Verification failed", 
+        details: outcome["error-codes"] 
+      };
     }
   } catch (error) {
     console.error("Turnstile verification error:", error);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return { success: false, error: "Internal server error" };
   }
 }

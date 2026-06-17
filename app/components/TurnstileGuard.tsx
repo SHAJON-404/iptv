@@ -49,17 +49,10 @@ export default function TurnstileGuard({ children }: TurnstileGuardProps) {
     setError(null);
 
     try {
-      const response = await fetch("/api/turnstile/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
-      });
+      const { verifyTurnstileToken } = await import("../actions/turnstile");
+      const data = await verifyTurnstileToken(token);
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (data.success) {
         // Save state on client side
         localStorage.setItem("cf_turnstile_verified", "true");
         // Give a short delay for smooth fade out transition
