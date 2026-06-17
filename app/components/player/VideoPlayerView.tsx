@@ -211,26 +211,6 @@ export function VideoPlayerView({
         </div>
       )}
 
-      {/* Center Play Button Overlay — only when paused */}
-      {playerStatus === "playing" && isPaused && !isBuffering && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/35 z-10 pointer-events-none">
-          <motion.button
-            key="play-btn"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePlayPause();
-            }}
-            className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-primary/95 text-white flex items-center justify-center shadow-lg shadow-primary/30 border border-white/10 pointer-events-auto cursor-pointer focus:outline-none"
-          >
-            <Play size={28} className="fill-white translate-x-0.5 md:w-8 md:h-8" />
-          </motion.button>
-        </div>
-      )}
 
       {/* YouTube-like Double Click Seek Visual Ripple Overlay */}
       <AnimatePresence>
