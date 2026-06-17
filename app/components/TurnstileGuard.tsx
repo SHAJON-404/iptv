@@ -16,6 +16,7 @@ export default function TurnstileGuard({ children }: TurnstileGuardProps) {
   const [hostname, setHostname] = useState("tv.shajon.dev");
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const isDisableTurnstile = process.env.NEXT_PUBLIC_DISABLE_TURNSTILE?.toLowerCase() === "true";
 
   useEffect(() => {
     // Defer state update to avoid synchronous cascading render warning in ESLint
@@ -27,8 +28,8 @@ export default function TurnstileGuard({ children }: TurnstileGuardProps) {
         setHostname(window.location.hostname);
       }
 
-      // Skip verification if Turnstile site key is not configured in environment variables
-      if (!siteKey) {
+      // Skip verification if Turnstile site key is not configured or Turnstile is disabled
+      if (isDisableTurnstile || !siteKey) {
         setIsVerified(true);
         return;
       }
@@ -41,7 +42,7 @@ export default function TurnstileGuard({ children }: TurnstileGuardProps) {
         setIsVerified(true);
       }
     }, 0);
-  }, [siteKey]);
+  }, [siteKey, isDisableTurnstile]);
 
   const handleVerify = async (token: string) => {
     setIsVerifying(true);

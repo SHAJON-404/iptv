@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
+    const isDisable = process.env.NEXT_PUBLIC_DISABLE_TURNSTILE?.toLowerCase() === "true";
+    if (isDisable) {
+      const response = NextResponse.json({ success: true });
+      response.cookies.set("cf_turnstile_verified", "true", {
+        path: "/",
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      });
+      return response;
+    }
+
     const { token } = await req.json();
 
     if (!token) {
