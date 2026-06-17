@@ -9,6 +9,15 @@
         "key": "68f96d618b0b956b008c445896a25a79"
     },
     {
+        "name": "FussBall TV 4K",
+        "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/1/17/2026_FIFA_World_Cup_emblem.svg/250px-2026_FIFA_World_Cup_emblem.svg.png",
+        "group": "FIFA",
+        "type": "dash",
+        "url": "https://live-pv-ta.amazon.fastly-edge.com/pdx-nitro/live/clients/dash/enc/stxrbahabo/out/v1/fc40f22f10374517a2784e1d97cb23f4/cenc.mpd",
+        "kid": "1f68713028d439ec03be07f56c1d6213",
+        "key": "20093db6455160fffed4c394def3193d"
+    },
+    {
         "name": "CAZE TV",
         "logo": "https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png",
         "group": "FIFA",

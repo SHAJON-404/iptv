@@ -86,6 +86,18 @@ function resolveUrl(relative: string, base: string): string {
   }
 }
 
+function getBaseUrl(targetUrl: string): string {
+  try {
+    const urlObj = new URL(targetUrl);
+    const pathname = urlObj.pathname;
+    const lastSlashIndex = pathname.lastIndexOf("/");
+    const parentPath = lastSlashIndex !== -1 ? pathname.substring(0, lastSlashIndex + 1) : "/";
+    return `${urlObj.origin}${parentPath}`;
+  } catch {
+    return targetUrl;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const targetUrl = searchParams.get("url");
@@ -184,6 +196,10 @@ export async function GET(request: NextRequest) {
       targetUrl.toLowerCase().split(/[?#]/)[0].endsWith(".m3u8") ||
       targetUrl.toLowerCase().split(/[?#]/)[0].endsWith(".m3u");
 
+    const isMPD =
+      contentType.toLowerCase().includes("dash+xml") ||
+      targetUrl.toLowerCase().split(/[?#]/)[0].endsWith(".mpd");
+
     if (isM3U8) {
       const text = await response.text();
       const lines = text.split(/\r?\n/);
@@ -232,6 +248,52 @@ export async function GET(request: NextRequest) {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Headers": "Range",
           "Access-Control-Expose-Headers": "Content-Range, Content-Length",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+      });
+    } else if (isMPD) {
+      const text = await response.text();
+      const baseUri = getBaseUrl(targetUrl);
+
+      // Find the first <Period tag or first <SegmentTemplate tag
+      const periodIndex = text.search(/<(Period|SegmentTemplate)/i);
+
+      let header = text;
+      let body = "";
+      if (periodIndex !== -1) {
+        header = text.substring(0, periodIndex);
+        body = text.substring(periodIndex);
+      }
+
+      const hasBaseUrl = /<BaseURL/i.test(header);
+
+      if (hasBaseUrl) {
+        // Rewrite all BaseURL elements in the header to be absolute
+        header = header.replace(/<BaseURL([^>]*)>([\s\S]*?)<\/BaseURL>/gi, (match, attrs, content) => {
+          const trimmed = content.trim();
+          if (/^https?:\/\//i.test(trimmed)) {
+            return match;
+          }
+          const resolved = resolveUrl(trimmed, targetUrl);
+          return `<BaseURL${attrs}>${resolved}</BaseURL>`;
+        });
+      } else {
+        // Insert BaseURL after <MPD> tag
+        const mpdMatch = header.match(/(<MPD[^>]*>)/i);
+        if (mpdMatch) {
+          header = header.replace(/(<MPD[^>]*>)/i, `$1\n  <BaseURL>${baseUri}</BaseURL>`);
+        }
+      }
+
+      const rewrittenText = header + body;
+
+      return new Response(rewrittenText, {
+        status: 200,
+        headers: {
+          "Content-Type": contentType || "application/dash+xml",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Range, Content-Type",
+          "Access-Control-Expose-Headers": "Content-Range, Content-Length, Accept-Ranges",
           "Cache-Control": "no-cache, no-store, must-revalidate",
         },
       });
