@@ -276,6 +276,7 @@ export function useIPTVPlaylists() {
         ? currentPlaylist.channels.filter(c => !(c.type === "dash" || c.url.includes(".mpd") || c.url.endsWith(".mpd")))
         : currentPlaylist.channels;
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setChannels(filtered);
       
       if (filtered.length > 0) {
