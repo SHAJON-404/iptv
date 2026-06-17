@@ -272,38 +272,31 @@ export function useIPTVPlaylists() {
   useEffect(() => {
     const currentPlaylist = playlists.find(p => p.id === activePlaylistId);
     if (currentPlaylist) {
-      const selectedChannelId = selectedChannel?.id;
-      const selectedChannelUrl = selectedChannel?.url;
+      const filtered = getIsIOS()
+        ? currentPlaylist.channels.filter(c => !(c.type === "dash" || c.url.includes(".mpd") || c.url.endsWith(".mpd")))
+        : currentPlaylist.channels;
 
-      setTimeout(() => {
-        const filtered = getIsIOS()
-          ? currentPlaylist.channels.filter(c => !(c.type === "dash" || c.url.includes(".mpd") || c.url.endsWith(".mpd")))
-          : currentPlaylist.channels;
-
-        setChannels(filtered);
-        if (filtered.length > 0) {
-          const alreadySelected = filtered.find(
-            c => c.id === selectedChannelId || c.url === selectedChannelUrl
-          );
-          if (alreadySelected) {
-            setSelectedChannel(prev => {
-              if (prev && prev !== alreadySelected) {
-                return alreadySelected;
-              }
-              return prev;
-            });
-          } else {
-            const randomIndex = Math.floor(Math.random() * filtered.length);
-            setSelectedChannel(filtered[randomIndex]);
+      setChannels(filtered);
+      
+      if (filtered.length > 0) {
+        setSelectedChannel(prev => {
+          if (prev) {
+            const alreadySelected = filtered.find(c => c.id === prev.id || c.url === prev.url);
+            if (alreadySelected) {
+              return prev !== alreadySelected ? alreadySelected : prev;
+            }
           }
-        } else {
-          if (!loading) {
-            setSelectedChannel(null);
-          }
+          // Select a random channel if none was selected, or if switching to a new playlist
+          const randomIndex = Math.floor(Math.random() * filtered.length);
+          return filtered[randomIndex];
+        });
+      } else {
+        if (!loading) {
+          setSelectedChannel(null);
         }
-      }, 0);
+      }
     }
-  }, [activePlaylistId, playlists, selectedChannel?.id, selectedChannel?.url, loading]);
+  }, [activePlaylistId, playlists, loading]);
 
   // Hydrate playlists from localStorage on client-side mount
   useEffect(() => {
