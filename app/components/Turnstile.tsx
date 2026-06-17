@@ -88,5 +88,5 @@ export default function Turnstile({
     };
   }, [siteKey, onSuccess, onError, onExpire]);
 
-  return <div ref={containerRef} className="flex justify-center min-h-[65px]" />;
+  return <div ref={containerRef} className="flex justify-start min-h-[65px]" />;
 }
