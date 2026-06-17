@@ -4,10 +4,12 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Server, Tv, HelpCircle, User, Trophy } from "lucide-react";
+import { Server, Tv, HelpCircle, User, Trophy, LogIn } from "lucide-react";
+import { useAuth } from "@/app/hooks/useAuth";
 
 export default function Header() {
   const pathname = usePathname();
+  const { session } = useAuth();
   const isFtpPage = pathname === "/ftp";
   const isFaqPage = pathname === "/faq";
   const isAboutPage = pathname === "/about";
@@ -121,11 +123,37 @@ export default function Header() {
               ) : (
                 <>
                   <Server size={15} className="text-primary" />
-                  <span className="hidden sm:inline">FTP Servers</span>
-                  <span className="sm:hidden">FTP</span>
+                  <span>FTP</span>
                 </>
               )}
             </Link>
+
+            {/* Auth Button */}
+            {session ? (
+              <Link href="/dashboard">
+                <button
+                  className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
+                  title={session.user?.name || "User"}
+                >
+                  {session.user?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={session.user.image} alt="Profile" className="w-4 h-4 sm:w-5 sm:h-5 rounded-full" />
+                  ) : (
+                    <User size={15} className="text-primary" />
+                  )}
+                  <span className="hidden sm:inline">Dashboard</span>
+                </button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <button
+                  className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-primary/30 hover:border-primary/50 bg-primary/10 hover:bg-primary/20 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
+                >
+                  <LogIn size={15} className="text-primary" />
+                  <span className="hidden sm:inline">Login</span>
+                </button>
+              </Link>
+            )}
           </motion.div>
         </div>
       </div>

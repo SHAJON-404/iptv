@@ -60,6 +60,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/__/oauth/google/callback',
+        destination: '/api/auth/callback/google',
+      },
+      {
+        source: '/__/oauth/google/callback/',
+        destination: '/api/auth/callback/google',
+      },
+    ];
+  },
   async headers() {
     return [
       {

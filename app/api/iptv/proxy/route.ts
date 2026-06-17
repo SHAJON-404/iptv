@@ -307,8 +307,11 @@ export async function GET(request: NextRequest) {
       };
 
       // Forward critical response headers from upstream
+      const contentEncoding = response.headers.get("content-encoding");
+      const isCompressed = contentEncoding && contentEncoding !== "identity";
+
       const contentLength = response.headers.get("content-length");
-      if (contentLength) {
+      if (contentLength && !isCompressed) {
         headers["Content-Length"] = contentLength;
       }
 

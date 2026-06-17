@@ -1,15 +1,16 @@
 {
   "name": "iptv",
-  "version": "2.0",
+  "version": "3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "convert-m3u": "node scripts/json-to-m3u.js"
+    "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "google-auth-library": "^10.7.0",
     "hls.js": "^1.6.16",
     "lucide-react": "^1.17.0",
     "motion": "^12.40.0",
@@ -32,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "postcss-preset-env": "^11.3.0",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

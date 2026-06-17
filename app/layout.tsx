@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientPopupWrapper from "./components/ClientPopupWrapper";
+import { AuthProvider } from "./hooks/useAuth";
 import Script from "next/script";
 import MobileNavBar from "./components/MobileNavBar";
 import TurnstileGuard from "./components/TurnstileGuard";
@@ -102,14 +103,16 @@ export default function RootLayout({
           <MaintenanceView />
         ) : (
           <TurnstileGuard>
-            <ViewerTracker />
-            {children}
-            <MobileNavBar />
-            <ClientPopupWrapper
-              showPopup={showPopup}
-              disableWcPopup={disableWcPopup}
-              disableTgPopup={disableTgPopup}
-            />
+            <AuthProvider>
+              <ViewerTracker />
+              {children}
+              <MobileNavBar />
+              <ClientPopupWrapper
+                showPopup={showPopup}
+                disableWcPopup={disableWcPopup}
+                disableTgPopup={disableTgPopup}
+              />
+            </AuthProvider>
           </TurnstileGuard>
         )}
         <Script

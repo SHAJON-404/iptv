@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useAuth } from "./useAuth";
 
 export interface Channel {
   id: string;
@@ -35,12 +36,11 @@ export const getIsIOS = (): boolean => {
   return (platform === "macOS" || platform === "MacIntel") && navigator.maxTouchPoints > 1;
 };
 
-const CACHE_MAX_AGE_MS = 15 * 60 * 1000;
-
 export function useIPTVPlaylists() {
+  const { status } = useAuth();
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading] = useState(false);
+  const [error] = useState<string | null>(null);
 
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,13 +60,11 @@ export function useIPTVPlaylists() {
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // (Default playlist logic and IndexedDB cache have been removed)
 
-  // Initially stop loading spinner since there are no default playlists to load
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+  // Loading spinner is now initialized to false natively
 
   // Sync active playlist channels to standard list representation
   useEffect(() => {
@@ -109,29 +107,31 @@ export function useIPTVPlaylists() {
         const parsedSaved = JSON.parse(saved) as Playlist[];
         const customPlaylists = parsedSaved.filter(p => p.type !== "default");
 
-        setTimeout(() => {
-          setPlaylists(customPlaylists);
-          
-          if (savedActiveId && customPlaylists.find(p => p.id === savedActiveId)) {
-            setActivePlaylistId(savedActiveId);
-          } else if (customPlaylists.length > 0) {
-            setActivePlaylistId(customPlaylists[0].id);
-          } else {
-            setPlaylistTab("manage");
-          }
-        }, 0);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPlaylists(customPlaylists);
+        
+        if (savedActiveId && customPlaylists.find(p => p.id === savedActiveId)) {
+          setActivePlaylistId(savedActiveId);
+        } else if (customPlaylists.length > 0) {
+          setActivePlaylistId(customPlaylists[0].id);
+        } else {
+          setPlaylistTab("manage");
+        }
       } else {
-        setTimeout(() => setPlaylistTab("manage"), 0);
+        setPlaylistTab("manage");
       }
     } catch (e) {
       console.error("Failed to load playlists from localStorage:", e);
+    } finally {
+      setIsHydrated(true);
     }
   }, []);
 
   // Save custom playlists to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem("iptv_saved_playlists", JSON.stringify(playlists));
+      const localOnly = playlists.filter(p => !p.id.startsWith("db-playlist-"));
+      localStorage.setItem("iptv_saved_playlists", JSON.stringify(localOnly));
     } catch (e) {
       console.error("Failed to save playlists to localStorage:", e);
     }
@@ -231,6 +231,78 @@ export function useIPTVPlaylists() {
       };
     });
   };
+
+  // Load saved playlists from database if logged in
+  useEffect(() => {
+    if (!isHydrated || status !== "authenticated") return;
+
+    const loadDBSavedPlaylists = async () => {
+      try {
+        const res = await fetch("/api/iptv/playlists");
+        if (!res.ok) return;
+        const data = await res.json();
+        const dbPlaylists = data.playlists || [];
+
+        // Filter for active ones
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const activeDBPlaylists = dbPlaylists.filter((p: any) => p.isActive);
+
+        // Fetch and parse each active DB playlist
+        const loadedPlaylists: Playlist[] = [];
+
+        for (const dbp of activeDBPlaylists) {
+          try {
+            const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(dbp.url.trim())}`;
+            const fileRes = await fetch(proxiedUrl);
+            if (!fileRes.ok) continue;
+
+            const text = await fileRes.text();
+            let parsed: Channel[] = [];
+            const trimmedText = text.trim();
+            if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
+              parsed = parseJSON(text);
+            } else {
+              parsed = parseM3U(text);
+            }
+
+            if (parsed.length > 0) {
+              loadedPlaylists.push({
+                id: `db-playlist-${dbp.id}`,
+                name: dbp.name,
+                type: "url",
+                url: dbp.url,
+                channels: parsed,
+              });
+            }
+          } catch (e) {
+            console.error(`Failed to load DB playlist ${dbp.name}:`, e);
+          }
+        }
+
+        // Add them to the state (avoid duplicates)
+        setPlaylists(prev => {
+          const localOnly = prev.filter(p => !p.id.startsWith("db-playlist-"));
+          const merged = [...localOnly, ...loadedPlaylists];
+          
+          if (merged.length > 0) {
+            setActivePlaylistId(currentId => {
+              if (currentId && merged.find(p => p.id === currentId)) {
+                return currentId;
+              }
+              return merged[0].id;
+            });
+          }
+          return merged;
+        });
+
+      } catch (err) {
+        console.error("Error loading DB playlists:", err);
+      }
+    };
+
+    loadDBSavedPlaylists();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, isHydrated]);
 
   // Custom playlist handlers
   const processFile = (file: File) => {
