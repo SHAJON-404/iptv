@@ -20,8 +20,11 @@ A modern, high-performance, and premium web-based IPTV player built with **Next.
 
 - 📺 **Cinematic Video Player**: Large, center-aligned, aspect-ratio locked media container utilizing HLS.js and native iOS Safari player engines. Supports Picture-in-Picture (PiP), custom volume controls, double-tap seek, and auto-fallback muted play.
 - 🔑 **DASH & ClearKey DRM Support**: Fully integrated **Shaka Player** engine for playing `.mpd` (DASH) streams. Supports automated decryption using ClearKey DRM configurations (decoding `kid` and `key` tags from the JSON database).
+- 🎬 **MPEG-TS Support**: Includes integrated `mpegts.js` support for natively playing legacy MPEG-TS streams in modern browsers.
+- 📊 **Enhanced Player Analytics**: Displays dynamic stream resolution (with superscript HD/4K tags) and precise Mbps bandwidth columns within the quality selection settings.
 - 🔄 **Advanced Error Recovery & Fallbacks**: Automatic recovery loops for HLS.js network and media failures. Implements a **10-second automatic channel switcher fallback** that automatically plays the next channel in the list if the current one fails to start.
 - 🛡️ **Anti-SSRF Security & DNS Validation**: Proxy API endpoint protects internal infrastructure by performing DNS resolution lookup on target hostnames to block private, local, loopback, or link-local IP addresses.
+- 🤖 **Cloudflare Turnstile Bot Protection**: Secures the platform against automated scraping and DDoS attacks using Cloudflare Turnstile verification for first-time visitors, executed safely via Next.js Server Actions.
 - 🌐 **CORS & Geo-Block Bypass**: Upstream proxy fetches streams using custom Undici Agents (TLS v1+ legacy cipher compatibility) and dynamically rewrites/injects headers (`Referer`, `Origin`, and `Range`) to bypass hotlink restrictions and CORS issues.
 - 💾 **SHA-256 Hash-Based IndexedDB Cache**: Caches each default playlist in the browser using IndexedDB. On page load, it queries a lightweight `/api/iptv/channels/hash?type=...` endpoint. If unchanged, channels load instantly from cache, saving bandwidth and eliminating player lag.
 - 📂 **High-Speed BDIX FTP Portal**: An elegant `/ftp` directory showing local BDIX movie and media servers, complete with real-time online status indicators, host configurations, speed diagnostics, and instant redirection link components.
@@ -113,7 +116,7 @@ The repository includes a built-in Node.js converter script that automatically s
 - **Library**: [React 19](https://react.dev/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animations**: [Motion](https://motion.dev/)
-- **Stream Engines**: [HLS.js](https://github.com/video-dev/hls.js/) & [Shaka Player](https://github.com/shaka-project/shaka-player) (for DASH & ClearKey DRM)
+- **Stream Engines**: [HLS.js](https://github.com/video-dev/hls.js/), [Shaka Player](https://github.com/shaka-project/shaka-player) (for DASH & ClearKey DRM), & [mpegts.js](https://github.com/xqq/mpegts.js) (for legacy MPEG-TS)
 - **HTTP Client**: [Undici](https://github.com/nodejs/undici) (for secure proxy streaming)
 
 ---
@@ -144,6 +147,11 @@ Ensure you have **Node.js** (**v22.19.0** or newer) installed.
    SHOW_POPUP=True
    DISABLE_WC_POPUP=True
    DISABLE_TG_POPUP=False
+
+   # Cloudflare Turnstile Verification Configuration
+   NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key
+   TURNSTILE_SECRET_KEY=your-secret-key
+   NEXT_PUBLIC_DISABLE_TURNSTILE=False
 
    # Developer/Local Subnet Origins (CORS validation bypass)
    ALLOWED_DEV_ORIGINS=live.shajon.dev,192.168.0.57
