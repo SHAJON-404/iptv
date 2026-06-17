@@ -29,6 +29,11 @@ export default function DashboardPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Sync states
+  const [syncingPlaylists, setSyncingPlaylists] = useState(false);
+  const [syncSuccessMsg, setSyncSuccessMsg] = useState<string | null>(null);
+  const [syncErrorMsg, setSyncErrorMsg] = useState<string | null>(null);
+
   const fetchPlaylists = async () => {
     setLoadingPlaylists(true);
     setError(null);
@@ -149,6 +154,71 @@ export default function DashboardPage() {
       }
     } catch {
       setActionError("Failed to delete playlist.");
+    }
+  };
+
+  const handleSyncPlaylistData = async () => {
+    setSyncingPlaylists(true);
+    setSyncSuccessMsg(null);
+    setSyncErrorMsg(null);
+
+    try {
+      // 1. Fetch latest saved playlists metadata from DB
+      const res = await fetch("/api/iptv/playlists");
+      if (!res.ok) throw new Error("Failed to fetch playlists from database.");
+      const data = await res.json();
+      const dbPlaylists = data.playlists || [];
+
+      // Update the local list of playlists in the dashboard state
+      setPlaylists(dbPlaylists);
+
+      // 2. Fetch and parse channels for active ones
+      const activeDBPlaylists = dbPlaylists.filter((p: SavedPlaylist) => p.isActive);
+      const loadedPlaylists = [];
+
+      // Import parser helpers
+      const { parseM3U, parseJSON } = await import("@/app/lib/playlistParser");
+
+      for (const dbp of activeDBPlaylists) {
+        try {
+          const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(dbp.url.trim())}`;
+          const fileRes = await fetch(proxiedUrl);
+          if (!fileRes.ok) continue;
+
+          const text = await fileRes.text();
+          let parsed = [];
+          const trimmedText = text.trim();
+          if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
+            parsed = parseJSON(text);
+          } else {
+            parsed = parseM3U(text);
+          }
+
+          if (parsed.length > 0) {
+            loadedPlaylists.push({
+              id: `db-playlist-${dbp.id}`,
+              name: dbp.name,
+              type: "url",
+              url: dbp.url,
+              channels: parsed,
+            });
+          }
+        } catch (e) {
+          console.error(`Failed to sync playlist content for ${dbp.name}:`, e);
+        }
+      }
+
+      // Save to localStorage cache
+      localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(loadedPlaylists));
+      
+      setSyncSuccessMsg("Playlist channels synchronized successfully!");
+      setTimeout(() => setSyncSuccessMsg(null), 3000);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setSyncErrorMsg(error.message || "Failed to synchronize playlist channels.");
+      setTimeout(() => setSyncErrorMsg(null), 4000);
+    } finally {
+      setSyncingPlaylists(false);
     }
   };
 
@@ -318,7 +388,39 @@ export default function DashboardPage() {
           {/* Saved Playlists List (col-span-7) */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             <div className="glass-card border border-white/10 rounded-3xl bg-white/[0.02] p-6 sm:p-8 shadow-lg backdrop-blur-xl text-left flex flex-col flex-1">
-              <h3 className="font-black text-lg text-white mb-6">Saved Playlists</h3>
+              <div className="flex items-center justify-between mb-6 gap-2">
+                <h3 className="font-black text-lg text-white">Saved Playlists</h3>
+                <button
+                  onClick={handleSyncPlaylistData}
+                  disabled={syncingPlaylists || playlists.length === 0}
+                  className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl border border-primary/20 hover:border-primary/50 bg-primary/5 hover:bg-primary/15 text-white font-bold text-xs sm:text-sm transition-all active:scale-95 disabled:opacity-45 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {syncingPlaylists ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                      <span>Syncing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Tv size={14} className="text-primary" />
+                      <span>Update Playlists Data</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {syncSuccessMsg && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-4 flex items-center gap-1.5">
+                  <Check size={14} />
+                  <span>{syncSuccessMsg}</span>
+                </div>
+              )}
+
+              {syncErrorMsg && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold mb-4">
+                  {syncErrorMsg}
+                </div>
+              )}
 
               {loadingPlaylists ? (
                 <div className="flex-1 flex items-center justify-center min-h-[200px]">

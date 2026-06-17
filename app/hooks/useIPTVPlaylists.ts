@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "./useAuth";
+import { parseM3U, parseJSON } from "@/app/lib/playlistParser";
 
 export interface Channel {
   id: string;
@@ -144,110 +145,58 @@ export function useIPTVPlaylists() {
     }
   }, [activePlaylistId]);
 
-  // M3U & JSON Parsing Helpers
-  const parseM3U = (text: string): Channel[] => {
-    const lines = text.split(/\r?\n/);
-    const parsedChannels: Channel[] = [];
-    let currentChannel: Partial<Channel> = {};
+  // M3U & JSON Parsing Helpers are imported from "@/app/lib/playlistParser"
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      if (line.startsWith("#EXTINF:")) {
-        currentChannel = {};
-
-        const logoMatch = line.match(/(?:tvg-logo|logo)="([^"]+)"/i);
-        if (logoMatch) currentChannel.logo = logoMatch[1];
-
-        const groupMatch = line.match(/(?:group-title|tvg-group|group)="([^"]+)"/i);
-        if (groupMatch) currentChannel.group = groupMatch[1];
-
-        const commaIndex = line.lastIndexOf(",");
-        if (commaIndex !== -1) {
-          currentChannel.name = line.substring(commaIndex + 1).trim();
-        }
-      } else if (
-        line.startsWith("http://") ||
-        line.startsWith("https://") ||
-        (line && !line.startsWith("#"))
-      ) {
-        if (currentChannel.name || line.includes("index.m3u8") || line.includes(".m3u8") || line.includes(".mp4")) {
-          currentChannel.url = line;
-          if (!currentChannel.name) {
-            const parts = line.split("/");
-            currentChannel.name = parts[parts.length - 1] || "Channel " + (parsedChannels.length + 1);
-          }
-          currentChannel.id = `custom-ch-${parsedChannels.length}-${Date.now()}`;
-          if (!currentChannel.group) currentChannel.group = "Custom";
-          if (!currentChannel.logo) currentChannel.logo = "";
-
-          parsedChannels.push(currentChannel as Channel);
-        }
-        currentChannel = {};
-      }
-    }
-
-    return parsedChannels;
-  };
-
-  interface RawChannelInput {
-    id?: string;
-    name?: string;
-    title?: string;
-    logo?: string;
-    logoUrl?: string;
-    image?: string;
-    group?: string;
-    category?: string;
-    url?: string;
-    streamUrl?: string;
-    link?: string;
-    type?: "dash" | "hls" | "ts";
-    kid?: string;
-    key?: string;
-    no_proxy?: boolean;
-  }
-
-  const parseJSON = (text: string): Channel[] => {
-    const data = JSON.parse(text);
-    const list = Array.isArray(data) ? data : data.channels || data.items || [];
-    if (!Array.isArray(list)) {
-      throw new Error("Invalid playlist JSON format. Expected an array of channels.");
-    }
-    return list.map((ch: RawChannelInput, idx: number) => {
-      const url = ch.url || ch.streamUrl || ch.link;
-      if (!url) throw new Error(`Channel at index ${idx} is missing a streaming URL ('url')`);
-      return {
-        id: ch.id || `custom-json-${idx}-${Date.now()}`,
-        name: ch.name || ch.title || `Channel ${idx + 1}`,
-        logo: ch.logo || ch.logoUrl || ch.image || "",
-        group: ch.group || ch.category || "Custom",
-        url: url,
-        ...(ch.type && { type: ch.type }),
-        ...(ch.kid && { kid: ch.kid }),
-        ...(ch.key && { key: ch.key }),
-        ...(ch.no_proxy !== undefined && { no_proxy: ch.no_proxy }),
-      };
-    });
-  };
-
-  // Load saved playlists from database if logged in
+  // Load saved playlists from database and sync with cache (every 10 minutes)
   useEffect(() => {
-    if (!isHydrated || status !== "authenticated") return;
+    if (!isHydrated) return;
 
-    const loadDBSavedPlaylists = async () => {
+    // 1. If authenticated, load from localStorage cache first for instant UI response
+    if (status === "authenticated") {
+      try {
+        const cached = localStorage.getItem("iptv_db_playlists_cache");
+        if (cached) {
+          const parsedCached = JSON.parse(cached) as Playlist[];
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setPlaylists(prev => {
+            const localOnly = prev.filter(p => !p.id.startsWith("db-playlist-"));
+            const merged = [...localOnly, ...parsedCached];
+            
+            // Set active playlist if not already set
+            setActivePlaylistId(currentId => {
+              if (currentId && merged.find(p => p.id === currentId)) {
+                return currentId;
+              }
+              return merged.length > 0 ? merged[0].id : "";
+            });
+            return merged;
+          });
+        }
+      } catch (e) {
+        console.error("Failed to load cached DB playlists:", e);
+      }
+    } else {
+      // If unauthenticated, clear any DB playlists from the state
+      setPlaylists(prev => prev.filter(p => !p.id.startsWith("db-playlist-")));
+    }
+
+    if (status !== "authenticated") return;
+
+    // 2. Define function to fetch and refresh DB playlists
+    const refreshDBSavedPlaylists = async () => {
       try {
         const res = await fetch("/api/iptv/playlists");
         if (!res.ok) return;
         const data = await res.json();
-        const dbPlaylists = data.playlists || [];
+        interface DBSavedPlaylist {
+          id: string;
+          name: string;
+          url: string;
+          isActive: boolean;
+        }
+        const dbPlaylists = (data.playlists || []) as DBSavedPlaylist[];
 
-        // Filter for active ones
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const activeDBPlaylists = dbPlaylists.filter((p: any) => p.isActive);
-
-        // Fetch and parse each active DB playlist
+        const activeDBPlaylists = dbPlaylists.filter(p => p.isActive);
         const loadedPlaylists: Playlist[] = [];
 
         for (const dbp of activeDBPlaylists) {
@@ -275,33 +224,39 @@ export function useIPTVPlaylists() {
               });
             }
           } catch (e) {
-            console.error(`Failed to load DB playlist ${dbp.name}:`, e);
+            console.error(`Failed to refresh DB playlist ${dbp.name}:`, e);
           }
         }
 
-        // Add them to the state (avoid duplicates)
+        // Save loaded playlists to cache
+        localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(loadedPlaylists));
+
+        // Update state
         setPlaylists(prev => {
           const localOnly = prev.filter(p => !p.id.startsWith("db-playlist-"));
           const merged = [...localOnly, ...loadedPlaylists];
           
-          if (merged.length > 0) {
-            setActivePlaylistId(currentId => {
-              if (currentId && merged.find(p => p.id === currentId)) {
-                return currentId;
-              }
-              return merged[0].id;
-            });
-          }
+          setActivePlaylistId(currentId => {
+            if (currentId && merged.find(p => p.id === currentId)) {
+              return currentId;
+            }
+            return merged.length > 0 ? merged[0].id : "";
+          });
           return merged;
         });
 
       } catch (err) {
-        console.error("Error loading DB playlists:", err);
+        console.error("Error refreshing DB playlists:", err);
       }
     };
 
-    loadDBSavedPlaylists();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Trigger initial refresh in the background
+    refreshDBSavedPlaylists();
+
+    // 3. Set up interval to automatically refresh every 10 minutes (during active session)
+    const intervalId = setInterval(refreshDBSavedPlaylists, 10 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
   }, [status, isHydrated]);
 
   // Custom playlist handlers
