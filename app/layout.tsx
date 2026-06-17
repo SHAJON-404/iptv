@@ -6,6 +6,7 @@ import Script from "next/script";
 import MobileNavBar from "./components/MobileNavBar";
 import TurnstileGuard from "./components/TurnstileGuard";
 import ViewerTracker from "./components/ViewerTracker";
+import MaintenanceView from "./components/MaintenanceView";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -92,20 +93,25 @@ export default function RootLayout({
   const showPopup = process.env.SHOW_POPUP?.toLowerCase() === "true";
   const disableWcPopup = process.env.DISABLE_WC_POPUP?.toLowerCase() === "true";
   const disableTgPopup = process.env.DISABLE_TG_POPUP?.toLowerCase() === "true";
+  const isMaintenance = process.env.MAINTANANCE?.toLowerCase() === "true";
 
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col pb-24 md:pb-0">
-        <TurnstileGuard>
-          <ViewerTracker />
-          {children}
-          <MobileNavBar />
-          <ClientPopupWrapper
-            showPopup={showPopup}
-            disableWcPopup={disableWcPopup}
-            disableTgPopup={disableTgPopup}
-          />
-        </TurnstileGuard>
+      <body className="min-h-full flex flex-col pb-24 md:pb-0 bg-[#070414]">
+        {isMaintenance ? (
+          <MaintenanceView />
+        ) : (
+          <TurnstileGuard>
+            <ViewerTracker />
+            {children}
+            <MobileNavBar />
+            <ClientPopupWrapper
+              showPopup={showPopup}
+              disableWcPopup={disableWcPopup}
+              disableTgPopup={disableTgPopup}
+            />
+          </TurnstileGuard>
+        )}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-N36GM5VYZ7"
           strategy="afterInteractive"
