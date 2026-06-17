@@ -17,7 +17,7 @@
     {
         "name": "Football World Cup 2026",
         "logo": "https://carboncredits.com/wp-content/uploads/2025/09/shutterstock_2306088965-e1757112807302.jpg",
-        "group": "Football World Cup 2026",
+        "group": "FIFA",
         "url": "http://starhub.pro/live/farhat-3379/67897-913379/744524.ts",
         "status": "live",
         "verified_at": "2026-06-17T13:35:14.093998",
@@ -27,7 +27,7 @@
     {
         "name": "Football World Cup 2026 4K",
         "logo": "https://carboncredits.com/wp-content/uploads/2025/09/shutterstock_2306088965-e1757112807302.jpg",
-        "group": "Football World Cup 2026",
+        "group": "FIFA",
         "url": "http://starhub.pro/live/farhat-3379/67897-913379/744527.ts",
         "status": "live",
         "verified_at": "2026-06-17T13:35:14.196308",
@@ -116,7 +116,7 @@
     {
         "name": "FIFA CTV - English (1080p)",
         "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/CTV_logo_2018.svg/3840px-CTV_logo_2018.svg.png",
-        "group": "Sports",
+        "group": "FIFA",
         "url": "https://otte-qw.live.pv-cdn.net/lhr-nitro/live/clients/dash/enc/72sjo8hygl/out/v1/3079be34d72a4985852d299a02406a0c/cenc.mpd",
         "type": "dash",
         "kid": "d185684e2330de5bea436daa094a5e86",
