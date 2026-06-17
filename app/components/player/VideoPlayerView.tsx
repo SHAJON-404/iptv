@@ -113,7 +113,7 @@ function getFriendlyErrorMessage(rawError: string): { title: string; desc: strin
   };
 }
 
-export function VideoPlayerView({
+export const VideoPlayerView = React.memo(function VideoPlayerView({
   videoRef,
   playerContainerRef,
   playerStatus,
@@ -499,4 +499,4 @@ export function VideoPlayerView({
       )}
     </div>
   );
-}
+});

@@ -22,7 +22,7 @@ interface PlaylistManagerViewProps {
   handleDrop: (e: React.DragEvent<HTMLDivElement>) => void;
 }
 
-export function PlaylistManagerView({
+export const PlaylistManagerView = React.memo(function PlaylistManagerView({
   playlistName,
   setPlaylistName,
   importUrl,
@@ -199,4 +199,4 @@ export function PlaylistManagerView({
       )}
     </div>
   );
-}
+});

@@ -12,7 +12,7 @@ interface PlaylistSidebarViewProps {
   handleDeletePlaylist: (id: string, e: React.MouseEvent) => void;
 }
 
-export function PlaylistSidebarView({
+export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
   playlists,
   activePlaylistId,
   setActivePlaylistId,
@@ -110,4 +110,4 @@ export function PlaylistSidebarView({
       </div>
     </div>
   );
-}
+});

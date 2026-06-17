@@ -21,7 +21,7 @@ interface ChannelListViewProps {
   hasMore: boolean;
 }
 
-export function ChannelListView({
+export const ChannelListView = React.memo(function ChannelListView({
   categories,
   selectedCategory,
   setSelectedCategory,
@@ -45,6 +45,19 @@ export function ChannelListView({
       .toUpperCase();
   };
 
+  const [localSearch, setLocalSearch] = React.useState(searchQuery);
+
+  React.useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(localSearch);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [localSearch, setSearchQuery]);
+
   return (
     <>
       {/* Search and Filters */}
@@ -54,16 +67,17 @@ export function ChannelListView({
           <input
             type="text"
             placeholder="Search live TV..."
-            value={searchQuery}
+            value={localSearch}
             onChange={(e) => {
-              setSearchQuery(e.target.value);
+              setLocalSearch(e.target.value);
               setDisplayCount(80);
             }}
             className="flex-1 bg-transparent border-none outline-none py-1.5 sm:py-2 px-2.5 sm:px-3 text-sm text-white placeholder:text-zinc-400"
           />
-          {searchQuery && (
+          {localSearch && (
             <button
               onClick={() => {
+                setLocalSearch("");
                 setSearchQuery("");
                 setDisplayCount(80);
               }}
@@ -190,4 +204,4 @@ export function ChannelListView({
       </div>
     </>
   );
-}
+});

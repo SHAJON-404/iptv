@@ -13,7 +13,7 @@ interface ChannelStatsProps {
   totalChannels: number;
 }
 
-export function ChannelStats({
+export const ChannelStats = React.memo(function ChannelStats({
   selectedChannel,
   playerStatus,
   totalChannels,
@@ -241,4 +241,4 @@ export function ChannelStats({
       </div>
     </>
   );
-}
+});

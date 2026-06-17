@@ -117,6 +117,9 @@ export function useVideoPlayer(
       unmuteCleanupRef.current();
     }
 
+    const container = playerContainerRef.current;
+    const target = container || document;
+
     const unmute = () => {
       const v = videoRef.current;
       if (v && v.muted) {
@@ -131,15 +134,15 @@ export function useVideoPlayer(
     };
 
     const cleanup = () => {
-      document.removeEventListener("click", unmute);
-      document.removeEventListener("touchstart", unmute);
-      document.removeEventListener("keydown", unmute);
+      target.removeEventListener("click", unmute as EventListener);
+      target.removeEventListener("touchstart", unmute as EventListener);
+      target.removeEventListener("keydown", unmute as EventListener);
       unmuteCleanupRef.current = null;
     };
 
-    document.addEventListener("click", unmute);
-    document.addEventListener("touchstart", unmute);
-    document.addEventListener("keydown", unmute);
+    target.addEventListener("click", unmute as EventListener);
+    target.addEventListener("touchstart", unmute as EventListener);
+    target.addEventListener("keydown", unmute as EventListener);
     unmuteCleanupRef.current = cleanup;
   }, []);
 
