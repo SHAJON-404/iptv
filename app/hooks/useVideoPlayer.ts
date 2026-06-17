@@ -40,6 +40,7 @@ export function useVideoPlayer(
 
   // Custom Player controls states
   const [isPaused, setIsPaused] = useState(true);
+  const [hasPlayed, setHasPlayed] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolume] = useState(0.8);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -217,7 +218,10 @@ export function useVideoPlayer(
     const video = videoRef.current;
     if (!video) return;
 
-    const handlePlay = () => setIsPaused(false);
+    const handlePlay = () => {
+      setIsPaused(false);
+      setHasPlayed(true);
+    };
     const handlePause = () => setIsPaused(true);
     const handleVolumeChange = () => {
       setIsMuted(video.muted);
@@ -530,6 +534,7 @@ export function useVideoPlayer(
       setPlayerStatus("loading");
       setPlayerError(null);
       setIsBuffering(false);
+      setHasPlayed(false);
       setAvailableQualities([{ id: "auto", name: "Auto" }]);
       setCurrentQuality("auto");
       loadedUrlRef.current = chan.url;
@@ -1080,6 +1085,7 @@ export function useVideoPlayer(
     playerError,
     isBuffering,
     isPaused,
+    hasPlayed,
     isMuted,
     volume,
     isFullscreen,

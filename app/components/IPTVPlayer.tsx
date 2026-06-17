@@ -64,6 +64,7 @@ export default function IPTVPlayer() {
     playerError,
     isBuffering,
     isPaused,
+    hasPlayed,
     isMuted,
     volume,
     isFullscreen,
@@ -109,7 +110,7 @@ export default function IPTVPlayer() {
 
   // 4. Automatic channel switch if playback doesn't start in 30 seconds
   useEffect(() => {
-    if (!selectedChannel || playerStatus === "playing" || playerStatus === "idle") {
+    if (!selectedChannel || playerStatus === "playing" || playerStatus === "idle" || (hasPlayed && isPaused)) {
       if (playTimeoutRef.current) {
         clearTimeout(playTimeoutRef.current);
         playTimeoutRef.current = null;
@@ -147,7 +148,7 @@ export default function IPTVPlayer() {
         playTimeoutRef.current = null;
       }
     };
-  }, [selectedChannel, playerStatus, retryKey, handleChannelSelect, setChannels]);
+  }, [selectedChannel, playerStatus, retryKey, handleChannelSelect, setChannels, hasPlayed, isPaused]);
 
   // 5. Memoized categories and channel collections
   const categories = useMemo(() => [
