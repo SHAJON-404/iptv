@@ -22,6 +22,7 @@ A modern, high-performance, and premium web-based IPTV player built with **Next.
 - 🎛️ **Cinematic Player Experience**: Custom video quality selection with precise Mbps analytics, Picture-in-Picture (PiP), double-tap seek, and automatic 10-second error recovery channel switching.
 - 🛡️ **Security & Proxy Routing**: Built-in secure proxy to bypass CORS and Geo-blocking with custom headers, protected by Anti-SSRF DNS validation and Cloudflare Turnstile Server Actions.
 - ⚡ **High-Performance Architecture**: Instant loading via SHA-256 IndexedDB channel caching, smart proxy bypass for direct streams, and live real-time watcher telemetry.
+- ☁️ **Cloud Playlist Sync**: Built-in Google OAuth authentication with a PostgreSQL database to securely save and sync custom M3U/JSON playlists across all your devices.
 - ✨ **Premium Glassmorphic UI**: Responsive interactive channel grid, seamless skeleton loaders, sticky headers, knockout bracket cards, and a GPU-optimized 3D CSS cyber background.
 - 📂 **BDIX FTP Portal**: An elegant directory for local BDIX media servers featuring real-time online status and speed diagnostics.
 
@@ -33,6 +34,8 @@ A modern, high-performance, and premium web-based IPTV player built with **Next.
 - **Library**: [React 19](https://react.dev/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animations**: [Motion](https://motion.dev/)
+- **Authentication**: [NextAuth.js (Auth.js)](https://next-auth.js.org/) (Google Provider)
+- **Database ORM**: [Prisma](https://www.prisma.io/) (PostgreSQL)
 - **Stream Engines**: [HLS.js](https://github.com/video-dev/hls.js/), [Shaka Player](https://github.com/shaka-project/shaka-player) (for DASH & ClearKey DRM), & [mpegts.js](https://github.com/xqq/mpegts.js) (for legacy MPEG-TS)
 - **HTTP Client**: [Undici](https://github.com/nodejs/undici) (for secure proxy streaming)
 
@@ -60,10 +63,8 @@ Ensure you have **Node.js** (**v22.19.0** or newer) installed.
    # Site Configuration
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
-   # Popup Modals Configuration
+   # Popup Configuration
    SHOW_POPUP=True
-   DISABLE_WC_POPUP=True
-   DISABLE_TG_POPUP=False
 
    # Cloudflare Turnstile Verification Configuration
    NEXT_PUBLIC_TURNSTILE_SITE_KEY=your-site-key
@@ -72,11 +73,19 @@ Ensure you have **Node.js** (**v22.19.0** or newer) installed.
 
    # Developer/Local Subnet Origins (CORS validation bypass)
    ALLOWED_DEV_ORIGINS=live.shajon.dev,192.168.0.57
+
+   # Database & Authentication (For Cloud Sync)
+   DATABASE_URL="postgresql://user:password@host:port/dbname?schema=public"
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=your-random-secret
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
    ```
 
-3. Install the dependencies:
+3. Setup the database and install dependencies:
    ```bash
    npm install
+   npx prisma db push
    ```
 
 3. Run the development server:
