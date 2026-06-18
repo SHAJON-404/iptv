@@ -86,14 +86,15 @@ Ensure you have **Node.js** (**v22.19.0** or newer) installed.
    ```bash
    npm install
    npx prisma db push
+   npx prisma generate
    ```
 
-3. Run the development server:
+4. Run the development server:
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Production Build & Running
 
