@@ -83,6 +83,49 @@ export default function DashboardPage() {
 
     setSubmitting(true);
     try {
+      // 1. Fetch playlist from URL using proxy to check response code
+      const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(url.trim())}`;
+      let fileRes;
+      try {
+        fileRes = await fetch(proxiedUrl);
+      } catch {
+        setActionError("Unable to reach the playlist URL. Please check the URL or your network connection.");
+        setSubmitting(false);
+        return;
+      }
+
+      if (!fileRes.ok) {
+        setActionError(`Failed to fetch from URL (Status ${fileRes.status}). Please verify the URL.`);
+        setSubmitting(false);
+        return;
+      }
+
+      // 2. Read text and validate format (JSON or M3U)
+      const text = await fileRes.text();
+      let parsed = [];
+      const trimmedText = text.trim();
+      const { parseM3U, parseJSON } = await import("@/app/lib/playlistParser");
+      
+      try {
+        if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
+          parsed = parseJSON(text);
+        } else {
+          parsed = parseM3U(text);
+        }
+      } catch (err: unknown) {
+        const error = err as Error;
+        setActionError(`Invalid playlist format: ${error.message || "Failed to parse JSON/M3U"}`);
+        setSubmitting(false);
+        return;
+      }
+
+      if (!parsed || parsed.length === 0) {
+        setActionError("No channels could be parsed from this playlist. Ensure it is a valid M3U or JSON playlist.");
+        setSubmitting(false);
+        return;
+      }
+
+      // 3. Save to database
       if (editingId) {
         const res = await fetch("/api/iptv/playlists", {
           method: "PATCH",
@@ -93,6 +136,35 @@ export default function DashboardPage() {
         const data = await res.json();
         if (res.ok) {
           setPlaylists(prev => prev.map(p => p.id === editingId ? { ...p, name: name.trim(), url: url.trim() } : p));
+          
+          // 4. Save fetch response to browser memory (iptv_db_playlists_cache)
+          try {
+            const cached = localStorage.getItem("iptv_db_playlists_cache");
+            interface CachedPlaylist {
+              id: string;
+              name: string;
+              type: string;
+              url?: string;
+              channels: typeof parsed;
+            }
+            let cachedPlaylists: CachedPlaylist[] = [];
+            if (cached) {
+              cachedPlaylists = JSON.parse(cached);
+            }
+            // Remove existing one if present and push updated one
+            cachedPlaylists = cachedPlaylists.filter((p) => p.id !== `db-playlist-${editingId}`);
+            cachedPlaylists.push({
+              id: `db-playlist-${editingId}`,
+              name: name.trim(),
+              type: "url",
+              url: url.trim(),
+              channels: parsed,
+            });
+            localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(cachedPlaylists));
+          } catch (e) {
+            console.error("Failed to update cache for edited playlist:", e);
+          }
+
           setName("");
           setUrl("");
           setEditingId(null);
@@ -110,7 +182,35 @@ export default function DashboardPage() {
 
         const data = await res.json();
         if (res.ok) {
-          setPlaylists(prev => [data.playlist, ...prev]);
+          const newDbPlaylist = data.playlist;
+          setPlaylists(prev => [newDbPlaylist, ...prev]);
+
+          // 4. Save fetch response to browser memory (iptv_db_playlists_cache)
+          try {
+            const cached = localStorage.getItem("iptv_db_playlists_cache");
+            interface CachedPlaylist {
+              id: string;
+              name: string;
+              type: string;
+              url?: string;
+              channels: typeof parsed;
+            }
+            let cachedPlaylists: CachedPlaylist[] = [];
+            if (cached) {
+              cachedPlaylists = JSON.parse(cached);
+            }
+            cachedPlaylists.push({
+              id: `db-playlist-${newDbPlaylist.id}`,
+              name: newDbPlaylist.name,
+              type: "url",
+              url: newDbPlaylist.url,
+              channels: parsed,
+            });
+            localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(cachedPlaylists));
+          } catch (e) {
+            console.error("Failed to add new playlist to cache:", e);
+          }
+
           setName("");
           setUrl("");
           setSuccessMsg("Playlist saved successfully!");
@@ -137,6 +237,22 @@ export default function DashboardPage() {
 
       if (res.ok) {
         setPlaylists(prev => prev.filter(p => p.id !== id));
+        
+        // Remove from localStorage cache
+        try {
+          const cached = localStorage.getItem("iptv_db_playlists_cache");
+          if (cached) {
+            interface CachedPlaylist {
+              id: string;
+            }
+            const parsedCached = JSON.parse(cached) as CachedPlaylist[];
+            const updatedCached = parsedCached.filter((p) => p.id !== `db-playlist-${id}`);
+            localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(updatedCached));
+          }
+        } catch (e) {
+          console.error("Failed to update cache on delete:", e);
+        }
+
         setSuccessMsg("Playlist deleted successfully.");
         setTimeout(() => setSuccessMsg(null), 3000);
       } else {
