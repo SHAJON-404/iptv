@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "./useAuth";
 import { parseM3U, parseJSON } from "@/app/lib/playlistParser";
 
@@ -62,6 +62,8 @@ export function useIPTVPlaylists() {
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   // (Default playlist logic and IndexedDB cache have been removed)
 
@@ -156,6 +158,168 @@ export function useIPTVPlaylists() {
 
   // M3U & JSON Parsing Helpers are imported from "@/app/lib/playlistParser"
 
+  // Define function to fetch and refresh DB & Local URL playlists
+  const refreshAllPlaylists = useCallback(async (isManual: boolean = false) => {
+    if (isManual) {
+      setIsUpdating(true);
+      setUpdateSuccess(false);
+    }
+    console.log("[useIPTVPlaylists] refreshAllPlaylists triggered. status:", status, "isManual:", isManual);
+    // Refresh DB playlists (cloud-saved)
+    const loadedDBPlaylists: Playlist[] = [];
+    if (status === "authenticated") {
+      try {
+        const res = await fetch("/api/iptv/playlists");
+        if (res.ok) {
+          const data = await res.json();
+          interface DBSavedPlaylist {
+            id: string;
+            name: string;
+            url: string;
+          }
+          const dbPlaylists = (data.playlists || []) as DBSavedPlaylist[];
+          console.log("[useIPTVPlaylists] DB returned playlists count:", dbPlaylists.length);
+
+          // Read existing cache first so we can fall back to it
+          let existingCached: Playlist[] = [];
+          try {
+            const cached = localStorage.getItem("iptv_db_playlists_cache");
+            if (cached) {
+              existingCached = JSON.parse(cached) as Playlist[];
+            }
+          } catch (e) {
+            console.error("Failed to parse cached DB playlists:", e);
+          }
+          
+          for (const dbp of dbPlaylists) {
+            const dbPlaylistId = `db-playlist-${dbp.id}`;
+            try {
+              console.log(`[useIPTVPlaylists] Fetching DB playlist content for: ${dbp.name} (${dbp.url})`);
+              const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(dbp.url.trim())}`;
+              const fileRes = await fetch(proxiedUrl);
+              if (fileRes.ok) {
+                const text = await fileRes.text();
+                let parsed: Channel[] = [];
+                const trimmedText = text.trim();
+                if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
+                  parsed = parseJSON(text);
+                } else {
+                  parsed = parseM3U(text);
+                }
+
+                if (parsed.length > 0) {
+                  console.log(`[useIPTVPlaylists] Successfully parsed ${parsed.length} channels for ${dbp.name}`);
+                  loadedDBPlaylists.push({
+                    id: dbPlaylistId,
+                    name: dbp.name,
+                    type: "url",
+                    url: dbp.url,
+                    channels: parsed,
+                  });
+                  continue;
+                }
+              } else {
+                console.warn(`[useIPTVPlaylists] Failed to fetch proxy URL for ${dbp.name}, status: ${fileRes.status}`);
+              }
+            } catch (e) {
+              console.error(`[useIPTVPlaylists] Failed to refresh DB playlist ${dbp.name}:`, e);
+            }
+
+            // Fallback: If network fetch failed, errored, or returned 0 channels,
+            // try to keep the existing cached channels for this playlist.
+            const existing = existingCached.find(p => p.id === dbPlaylistId);
+            if (existing) {
+              console.log(`[useIPTVPlaylists] Using cached channels fallback for: ${dbp.name}`);
+              loadedDBPlaylists.push({
+                ...existing,
+                name: dbp.name,
+                url: dbp.url,
+              });
+            } else {
+              console.log(`[useIPTVPlaylists] No cache found for ${dbp.name}. Creating empty playlist structure.`);
+              loadedDBPlaylists.push({
+                id: dbPlaylistId,
+                name: dbp.name,
+                type: "url",
+                url: dbp.url,
+                channels: [],
+              });
+            }
+          }
+
+          // Save loaded playlists to cache
+          localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(loadedDBPlaylists));
+        } else {
+          console.error("[useIPTVPlaylists] Failed to fetch playlists from API, status:", res.status);
+        }
+      } catch (err) {
+        console.error("Error refreshing DB playlists:", err);
+      }
+    }
+
+    // Refresh Local URL Playlists
+    let localPlaylists: Playlist[] = [];
+    try {
+      const saved = localStorage.getItem("iptv_saved_playlists");
+      if (saved) {
+        localPlaylists = JSON.parse(saved) as Playlist[];
+      }
+    } catch (e) {
+      console.error("Failed to read local playlists for refresh:", e);
+    }
+
+    const updatedLocalPlaylists: Playlist[] = [];
+    for (const pl of localPlaylists) {
+      if (pl.type === "url" && pl.url) {
+        try {
+          const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(pl.url.trim())}`;
+          const fileRes = await fetch(proxiedUrl);
+          if (fileRes.ok) {
+            const text = await fileRes.text();
+            let parsed: Channel[] = [];
+            const trimmedText = text.trim();
+            if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
+              parsed = parseJSON(text);
+            } else {
+              parsed = parseM3U(text);
+            }
+            if (parsed.length > 0) {
+              updatedLocalPlaylists.push({
+                ...pl,
+                channels: parsed,
+              });
+              continue;
+            }
+          }
+        } catch (e) {
+          console.error(`Failed to refresh local playlist ${pl.name}:`, e);
+        }
+      }
+      updatedLocalPlaylists.push(pl);
+    }
+
+    // Update state with both refreshed local and DB playlists
+    setPlaylists(() => {
+      const merged = [...updatedLocalPlaylists, ...loadedDBPlaylists];
+      
+      setActivePlaylistId(currentId => {
+        if (currentId && merged.find(p => p.id === currentId)) {
+          return currentId;
+        }
+        return merged.length > 0 ? merged[0].id : "";
+      });
+      return merged;
+    });
+
+    if (isManual) {
+      setIsUpdating(false);
+      setUpdateSuccess(true);
+      setTimeout(() => {
+        setUpdateSuccess(false);
+      }, 2000);
+    }
+  }, [status]);
+
   // Load saved playlists from database and sync with cache (every 10 minutes)
   useEffect(() => {
     if (!isHydrated) return;
@@ -195,166 +359,16 @@ export function useIPTVPlaylists() {
       setPlaylists(prev => prev.filter(p => !p.id.startsWith("db-playlist-")));
     }
 
-    if (status !== "authenticated") return;
-
-    // 2. Define function to fetch and refresh DB & Local URL playlists
-    const refreshAllPlaylists = async () => {
-      console.log("[useIPTVPlaylists] refreshAllPlaylists triggered. status:", status);
-      // Refresh DB playlists (cloud-saved)
-      const loadedDBPlaylists: Playlist[] = [];
-      if (status === "authenticated") {
-        try {
-          const res = await fetch("/api/iptv/playlists");
-          if (res.ok) {
-            const data = await res.json();
-            interface DBSavedPlaylist {
-              id: string;
-              name: string;
-              url: string;
-            }
-            const dbPlaylists = (data.playlists || []) as DBSavedPlaylist[];
-            console.log("[useIPTVPlaylists] DB returned playlists count:", dbPlaylists.length);
-
-            // Read existing cache first so we can fall back to it
-            let existingCached: Playlist[] = [];
-            try {
-              const cached = localStorage.getItem("iptv_db_playlists_cache");
-              if (cached) {
-                existingCached = JSON.parse(cached) as Playlist[];
-              }
-            } catch (e) {
-              console.error("Failed to parse cached DB playlists:", e);
-            }
-            
-            for (const dbp of dbPlaylists) {
-              const dbPlaylistId = `db-playlist-${dbp.id}`;
-              try {
-                console.log(`[useIPTVPlaylists] Fetching DB playlist content for: ${dbp.name} (${dbp.url})`);
-                const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(dbp.url.trim())}`;
-                const fileRes = await fetch(proxiedUrl);
-                if (fileRes.ok) {
-                  const text = await fileRes.text();
-                  let parsed: Channel[] = [];
-                  const trimmedText = text.trim();
-                  if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
-                    parsed = parseJSON(text);
-                  } else {
-                    parsed = parseM3U(text);
-                  }
-
-                  if (parsed.length > 0) {
-                    console.log(`[useIPTVPlaylists] Successfully parsed ${parsed.length} channels for ${dbp.name}`);
-                    loadedDBPlaylists.push({
-                      id: dbPlaylistId,
-                      name: dbp.name,
-                      type: "url",
-                      url: dbp.url,
-                      channels: parsed,
-                    });
-                    continue;
-                  }
-                } else {
-                  console.warn(`[useIPTVPlaylists] Failed to fetch proxy URL for ${dbp.name}, status: ${fileRes.status}`);
-                }
-              } catch (e) {
-                console.error(`[useIPTVPlaylists] Failed to refresh DB playlist ${dbp.name}:`, e);
-              }
-
-              // Fallback: If network fetch failed, errored, or returned 0 channels,
-              // try to keep the existing cached channels for this playlist.
-              const existing = existingCached.find(p => p.id === dbPlaylistId);
-              if (existing) {
-                console.log(`[useIPTVPlaylists] Using cached channels fallback for: ${dbp.name}`);
-                loadedDBPlaylists.push({
-                  ...existing,
-                  name: dbp.name,
-                  url: dbp.url,
-                });
-              } else {
-                console.log(`[useIPTVPlaylists] No cache found for ${dbp.name}. Creating empty playlist structure.`);
-                loadedDBPlaylists.push({
-                  id: dbPlaylistId,
-                  name: dbp.name,
-                  type: "url",
-                  url: dbp.url,
-                  channels: [],
-                });
-              }
-            }
-
-            // Save loaded playlists to cache
-            localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(loadedDBPlaylists));
-          } else {
-            console.error("[useIPTVPlaylists] Failed to fetch playlists from API, status:", res.status);
-          }
-        } catch (err) {
-          console.error("Error refreshing DB playlists:", err);
-        }
-      }
-
-      // Refresh Local URL Playlists
-      let localPlaylists: Playlist[] = [];
-      try {
-        const saved = localStorage.getItem("iptv_saved_playlists");
-        if (saved) {
-          localPlaylists = JSON.parse(saved) as Playlist[];
-        }
-      } catch (e) {
-        console.error("Failed to read local playlists for refresh:", e);
-      }
-
-      const updatedLocalPlaylists: Playlist[] = [];
-      for (const pl of localPlaylists) {
-        if (pl.type === "url" && pl.url) {
-          try {
-            const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(pl.url.trim())}`;
-            const fileRes = await fetch(proxiedUrl);
-            if (fileRes.ok) {
-              const text = await fileRes.text();
-              let parsed: Channel[] = [];
-              const trimmedText = text.trim();
-              if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
-                parsed = parseJSON(text);
-              } else {
-                parsed = parseM3U(text);
-              }
-              if (parsed.length > 0) {
-                updatedLocalPlaylists.push({
-                  ...pl,
-                  channels: parsed,
-                });
-                continue;
-              }
-            }
-          } catch (e) {
-            console.error(`Failed to refresh local playlist ${pl.name}:`, e);
-          }
-        }
-        updatedLocalPlaylists.push(pl);
-      }
-
-      // Update state with both refreshed local and DB playlists
-      setPlaylists(() => {
-        const merged = [...updatedLocalPlaylists, ...loadedDBPlaylists];
-        
-        setActivePlaylistId(currentId => {
-          if (currentId && merged.find(p => p.id === currentId)) {
-            return currentId;
-          }
-          return merged.length > 0 ? merged[0].id : "";
-        });
-        return merged;
-      });
-    };
-
     // Trigger initial refresh in the background
-    refreshAllPlaylists();
+    refreshAllPlaylists(false);
 
     // 3. Set up interval to automatically refresh every 10 minutes (during active session)
-    const intervalId = setInterval(refreshAllPlaylists, 10 * 60 * 1000);
+    const intervalId = setInterval(() => {
+      refreshAllPlaylists(false);
+    }, 10 * 60 * 1000);
 
     return () => clearInterval(intervalId);
-  }, [status, isHydrated]);
+  }, [status, isHydrated, refreshAllPlaylists]);
 
   // Custom playlist handlers
   const processFile = (file: File) => {
@@ -544,5 +558,8 @@ export function useIPTVPlaylists() {
     handleDrop,
     handleUrlImport,
     handleDeletePlaylist,
+    isUpdating,
+    updateSuccess,
+    refreshAllPlaylists,
   };
 }
