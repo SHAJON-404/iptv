@@ -13,6 +13,7 @@ import {
   BookOpen,
   Scale,
   Mail,
+  Users,
 } from "lucide-react";
 
 import BackgroundScene from "../components/BackgroundScene";
@@ -25,6 +26,13 @@ const faqs = [
     answer:
       "This website is strictly an IPTV player. We do not host, provide, distribute, or sell any IPTV links, playlists, or media content. The player solely reads and plays data from the user's own provided M3U or JSON playlist files.",
     icon: Scale,
+  },
+  {
+    id: "faq-community",
+    question: "Are the playlists from Discord/Telegram affiliated with this project?",
+    answer:
+      "No. This IPTV Player is an independent open-source project. Any playlists shared in our community channels (Discord/Telegram) are provided by users and have absolutely no relation to this project. If you have issues regarding the player's functionality, please create an issue on our GitHub repository and we will solve it.",
+    icon: Users,
   },
   {
     id: "faq-1",
