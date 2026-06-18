@@ -116,7 +116,7 @@ docker run -p 3000:3000 iptv-player
 
 ## ⚠️ Disclaimer
 
-This repository does not host, store, retransmit, or own any television channels or media content. The JSON file and web player only reference publicly available stream links collected from open-source IPTV playlists and public internet sources. Channel availability may change, expire, or stop working at any time.
+This repository does not host, store, retransmit, or own any television channels or media content. The web player only processes and plays data from the user's own provided playlist files (M3U or JSON) or publicly available stream links. Channel availability may change, expire, or stop working at any time.
 
 If you are the copyright owner of any content and would like it removed, please refer to our [Security & DMCA Policy](SECURITY.md) or contact the developer directly.
 
