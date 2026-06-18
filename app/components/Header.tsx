@@ -4,15 +4,13 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Server, Tv, HelpCircle, User, Trophy, LogIn } from "lucide-react";
+import { HelpCircle, User, Trophy, LogIn } from "lucide-react";
 import { useAuth } from "@/app/hooks/useAuth";
 
 export default function Header() {
   const pathname = usePathname();
   const { session } = useAuth();
-  const isFtpPage = pathname === "/ftp";
   const isFaqPage = pathname === "/faq";
-  const isAboutPage = pathname === "/about";
 
   return (
     <header
@@ -87,18 +85,6 @@ export default function Header() {
             </Link>
 
             <Link
-              href="/about"
-              className={`hidden sm:flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
-                isAboutPage
-                  ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
-                  : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
-              } font-bold text-xs sm:text-sm`}
-            >
-              <User size={15} className="text-primary" />
-              <span>About</span>
-            </Link>
-
-            <Link
               href="/faq"
               className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
                 isFaqPage
@@ -108,24 +94,6 @@ export default function Header() {
             >
               <HelpCircle size={15} className="text-primary" />
               <span>FAQ</span>
-            </Link>
-
-            <Link
-              href={isFtpPage ? "/" : "/ftp"}
-              className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
-            >
-              {isFtpPage ? (
-                <>
-                  <Tv size={15} className="text-primary" />
-                  <span className="hidden sm:inline">Watch Live TV</span>
-                  <span className="sm:hidden">Live TV</span>
-                </>
-              ) : (
-                <>
-                  <Server size={15} className="text-primary" />
-                  <span>FTP</span>
-                </>
-              )}
             </Link>
 
             {/* Auth Button */}

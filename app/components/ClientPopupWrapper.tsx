@@ -1,19 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import WorldCupPopup from "./WorldCupPopup";
-import TelegramPopup from "./TelegramPopup";
+import MainPopup from "./MainPopup";
 
 interface ClientPopupWrapperProps {
   showPopup: boolean;
-  disableWcPopup: boolean;
-  disableTgPopup: boolean;
 }
 
 export default function ClientPopupWrapper({
   showPopup,
-  disableWcPopup,
-  disableTgPopup,
 }: ClientPopupWrapperProps) {
   const [canShow, setCanShow] = useState(false);
 
@@ -45,9 +40,6 @@ export default function ClientPopupWrapper({
   if (!showPopup || !canShow) return null;
 
   return (
-    <>
-      {!disableWcPopup && <WorldCupPopup showPopup={showPopup} />}
-      {!disableTgPopup && <TelegramPopup showPopup={showPopup} />}
-    </>
+    <MainPopup showPopup={showPopup} />
   );
 }

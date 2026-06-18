@@ -55,7 +55,6 @@ export async function POST(request: Request) {
         userId: user.id,
         name: name.trim(),
         url: url.trim(),
-        isActive: true,
       },
     });
 
@@ -81,7 +80,7 @@ export async function PATCH(request: Request) {
 
   try {
     const body = await request.json();
-    const { id, isActive, name, url } = body;
+    const { id, name, url } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Playlist ID is required" }, { status: 400 });
@@ -98,7 +97,6 @@ export async function PATCH(request: Request) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
-    if (isActive !== undefined) updateData.isActive = isActive;
     if (name !== undefined) updateData.name = name.trim();
     if (url !== undefined) {
       // Validate URL format

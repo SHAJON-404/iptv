@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Send } from "lucide-react";
 
-interface TelegramPopupProps {
+interface MainPopupProps {
   showPopup: boolean;
 }
 
-export default function TelegramPopup({ showPopup }: TelegramPopupProps) {
+export default function MainPopup({ showPopup }: MainPopupProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {

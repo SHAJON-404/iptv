@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { List, Tv, Link as LinkIcon, FileText, Check, Trash2 } from "lucide-react";
+import { List, Tv, Link as LinkIcon, FileText, Trash2 } from "lucide-react";
 import { Playlist, getIsIOS } from "../../hooks/useIPTVPlaylists";
 
 interface PlaylistSidebarViewProps {
@@ -84,19 +84,19 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  {isActive && (
-                    <span className="p-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      <Check size={10} className="sm:w-3 sm:h-3 stroke-[3]" />
-                    </span>
-                  )}
                   {pl.type !== "default" &&
                     pl.id !== "default" &&
                     pl.id !== "sports" &&
                     pl.id !== "universal" &&
                     pl.id !== "bangla" && (
                       <button
-                        onClick={(e) => handleDeletePlaylist(pl.id, e)}
-                        className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 focus:opacity-100 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Are you sure? you want to delete this playlist ${pl.name}`)) {
+                            handleDeletePlaylist(pl.id, e);
+                          }
+                        }}
+                        className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all opacity-100 focus:opacity-100 cursor-pointer"
                         title="Delete Playlist"
                       >
                         <Trash2 size={14} />

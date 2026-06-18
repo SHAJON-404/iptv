@@ -8,6 +8,7 @@ import MobileNavBar from "./components/MobileNavBar";
 import TurnstileGuard from "./components/TurnstileGuard";
 import ViewerTracker from "./components/ViewerTracker";
 import MaintenanceView from "./components/MaintenanceView";
+import Footer from "./components/Footer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -92,8 +93,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const showPopup = process.env.SHOW_POPUP?.toLowerCase() === "true";
-  const disableWcPopup = process.env.DISABLE_WC_POPUP?.toLowerCase() === "true";
-  const disableTgPopup = process.env.DISABLE_TG_POPUP?.toLowerCase() === "true";
   const isMaintenance = process.env.MAINTANANCE?.toLowerCase() === "true";
 
   return (
@@ -105,13 +104,12 @@ export default function RootLayout({
           <TurnstileGuard>
             <AuthProvider>
               <ViewerTracker />
-              {children}
+              <div className="flex-1 flex flex-col">
+                {children}
+              </div>
+              <Footer />
               <MobileNavBar />
-              <ClientPopupWrapper
-                showPopup={showPopup}
-                disableWcPopup={disableWcPopup}
-                disableTgPopup={disableTgPopup}
-              />
+              <ClientPopupWrapper showPopup={showPopup} />
             </AuthProvider>
           </TurnstileGuard>
         )}

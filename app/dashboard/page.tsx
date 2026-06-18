@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import Image from "next/image";
-import { Plus, Trash2, LogOut, Check, Loader2, Sparkles, RefreshCw, Link as LinkIcon, Database, Tag, List } from "lucide-react";
+import { Plus, Trash2, LogOut, Check, Loader2, Sparkles, RefreshCw, Link as LinkIcon, Database, Tag, List, Edit2 } from "lucide-react";
 import BackgroundScene from "../components/BackgroundScene";
 import Header from "../components/Header";
 
@@ -12,7 +12,6 @@ interface SavedPlaylist {
   id: string;
   name: string;
   url: string;
-  isActive: boolean;
 }
 
 export default function DashboardPage() {
@@ -29,6 +28,7 @@ export default function DashboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Sync states
   const [syncingPlaylists, setSyncingPlaylists] = useState(false);
@@ -76,63 +76,53 @@ export default function DashboardPage() {
       return;
     }
 
-    if (playlists.length >= 10) {
+    if (!editingId && playlists.length >= 10) {
       setActionError("You have reached the limit of 10 saved playlists.");
       return;
     }
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/iptv/playlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), url: url.trim() }),
-      });
+      if (editingId) {
+        const res = await fetch("/api/iptv/playlists", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, name: name.trim(), url: url.trim() }),
+        });
 
-      const data = await res.json();
-      if (res.ok) {
-        setPlaylists(prev => [data.playlist, ...prev]);
-        setName("");
-        setUrl("");
-        setSuccessMsg("Playlist saved successfully!");
-        setTimeout(() => setSuccessMsg(null), 3000);
+        const data = await res.json();
+        if (res.ok) {
+          setPlaylists(prev => prev.map(p => p.id === editingId ? { ...p, name: name.trim(), url: url.trim() } : p));
+          setName("");
+          setUrl("");
+          setEditingId(null);
+          setSuccessMsg("Playlist updated successfully!");
+          setTimeout(() => setSuccessMsg(null), 3000);
+        } else {
+          setActionError(data.error || "Failed to update playlist.");
+        }
       } else {
-        setActionError(data.error || "Failed to save playlist.");
+        const res = await fetch("/api/iptv/playlists", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name.trim(), url: url.trim() }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setPlaylists(prev => [data.playlist, ...prev]);
+          setName("");
+          setUrl("");
+          setSuccessMsg("Playlist saved successfully!");
+          setTimeout(() => setSuccessMsg(null), 3000);
+        } else {
+          setActionError(data.error || "Failed to save playlist.");
+        }
       }
     } catch {
-      setActionError("Failed to save playlist.");
+      setActionError(editingId ? "Failed to update playlist." : "Failed to save playlist.");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleToggleActive = async (id: string, currentActive: boolean) => {
-    try {
-      // Optimistic update
-      setPlaylists(prev =>
-        prev.map(p => (p.id === id ? { ...p, isActive: !currentActive } : p))
-      );
-
-      const res = await fetch("/api/iptv/playlists", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, isActive: !currentActive }),
-      });
-
-      if (!res.ok) {
-        // Revert on error
-        setPlaylists(prev =>
-          prev.map(p => (p.id === id ? { ...p, isActive: currentActive } : p))
-        );
-        const data = await res.json();
-        setActionError(data.error || "Failed to update playlist state.");
-      }
-    } catch {
-      // Revert on error
-      setPlaylists(prev =>
-        prev.map(p => (p.id === id ? { ...p, isActive: currentActive } : p))
-      );
-      setActionError("Failed to update playlist state.");
     }
   };
 
@@ -173,8 +163,8 @@ export default function DashboardPage() {
       // Update the local list of playlists in the dashboard state
       setPlaylists(dbPlaylists);
 
-      // 2. Fetch and parse channels for active ones
-      const activeDBPlaylists = dbPlaylists.filter((p: SavedPlaylist) => p.isActive);
+      // 2. Fetch and parse channels
+      const activeDBPlaylists = dbPlaylists;
       const loadedPlaylists = [];
 
       // Import parser helpers
@@ -252,7 +242,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-primary/30 flex-shrink-0 shadow-lg">
               {user?.image ? (
-                <Image src={user.image} alt={user.name || "User"} fill className="object-cover" />
+                <Image src={user.image} alt={user.name || "User"} fill sizes="64px" className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-primary/20 flex items-center justify-center text-primary font-black text-2xl uppercase">
                   {user?.name?.[0] || "U"}
@@ -278,18 +268,18 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 flex-1 min-h-0">
+        <div className="flex flex-col gap-6 lg:gap-8 flex-1 min-h-0">
           
-          {/* Add Playlist Form (col-span-5) */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Add Playlist Form */}
+          <div className="flex flex-col gap-6">
             <div className="glass-card border border-white/10 rounded-3xl bg-white/[0.02] p-6 sm:p-8 shadow-lg backdrop-blur-xl text-left flex flex-col flex-1">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-inner">
                   <Database size={20} />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-white">Add Playlist URL</h3>
-                  <p className="text-xs text-zinc-400 mt-0.5">Save playlists to your cloud account</p>
+                  <h3 className="font-black text-lg text-white">{editingId ? "Edit Playlist URL" : "Add Playlist URL"}</h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">{editingId ? "Update your saved playlist" : "Save playlists to your cloud account"}</p>
                 </div>
               </div>
 
@@ -305,7 +295,7 @@ export default function DashboardPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    disabled={playlists.length >= 10}
+                    disabled={!editingId && playlists.length >= 10}
                     className="w-full bg-white/[0.03] border border-white/10 focus-within:border-primary/50 focus-within:bg-white/[0.05] rounded-2xl py-3.5 px-4 text-sm text-white placeholder:text-zinc-500 outline-none transition-all disabled:opacity-50"
                   />
                 </div>
@@ -321,7 +311,7 @@ export default function DashboardPage() {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     required
-                    disabled={playlists.length >= 10}
+                    disabled={!editingId && playlists.length >= 10}
                     className="w-full bg-white/[0.03] border border-white/10 focus-within:border-primary/50 focus-within:bg-white/[0.05] rounded-2xl py-3.5 px-4 text-sm text-white placeholder:text-zinc-500 outline-none transition-all disabled:opacity-50"
                   />
                 </div>
@@ -339,22 +329,37 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={submitting || playlists.length >= 10}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 px-5 bg-primary hover:bg-primary/95 text-white text-sm font-black rounded-2xl transition-all shadow-lg shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
-                >
-                  {submitting ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Plus size={16} />
-                      <span>Save Playlist ({playlists.length}/10)</span>
-                    </>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="submit"
+                    disabled={submitting || (!editingId && playlists.length >= 10)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 px-5 bg-primary hover:bg-primary/95 text-white text-sm font-black rounded-2xl transition-all shadow-lg shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
+                  >
+                    {submitting ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        {editingId ? <Check size={16} /> : <Plus size={16} />}
+                        <span>{editingId ? "Update Playlist" : `Save Playlist (${playlists.length}/10)`}</span>
+                      </>
+                    )}
+                  </button>
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingId(null);
+                        setName("");
+                        setUrl("");
+                      }}
+                      className="px-5 py-3.5 rounded-2xl border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold text-sm transition-all active:scale-95 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
                   )}
-                </button>
+                </div>
 
-                {playlists.length >= 10 && (
+                {!editingId && playlists.length >= 10 && (
                   <p className="text-[11px] text-yellow-500 font-medium text-center mt-2">
                     💡 You have reached the maximum limit of 10 saved playlists. Delete an existing one to add more.
                   </p>
@@ -363,8 +368,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Saved Playlists List (col-span-7) */}
-          <div className="lg:col-span-7 flex flex-col gap-6">
+          {/* Saved Playlists List */}
+          <div className="flex flex-col gap-6">
             <div className="glass-card border border-white/10 rounded-3xl bg-white/[0.02] p-6 sm:p-8 shadow-lg backdrop-blur-xl text-left flex flex-col flex-1">
               <div className="flex items-center justify-between mb-6 gap-2">
                 <div className="flex items-center gap-3">
@@ -432,29 +437,15 @@ export default function DashboardPage() {
                   {playlists.map((playlist) => (
                     <div 
                       key={playlist.id} 
-                      className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 bg-white/[0.01] ${
-                        playlist.isActive ? "border-white/10 hover:border-primary/30" : "border-white/5 opacity-60 hover:opacity-80"
-                      }`}
+                      className="p-4 rounded-2xl border border-white/10 hover:border-primary/30 transition-all flex items-center justify-between gap-4 bg-white/[0.01]"
                     >
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        <div className={`p-3 rounded-2xl border flex-shrink-0 transition-colors ${
-                          playlist.isActive 
-                            ? "bg-primary/10 border-primary/20 text-primary shadow-inner" 
-                            : "bg-white/5 border-white/10 text-zinc-500"
-                        }`}>
+                        <div className="p-3 rounded-2xl border bg-primary/10 border-primary/20 text-primary shadow-inner flex-shrink-0 transition-colors">
                           <LinkIcon size={18} />
                         </div>
                         <div className="min-w-0 flex-1">
                            <div className="flex items-center gap-2">
                              <h4 className="font-black text-base text-white truncate">{playlist.name}</h4>
-                             <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md ${
-                               playlist.isActive 
-                                 ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25" 
-                                 : "bg-zinc-500/15 text-zinc-400 border border-zinc-500/25"
-                             }`}>
-                               <span className={`w-1 h-1 rounded-full ${playlist.isActive ? "bg-emerald-400" : "bg-zinc-400"}`} />
-                               {playlist.isActive ? "Active" : "Inactive"}
-                             </span>
                            </div>
                            <p className="text-xs text-zinc-400 mt-1 truncate max-w-md font-medium" title={playlist.url}>
                              {playlist.url}
@@ -463,18 +454,18 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        {/* Toggle Switch */}
+                        {/* Edit Button */}
                         <button
-                          onClick={() => handleToggleActive(playlist.id, playlist.isActive)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer outline-none ${
-                            playlist.isActive ? "bg-primary" : "bg-white/15"
-                          }`}
+                          onClick={() => {
+                            setEditingId(playlist.id);
+                            setName(playlist.name);
+                            setUrl(playlist.url);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="p-2 rounded-xl border border-white/5 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-zinc-400 hover:text-primary transition-colors cursor-pointer"
+                          title="Edit Playlist"
                         >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              playlist.isActive ? "translate-x-6" : "translate-x-1"
-                            }`}
-                          />
+                          <Edit2 size={15} />
                         </button>
 
                         {/* Delete Button */}

@@ -160,7 +160,6 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
 
   React.useEffect(() => {
     if (!showControls) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowSettings(false);
     }
   }, [showControls]);

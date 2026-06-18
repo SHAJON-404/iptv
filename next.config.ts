@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: customOrigins,
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

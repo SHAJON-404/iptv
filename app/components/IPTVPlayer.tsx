@@ -312,13 +312,15 @@ export default function IPTVPlayer() {
             <div className="p-1.5 sm:p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex-shrink-0 animate-pulse mt-0.5 sm:mt-0">
               <AlertCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
-            <p className="text-xs sm:text-sm text-zinc-300 font-medium leading-relaxed select-text flex-1">
-              <span className="text-amber-400 font-black">Notice: </span>
-              If you encounter a blank or black screen, please click the <span className="text-primary font-bold">Reload Stream</span> button in the player controls or <span className="text-primary font-bold">Try Reconnecting</span>.
-              <span className="block mt-1 text-zinc-400 text-[11px] sm:text-xs">
-                ⚠️ ওয়েবসাইটে বর্তমানে কোনো ডিফল্ট প্লেলিস্ট নেই। প্লেলিস্টের জন্য আমাদের <a href="https://t.me/shajonOTT" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">টেলিগ্রাম চ্যানেল</a> অথবা <a href="https://discord.gg/TtWrw8W9B" target="_blank" rel="noopener noreferrer" className="text-[#5865F2] hover:underline font-bold">ডিসকর্ড সার্ভারের</a> নির্দেশনা অনুসরণ করুন।
-              </span>
-            </p>
+            <div className="flex-1 text-xs sm:text-sm text-zinc-300 font-medium leading-relaxed select-text flex items-center gap-1.5">
+              <span className="text-amber-400 font-black whitespace-nowrap">Notice:</span>
+              <div className="flex flex-col gap-1">
+                <span>If you encounter a blank or black screen, please click the <span className="text-primary font-bold">Reload Stream</span> button in the player controls or <span className="text-primary font-bold">Try Reconnecting</span>.</span>
+                <span className="text-zinc-400 text-[11px] sm:text-xs">
+                  ⚠️ ওয়েবসাইটে বর্তমানে কোনো ডিফল্ট প্লেলিস্ট নেই। প্লেলিস্টের জন্য আমাদের <a href="https://t.me/shajonOTT" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">টেলিগ্রাম চ্যানেল</a> অথবা <a href="https://discord.gg/TtWrw8W9B" target="_blank" rel="noopener noreferrer" className="text-[#5865F2] hover:underline font-bold">ডিসকর্ড সার্ভারের</a> নির্দেশনা অনুসরণ করুন।
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Details & Counter Panels */}

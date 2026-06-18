@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import Hls from "hls.js";
+import type Hls from "hls.js";
 import { Channel, getIsIOS } from "./useIPTVPlaylists";
 
 // shaka-player is loaded dynamically because it requires `window` (browser-only)
@@ -874,157 +874,214 @@ export function useVideoPlayer(
             setPlayerStatus("error");
           }
         })();
-      } else if (Hls.isSupported()) {
-        const hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true,
-          backBufferLength: 0,
-          startLevel: -1,
-        });
-        hlsRef.current = hls;
-
-        hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-          const playableUrl = getPlayableUrl(chan.url, chan.no_proxy);
-          hls.loadSource(playableUrl);
-        });
-
-        hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
-          try {
-            const levels = data.levels;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const extractedQualities = levels.map((l: any, i: number) => ({
-              id: i,
-              name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
-              height: l.height,
-              bandwidth: l.bitrate
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            })).filter((q: any) => q.height > 0)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .sort((a: any, b: any) => {
-              if (b.height !== a.height) return b.height - a.height;
-              return b.bandwidth - a.bandwidth;
-            });
-            if (extractedQualities.length > 0) {
-              setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
-            }
-          } catch (e) {
-            console.warn("Failed to extract HLS qualities", e);
-          }
-
-          if (!video.paused) {
-            setPlayerStatus("playing");
-            setIsPaused(false);
-            return;
-          }
-          attemptPlay();
-        });
-
-        hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                console.warn("Fatal HLS network error, attempting to recover...");
-                hls.startLoad();
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                console.warn("Fatal HLS media error, attempting to recover...");
-                hls.recoverMediaError();
-                break;
-              default:
-                console.error("Fatal unrecoverable HLS error:", data);
-                setPlayerError(`Fatal HLS stream error (${data.type})`);
-                setPlayerStatus("error");
-                break;
-            }
-          }
-        });
-
-        hls.attachMedia(video);
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        const isIOS = getIsIOS();
-        const directUrl = chan.url;
-        const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy);
-
-        video.src = isIOS ? directUrl : proxiedUrl;
-        try {
-          video.load();
-        } catch { /* ignore */ }
-
-        let errorCleanedUp = false;
-
-        const onLoadedMetadata = () => {
-          if (errorCleanedUp) return;
-          video.removeEventListener("error", onError);
-          errorCleanedUp = true;
-          nativeErrorCleanupRef.current = null;
-          if (!video.paused) {
-            setPlayerStatus("playing");
-            setIsPaused(false);
-            return;
-          }
-          attemptPlay();
-        };
-
-        const onError = (e: Event) => {
-          if (errorCleanedUp) return;
-          video.removeEventListener("loadedmetadata", onLoadedMetadata);
-          errorCleanedUp = true;
-          nativeErrorCleanupRef.current = null;
-
-          if (isIOS && video.src !== proxiedUrl && video.src.indexOf("/api/iptv/proxy") === -1) {
-            console.warn("[iOS] Direct stream failed, retrying via proxy...");
-            video.src = proxiedUrl;
-            try {
-              video.load();
-            } catch { /* ignore */ }
-            errorCleanedUp = false;
-
-            const onProxyMetadata = () => {
-              if (errorCleanedUp) return;
-              video.removeEventListener("error", onProxyError);
-              errorCleanedUp = true;
-              nativeErrorCleanupRef.current = null;
-              if (!video.paused) {
-                setPlayerStatus("playing");
-                setIsPaused(false);
-                return;
-              }
-              attemptPlay();
-            };
-
-            const onProxyError = (ev: Event) => {
-              if (errorCleanedUp) return;
-              video.removeEventListener("loadedmetadata", onProxyMetadata);
-              errorCleanedUp = true;
-              nativeErrorCleanupRef.current = null;
-              console.error("Native video player error (proxy fallback):", ev);
-              setPlayerError("Native video player playback error");
-              setPlayerStatus("error");
-            };
-
-            video.addEventListener("loadedmetadata", onProxyMetadata, { once: true });
-            video.addEventListener("error", onProxyError, { once: true });
-            nativeErrorCleanupRef.current = () => {
-              video.removeEventListener("loadedmetadata", onProxyMetadata);
-              video.removeEventListener("error", onProxyError);
-            };
-            return;
-          }
-
-          console.error("Native video player error:", e);
-          setPlayerError("Native video player playback error");
-          setPlayerStatus("error");
-        };
-
-        video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
-        video.addEventListener("error", onError, { once: true });
-        nativeErrorCleanupRef.current = () => {
-          video.removeEventListener("loadedmetadata", onLoadedMetadata);
-          video.removeEventListener("error", onError);
-        };
       } else {
-        setPlayerError("Your browser does not support stream playback.");
-        setPlayerStatus("error");
+        (async () => {
+          try {
+            const HlsModule = await import("hls.js");
+            const Hls = HlsModule.default || HlsModule;
+
+            if (Hls.isSupported()) {
+              const hls = new Hls({
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 0,
+                startLevel: -1,
+              });
+              hlsRef.current = hls;
+
+              hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+                const playableUrl = getPlayableUrl(chan.url, chan.no_proxy);
+                hls.loadSource(playableUrl);
+              });
+
+              hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
+                try {
+                  const levels = data.levels;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const extractedQualities = levels.map((l: any, i: number) => ({
+                    id: i,
+                    name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
+                    height: l.height,
+                    bandwidth: l.bitrate
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  })).filter((q: any) => q.height > 0)
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  .sort((a: any, b: any) => {
+                    if (b.height !== a.height) return b.height - a.height;
+                    return b.bandwidth - a.bandwidth;
+                  });
+                  if (extractedQualities.length > 0) {
+                    setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
+                  }
+                } catch (e) {
+                  console.warn("Failed to extract HLS qualities", e);
+                }
+
+                if (!video.paused) {
+                  setPlayerStatus("playing");
+                  setIsPaused(false);
+                  return;
+                }
+                attemptPlay();
+              });
+
+              hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
+                if (data.fatal) {
+                  switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                      console.warn("Fatal HLS network error, attempting to recover...");
+                      hls.startLoad();
+                      break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                      console.warn("Fatal HLS media error, attempting to recover...");
+                      hls.recoverMediaError();
+                      break;
+                    default:
+                      console.error("Fatal unrecoverable HLS error:", data);
+                      setPlayerError(`Fatal HLS stream error (${data.type})`);
+                      setPlayerStatus("error");
+                      break;
+                  }
+                }
+              });
+
+              hls.attachMedia(video);
+            } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+              const isIOS = getIsIOS();
+              const directUrl = chan.url;
+              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy);
+
+              video.src = isIOS ? directUrl : proxiedUrl;
+              try {
+                video.load();
+              } catch { /* ignore */ }
+
+              let errorCleanedUp = false;
+
+              const onLoadedMetadata = () => {
+                if (errorCleanedUp) return;
+                video.removeEventListener("error", onError);
+                errorCleanedUp = true;
+                nativeErrorCleanupRef.current = null;
+                if (!video.paused) {
+                  setPlayerStatus("playing");
+                  setIsPaused(false);
+                  return;
+                }
+                attemptPlay();
+              };
+
+              const onError = (e: Event) => {
+                if (errorCleanedUp) return;
+                video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                errorCleanedUp = true;
+                nativeErrorCleanupRef.current = null;
+
+                if (isIOS && video.src !== proxiedUrl && video.src.indexOf("/api/iptv/proxy") === -1) {
+                  console.warn("[iOS] Direct stream failed, retrying via proxy...");
+                  video.src = proxiedUrl;
+                  try {
+                    video.load();
+                  } catch { /* ignore */ }
+                  errorCleanedUp = false;
+
+                  const onProxyMetadata = () => {
+                    if (errorCleanedUp) return;
+                    video.removeEventListener("error", onProxyError);
+                    errorCleanedUp = true;
+                    nativeErrorCleanupRef.current = null;
+                    if (!video.paused) {
+                      setPlayerStatus("playing");
+                      setIsPaused(false);
+                      return;
+                    }
+                    attemptPlay();
+                  };
+
+                  const onProxyError = (ev: Event) => {
+                    if (errorCleanedUp) return;
+                    video.removeEventListener("loadedmetadata", onProxyMetadata);
+                    errorCleanedUp = true;
+                    nativeErrorCleanupRef.current = null;
+                    console.error("Native video player error (proxy fallback):", ev);
+                    setPlayerError("Native video player playback error");
+                    setPlayerStatus("error");
+                  };
+
+                  video.addEventListener("loadedmetadata", onProxyMetadata, { once: true });
+                  video.addEventListener("error", onProxyError, { once: true });
+                  nativeErrorCleanupRef.current = () => {
+                    video.removeEventListener("loadedmetadata", onProxyMetadata);
+                    video.removeEventListener("error", onProxyError);
+                  };
+                  return;
+                }
+
+                console.error("Native video player error:", e);
+                setPlayerError("Native video player playback error");
+                setPlayerStatus("error");
+              };
+
+              video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
+              video.addEventListener("error", onError, { once: true });
+              nativeErrorCleanupRef.current = () => {
+                video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                video.removeEventListener("error", onError);
+              };
+            } else {
+              setPlayerError("Your browser does not support stream playback.");
+              setPlayerStatus("error");
+            }
+          } catch (err) {
+            console.error("Failed to load hls.js", err);
+            
+            // Fallback to native Apple HLS playback if hls.js fails to load
+            if (video.canPlayType("application/vnd.apple.mpegurl")) {
+              const isIOS = getIsIOS();
+              const directUrl = chan.url;
+              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy);
+
+              video.src = isIOS ? directUrl : proxiedUrl;
+              try {
+                video.load();
+              } catch { /* ignore */ }
+
+              let errorCleanedUp = false;
+
+              const onLoadedMetadata = () => {
+                if (errorCleanedUp) return;
+                video.removeEventListener("error", onError);
+                errorCleanedUp = true;
+                nativeErrorCleanupRef.current = null;
+                if (!video.paused) {
+                  setPlayerStatus("playing");
+                  setIsPaused(false);
+                  return;
+                }
+                attemptPlay();
+              };
+
+              const onError = () => {
+                if (errorCleanedUp) return;
+                video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                errorCleanedUp = true;
+                nativeErrorCleanupRef.current = null;
+                setPlayerError("Native video player playback error");
+                setPlayerStatus("error");
+              };
+
+              video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
+              video.addEventListener("error", onError, { once: true });
+              nativeErrorCleanupRef.current = () => {
+                video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                video.removeEventListener("error", onError);
+              };
+            } else {
+              setPlayerError("Failed to load HLS player module.");
+              setPlayerStatus("error");
+            }
+          }
+        })();
       }
       }, 50);
     },
