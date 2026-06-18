@@ -53,6 +53,9 @@ export default function IPTVPlayer() {
     handleDrop,
     handleUrlImport,
     handleDeletePlaylist,
+    isUpdating,
+    updateSuccess,
+    refreshAllPlaylists,
   } = useIPTVPlaylists();
 
   // 2. Video Player logic and integrations via hook
@@ -338,6 +341,9 @@ export default function IPTVPlayer() {
               setActivePlaylistId={setActivePlaylistId}
               setPlaylistTab={setPlaylistTab}
               handleDeletePlaylist={handleDeletePlaylist}
+              isUpdating={isUpdating}
+              updateSuccess={updateSuccess}
+              onUpdatePlaylists={() => refreshAllPlaylists(true)}
             />
 
             <div className="w-full lg:w-2/3 xl:w-3/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">

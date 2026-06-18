@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { List, Tv, Link as LinkIcon, FileText, Trash2 } from "lucide-react";
+import { List, Tv, Link as LinkIcon, FileText, Trash2, RefreshCw, Check } from "lucide-react";
 import { Playlist, getIsIOS } from "../../hooks/useIPTVPlaylists";
 
 interface PlaylistSidebarViewProps {
@@ -10,6 +10,9 @@ interface PlaylistSidebarViewProps {
   setActivePlaylistId: (id: string) => void;
   setPlaylistTab: (tab: "browse" | "manage") => void;
   handleDeletePlaylist: (id: string, e: React.MouseEvent) => void;
+  isUpdating: boolean;
+  updateSuccess: boolean;
+  onUpdatePlaylists: () => void;
 }
 
 export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
@@ -18,10 +21,62 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
   setActivePlaylistId,
   setPlaylistTab,
   handleDeletePlaylist,
+  isUpdating,
+  updateSuccess,
+  onUpdatePlaylists,
 }: PlaylistSidebarViewProps) {
   return (
     <div className="w-full lg:w-1/3 xl:w-1/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col max-h-[280px] lg:max-h-none lg:h-[600px] xl:h-[700px]">
-      <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4">
+      {/* 1. Update Playlist Button */}
+      {playlists.length > 0 && (
+        <div className="pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-shrink-0">
+          <button
+            onClick={onUpdatePlaylists}
+            disabled={isUpdating}
+            className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all group/btn ${
+              isUpdating
+                ? "bg-primary/5 border-primary/20 text-primary/50 cursor-not-allowed"
+                : updateSuccess
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                : "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5 hover:bg-primary/20 hover:border-primary/80 cursor-pointer"
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border flex-shrink-0 transition-all ${
+                  isUpdating
+                    ? "bg-primary/10 border-primary/20"
+                    : updateSuccess
+                    ? "bg-emerald-500/20 border-emerald-500/20"
+                    : "bg-primary/20 border-primary/20 group-hover/btn:bg-primary/30"
+                }`}
+              >
+                {isUpdating ? (
+                  <RefreshCw size={14} className="sm:w-4 sm:h-4 animate-spin text-primary" />
+                ) : updateSuccess ? (
+                  <Check size={14} className="sm:w-4 sm:h-4 text-emerald-400" />
+                ) : (
+                  <RefreshCw size={14} className="sm:w-4 sm:h-4 text-primary transition-colors" />
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <h5 className={`font-bold text-xs sm:text-sm truncate pr-2 ${
+                  isUpdating ? "text-primary/50" : updateSuccess ? "text-emerald-400" : "text-primary group-hover/btn:text-white transition-colors"
+                }`}>
+                  {isUpdating ? "Updating Playlists..." : updateSuccess ? "Updated Successfully" : "Update Playlist"}
+                </h5>
+                <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase tracking-wider group-hover/btn:text-zinc-300 transition-colors">
+                  {isUpdating ? "Fetching live sources" : updateSuccess ? "Cache synced" : "Sync channels & cache"}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* 2. Your Playlists Header */}
+      <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-shrink-0">
         <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full">
           <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold w-full bg-primary text-white shadow-lg shadow-primary/20 cursor-default">
             <List size={14} />
@@ -29,6 +84,8 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
           </div>
         </div>
       </div>
+
+      {/* 3. Playlist List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2.5">
         {playlists.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full min-h-[150px] text-center p-4 gap-3 text-zinc-400">
