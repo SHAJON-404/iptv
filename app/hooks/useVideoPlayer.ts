@@ -8,9 +8,13 @@ import { Channel, getIsIOS } from "./useIPTVPlaylists";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ShakaPlayer = any;
 
-const getPlayableUrl = (url: string, no_proxy?: boolean) => {
+const getPlayableUrl = (url: string, no_proxy?: boolean, referer?: string) => {
   if (!no_proxy && url && (url.startsWith("http://") || url.startsWith("https://"))) {
-    return `/api/iptv/proxy?url=${encodeURIComponent(url)}`;
+    let proxyUrl = `/api/iptv/proxy?url=${encodeURIComponent(url)}`;
+    if (referer) {
+      proxyUrl += `&referer=${encodeURIComponent(referer)}`;
+    }
+    return proxyUrl;
   }
   return url;
 };
@@ -670,7 +674,11 @@ export function useVideoPlayer(
                   if (request.uris && request.uris.length > 0) {
                     request.uris = request.uris.map((uri: string) => {
                       if (!chan.no_proxy && uri && (uri.startsWith("http://") || uri.startsWith("https://")) && !uri.includes("/api/iptv/proxy")) {
-                        return `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
+                        let proxyUri = `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
+                        if (chan.referer) {
+                          proxyUri += `&referer=${encodeURIComponent(chan.referer)}`;
+                        }
+                        return proxyUri;
                       }
                       return uri;
                     });
@@ -841,7 +849,7 @@ export function useVideoPlayer(
 
             if (loadedUrlRef.current !== chan.url) return;
 
-            const playableUrl = getPlayableUrl(chan.url, chan.no_proxy);
+            const playableUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
             // Convert to absolute URL because mpegts.js Web Worker fails to parse relative URLs
             const absoluteUrl = new URL(playableUrl, window.location.origin).href;
 
@@ -890,7 +898,7 @@ export function useVideoPlayer(
               hlsRef.current = hls;
 
               hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                const playableUrl = getPlayableUrl(chan.url, chan.no_proxy);
+                const playableUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
                 hls.loadSource(playableUrl);
               });
 
@@ -949,7 +957,7 @@ export function useVideoPlayer(
             } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
               const isIOS = getIsIOS();
               const directUrl = chan.url;
-              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy);
+              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
 
               video.src = isIOS ? directUrl : proxiedUrl;
               try {
@@ -1039,7 +1047,7 @@ export function useVideoPlayer(
             if (video.canPlayType("application/vnd.apple.mpegurl")) {
               const isIOS = getIsIOS();
               const directUrl = chan.url;
-              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy);
+              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
 
               video.src = isIOS ? directUrl : proxiedUrl;
               try {
