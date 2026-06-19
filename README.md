@@ -122,12 +122,6 @@ If you are the copyright owner of any content and would like it removed, please 
 
 ---
 
-## ❤️ Credits
-
-Special thanks to all IPTV open-source repository maintainers and contributors whose publicly available playlists and stream sources make this collection and player possible.
-
----
-
 ## 📄 License & Compliance
 
 This project is open-source software licensed under the **GNU General Public License v3 (GPLv3)**.
