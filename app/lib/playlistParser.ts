@@ -8,6 +8,7 @@ export interface Channel {
   kid?: string;
   key?: string;
   no_proxy?: boolean;
+  referer?: string;
 }
 
 export interface Playlist {
@@ -80,6 +81,7 @@ interface RawChannelInput {
   kid?: string;
   key?: string;
   no_proxy?: boolean;
+  referer?: string;
 }
 
 export const parseJSON = (text: string): Channel[] => {
@@ -101,6 +103,7 @@ export const parseJSON = (text: string): Channel[] => {
       ...(ch.kid && { kid: ch.kid }),
       ...(ch.key && { key: ch.key }),
       ...(ch.no_proxy !== undefined && { no_proxy: ch.no_proxy }),
+      ...(ch.referer && { referer: ch.referer }),
     };
   });
 };
