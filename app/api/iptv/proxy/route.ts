@@ -122,13 +122,19 @@ export async function GET(request: NextRequest) {
       upstreamHeaders["Range"] = rangeHeader;
     }
 
-    // Set Referer to the stream's origin for servers that check it
-    try {
-      const parsedTarget = new URL(targetUrl);
-      upstreamHeaders["Referer"] = parsedTarget.origin + "/";
-      upstreamHeaders["Origin"] = parsedTarget.origin;
-    } catch {
-      // Invalid URL, skip Referer
+    // Support an optional custom Referer/Origin via query parameter.
+    // Some streams require a specific referrer (e.g. Origin: https://example.com).
+    // We do NOT default to the target URL's own origin because CDNs like CloudFront
+    // block self-referencing Origin headers with 403 Forbidden.
+    const customReferer = searchParams.get("referer");
+    if (customReferer) {
+      try {
+        const parsedReferer = new URL(customReferer);
+        upstreamHeaders["Referer"] = parsedReferer.origin + "/";
+        upstreamHeaders["Origin"] = parsedReferer.origin;
+      } catch {
+        // Invalid referer URL, skip
+      }
     }
 
     // Fetch with a timeout to avoid hanging on unresponsive servers
@@ -218,6 +224,7 @@ export async function GET(request: NextRequest) {
       }
 
       const proxyBaseUrl = `${resolvedOrigin}/api/iptv/proxy`;
+      const refererSuffix = customReferer ? `&referer=${encodeURIComponent(customReferer)}` : "";
 
       const rewrittenLines = lines.map((line) => {
         const trimmed = line.trim();
@@ -231,13 +238,13 @@ export async function GET(request: NextRequest) {
               const uri = qDouble || qSingle || unquoted;
               if (!uri) return match;
               const resolved = resolveUrl(uri, targetUrl);
-              return `URI="${proxyBaseUrl}?url=${encodeURIComponent(resolved)}"`;
+              return `URI="${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${refererSuffix}"`;
             }
           );
         } else {
           // Rewrite the direct stream/segment URL line
           const resolved = resolveUrl(trimmed, targetUrl);
-          return `${proxyBaseUrl}?url=${encodeURIComponent(resolved)}`;
+          return `${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${refererSuffix}`;
         }
       });
 
