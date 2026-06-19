@@ -96,7 +96,7 @@ export default function RootLayout({
   const isMaintenance = process.env.MAINTANANCE?.toLowerCase() === "true";
 
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col pb-24 md:pb-0 bg-[#070414]">
         {isMaintenance ? (
           <MaintenanceView />
