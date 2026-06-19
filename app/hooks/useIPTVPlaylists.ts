@@ -14,6 +14,7 @@ export interface Channel {
   kid?: string;
   key?: string;
   no_proxy?: boolean;
+  referer?: string;
 }
 
 export interface Playlist {
