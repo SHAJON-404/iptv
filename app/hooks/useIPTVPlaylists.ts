@@ -125,7 +125,7 @@ export function useIPTVPlaylists() {
 
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setChannels(filtered);
-      
+
       if (filtered.length > 0) {
         setSelectedChannel(prev => {
           if (prev) {
@@ -151,7 +151,7 @@ export function useIPTVPlaylists() {
     const hydrate = async () => {
       try {
         let savedPlaylists = await getFromDB<Playlist[]>("iptv_saved_playlists");
-        
+
         // Fallback to localStorage if IndexedDB is empty (migration)
         if (!savedPlaylists) {
           const localStr = localStorage.getItem("iptv_saved_playlists");
@@ -166,7 +166,7 @@ export function useIPTVPlaylists() {
         if (savedPlaylists && Array.isArray(savedPlaylists)) {
           const customPlaylists = savedPlaylists.filter(p => p.type !== "default");
           setPlaylists(customPlaylists);
-          
+
           if (savedActiveId && customPlaylists.find(p => p.id === savedActiveId)) {
             setActivePlaylistId(savedActiveId);
           } else if (customPlaylists.length > 0) {
@@ -249,7 +249,7 @@ export function useIPTVPlaylists() {
           } catch (e) {
             console.error("Failed to parse cached DB playlists:", e);
           }
-          
+
           for (const dbp of dbPlaylists) {
             const dbPlaylistId = `db-playlist-${dbp.id}`;
             try {
@@ -363,7 +363,7 @@ export function useIPTVPlaylists() {
     // Update state with both refreshed local and DB playlists
     setPlaylists(() => {
       const merged = [...updatedLocalPlaylists, ...loadedDBPlaylists];
-      
+
       setActivePlaylistId(currentId => {
         if (currentId && merged.find(p => p.id === currentId)) {
           return currentId;
@@ -401,7 +401,7 @@ export function useIPTVPlaylists() {
           setPlaylists(prev => {
             const localOnly = prev.filter(p => !p.id.startsWith("db-playlist-"));
             const merged = [...localOnly, ...cached];
-            
+
             setActivePlaylistId(currentId => {
               if (currentId && merged.find(p => p.id === currentId)) {
                 return currentId;
