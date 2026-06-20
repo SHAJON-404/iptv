@@ -322,7 +322,7 @@ export default function IPTVPlayer() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm sm:text-base font-bold text-amber-400/80 tracking-widest mb-1">Troubleshooting</p>
                   <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-medium">
-                    Encountering a blank or black screen? Click <span className="text-primary font-bold">Reload Stream</span> in the player controls or <span className="text-primary font-bold">Try Reconnecting</span>.
+                    Encountering a blank or black screen? Click <span className="text-primary font-bold">Reload Stream</span> in the player controls or <span className="text-primary font-bold">Try Reconnecting</span>. If buffering is frequent, try connecting to a <span className="text-primary font-bold">VPN</span>.
                   </p>
                 </div>
               </div>
