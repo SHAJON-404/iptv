@@ -3,7 +3,7 @@
 Welcome to the **IPTV** project. This document provides essential context, architectural guidelines, and coding standards for AI agents (like GitHub Copilot, Cursor, Windsurf, or Gemini) operating within this repository.
 
 ## 📌 Project Overview
-This project is a modern, responsive, and high-performance IPTV web player built with Next.js. It supports both **HLS (.m3u8)** and **DASH (.mpd)** live streams, parses custom `.m3u` and `.json` playlists, and features a sleek, premium, glassmorphism-inspired UI with YouTube-like video controls and quality selection.
+This project is a modern, responsive, and high-performance IPTV web player built with Next.js. It supports **HLS (.m3u8)**, **DASH (.mpd)**, and legacy **MPEG-TS (.ts)** live streams. It parses custom `.m3u` and `.json` playlists, supports Cloud Playlist Sync using Google OAuth & PostgreSQL, and features a sleek, premium, glassmorphism-inspired UI with YouTube-like video controls and quality selection.
 
 ## 🛠️ Technology Stack
 - **Framework:** Next.js 16.x (App Router)
@@ -13,16 +13,21 @@ This project is a modern, responsive, and high-performance IPTV web player built
 - **Video Players / Engines:** 
   - `hls.js` (for HTTP Live Streaming)
   - `shaka-player` (for DASH and DRM-encrypted streams)
+  - `mpegts.js` (for legacy MPEG-TS streams)
+- **Database ORM:** Prisma (PostgreSQL)
+- **Authentication:** Google Auth Library
+- **HTTP Client:** Undici (for secure proxy streaming)
 - **Animations:** `motion` (Framer Motion)
 - **Icons:** `lucide-react`, `react-icons`
 
 ## 📂 Project Structure
 - `app/` - Next.js App Router root.
-  - `api/` - Backend API routes (e.g., proxying requests, viewers tracking).
+  - `api/` - Backend API routes (e.g., proxying requests, viewers tracking, auth).
   - `components/` - Reusable UI components.
     - `player/` - Video player sub-components (`VideoPlayerView`, `ChannelListView`, etc.).
-  - `hooks/` - Custom React hooks (`useVideoPlayer`, `useIPTVPlaylists`).
+  - `hooks/` - Custom React hooks (`useVideoPlayer`, `useIPTVPlaylists`, `useAuth`).
   - `data/` - Static JSON files (e.g., `fifa.json`).
+- `prisma/` - Prisma database schema.
 - `public/` - Static assets.
 
 ## 📜 Coding Standards & Rules
@@ -44,18 +49,20 @@ This project is a modern, responsive, and high-performance IPTV web player built
 - **Animations:** Use Framer Motion (`motion.div`, `AnimatePresence`) for micro-interactions, popovers, and smooth state transitions. Do not use generic blocky UI.
 
 ### 4. Video Player Integration
-- **Do not use native HTML5 player alone** for `.m3u8` or `.mpd` files (unless on iOS where native HLS is supported). 
+- **Do not use native HTML5 player alone** for `.m3u8`, `.mpd`, or `.ts` files (unless on iOS where native HLS is supported). 
 - Rely on the centralized `useVideoPlayer.ts` hook for stream initialization.
 - **Quality Selection:** Quality state is dynamic and must be re-fetched whenever a channel changes. `availableQualities` are extracted directly from the HLS `levels` or Shaka Player `variantTracks`.
 - Ensure all video controls (play, pause, volume, pip, fullscreen, settings) are managed via custom overlays, hiding the native video controls.
 
-### 5. Backend & Next.js APIs
+### 5. Backend, Next.js APIs, & Security
 - Use Next.js Route Handlers (`app/api/route.ts`).
 - When dealing with CORS issues on live streams, route the streams through the built-in proxy (`/api/iptv/proxy`).
+- Ensure proxy routes (`Undici`) maintain anti-SSRF protections and handle URL/query parameter propagation correctly.
+- Be aware of the Turnstile and Auth implementations when modifying API routes that require protection or user context.
 
 ## 🤝 AI Agent Workflow
 When asked to implement a feature or fix a bug:
-1. **Analyze:** Check `useVideoPlayer.ts` or `useIPTVPlaylists.ts` before creating new state to see if it belongs there.
+1. **Analyze:** Check `useVideoPlayer.ts`, `useIPTVPlaylists.ts`, or `useAuth.ts` before creating new state to see if it belongs there.
 2. **Design:** Ensure any new UI matches the dark, glassmorphic theme.
 3. **Verify:** Check for linting errors using `npm run lint`.
 4. **Communicate:** Keep explanations concise and use GitHub-flavored markdown.
