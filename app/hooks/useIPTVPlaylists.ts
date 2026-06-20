@@ -4,6 +4,51 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "./useAuth";
 import { parseM3U, parseJSON } from "@/app/lib/playlistParser";
 
+const initDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("IPTVAppDB", 1);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains("store")) {
+        db.createObjectStore("store");
+      }
+    };
+  });
+};
+
+const getFromDB = async <T>(key: string): Promise<T | null> => {
+  try {
+    const db = await initDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction("store", "readonly");
+      const store = transaction.objectStore("store");
+      const request = store.get(key);
+      request.onsuccess = () => resolve(request.result ? (request.result as T) : null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (e) {
+    console.error("IndexedDB get error:", e);
+    return null;
+  }
+};
+
+const saveToDB = async <T>(key: string, value: T): Promise<void> => {
+  try {
+    const db = await initDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction("store", "readwrite");
+      const store = transaction.objectStore("store");
+      const request = store.put(value, key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (e) {
+    console.error("IndexedDB save error:", e);
+  }
+};
+
 export interface Channel {
   id: string;
   name: string;
@@ -101,34 +146,45 @@ export function useIPTVPlaylists() {
     }
   }, [activePlaylistId, playlists, loading]);
 
-  // Hydrate playlists from localStorage on client-side mount
+  // Hydrate playlists from IndexedDB/localStorage on client-side mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("iptv_saved_playlists");
-      const savedActiveId = localStorage.getItem("iptv_active_playlist_id");
-
-      if (saved) {
-        const parsedSaved = JSON.parse(saved) as Playlist[];
-        const customPlaylists = parsedSaved.filter(p => p.type !== "default");
-
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setPlaylists(customPlaylists);
+    const hydrate = async () => {
+      try {
+        let savedPlaylists = await getFromDB<Playlist[]>("iptv_saved_playlists");
         
-        if (savedActiveId && customPlaylists.find(p => p.id === savedActiveId)) {
-          setActivePlaylistId(savedActiveId);
-        } else if (customPlaylists.length > 0) {
-          setActivePlaylistId(customPlaylists[0].id);
+        // Fallback to localStorage if IndexedDB is empty (migration)
+        if (!savedPlaylists) {
+          const localStr = localStorage.getItem("iptv_saved_playlists");
+          if (localStr) {
+            savedPlaylists = JSON.parse(localStr) as Playlist[];
+            await saveToDB("iptv_saved_playlists", savedPlaylists);
+          }
+        }
+
+        const savedActiveId = localStorage.getItem("iptv_active_playlist_id");
+
+        if (savedPlaylists && Array.isArray(savedPlaylists)) {
+          const customPlaylists = savedPlaylists.filter(p => p.type !== "default");
+          setPlaylists(customPlaylists);
+          
+          if (savedActiveId && customPlaylists.find(p => p.id === savedActiveId)) {
+            setActivePlaylistId(savedActiveId);
+          } else if (customPlaylists.length > 0) {
+            setActivePlaylistId(customPlaylists[0].id);
+          } else {
+            setPlaylistTab("manage");
+          }
         } else {
           setPlaylistTab("manage");
         }
-      } else {
+      } catch (e) {
+        console.error("Failed to load playlists from DB:", e);
         setPlaylistTab("manage");
+      } finally {
+        setIsHydrated(true);
       }
-    } catch (e) {
-      console.error("Failed to load playlists from localStorage:", e);
-    } finally {
-      setIsHydrated(true);
-    }
+    };
+    hydrate();
   }, []);
 
   // Auto-switch to browse tab when playlists become available
@@ -140,15 +196,14 @@ export function useIPTVPlaylists() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playlists.length > 0, isHydrated]);
 
-  // Save custom playlists to localStorage whenever they change
+  // Save custom playlists to IndexedDB whenever they change
   useEffect(() => {
-    try {
-      const localOnly = playlists.filter(p => !p.id.startsWith("db-playlist-"));
-      localStorage.setItem("iptv_saved_playlists", JSON.stringify(localOnly));
-    } catch (e) {
-      console.error("Failed to save playlists to localStorage:", e);
-    }
-  }, [playlists]);
+    if (!isHydrated) return; // Don't save empty state during hydration
+    const localOnly = playlists.filter(p => !p.id.startsWith("db-playlist-"));
+    saveToDB("iptv_saved_playlists", localOnly).catch(e =>
+      console.error("Failed to save playlists to DB:", e)
+    );
+  }, [playlists, isHydrated]);
 
   // Sync activePlaylistId to localStorage
   useEffect(() => {
@@ -184,9 +239,12 @@ export function useIPTVPlaylists() {
           // Read existing cache first so we can fall back to it
           let existingCached: Playlist[] = [];
           try {
-            const cached = localStorage.getItem("iptv_db_playlists_cache");
-            if (cached) {
-              existingCached = JSON.parse(cached) as Playlist[];
+            const cached = await getFromDB<Playlist[]>("iptv_db_playlists_cache");
+            if (cached && Array.isArray(cached)) {
+              existingCached = cached;
+            } else {
+              const localStr = localStorage.getItem("iptv_db_playlists_cache");
+              if (localStr) existingCached = JSON.parse(localStr) as Playlist[];
             }
           } catch (e) {
             console.error("Failed to parse cached DB playlists:", e);
@@ -249,7 +307,7 @@ export function useIPTVPlaylists() {
           }
 
           // Save loaded playlists to cache
-          localStorage.setItem("iptv_db_playlists_cache", JSON.stringify(loadedDBPlaylists));
+          await saveToDB("iptv_db_playlists_cache", loadedDBPlaylists);
         } else {
           console.error("[useIPTVPlaylists] Failed to fetch playlists from API, status:", res.status);
         }
@@ -261,9 +319,12 @@ export function useIPTVPlaylists() {
     // Refresh Local URL Playlists
     let localPlaylists: Playlist[] = [];
     try {
-      const saved = localStorage.getItem("iptv_saved_playlists");
-      if (saved) {
-        localPlaylists = JSON.parse(saved) as Playlist[];
+      const saved = await getFromDB<Playlist[]>("iptv_saved_playlists");
+      if (saved && Array.isArray(saved)) {
+        localPlaylists = saved;
+      } else {
+        const localStr = localStorage.getItem("iptv_saved_playlists");
+        if (localStr) localPlaylists = JSON.parse(localStr) as Playlist[];
       }
     } catch (e) {
       console.error("Failed to read local playlists for refresh:", e);
@@ -327,19 +388,20 @@ export function useIPTVPlaylists() {
 
     console.log("[useIPTVPlaylists] auth status changed:", status, "isHydrated:", isHydrated);
 
-    // 1. If authenticated, load from localStorage cache first for instant UI response
+    // 1. If authenticated, load from DB cache first for instant UI response
     if (status === "authenticated") {
-      try {
-        const cached = localStorage.getItem("iptv_db_playlists_cache");
-        if (cached) {
-          const parsedCached = JSON.parse(cached) as Playlist[];
-          console.log("[useIPTVPlaylists] Found cached DB playlists:", parsedCached.length);
-          // eslint-disable-next-line react-hooks/set-state-in-effect
+      getFromDB<Playlist[]>("iptv_db_playlists_cache").then(cached => {
+        if (!cached) {
+          const localStr = localStorage.getItem("iptv_db_playlists_cache");
+          if (localStr) cached = JSON.parse(localStr) as Playlist[];
+        }
+
+        if (cached && Array.isArray(cached)) {
+          console.log("[useIPTVPlaylists] Found cached DB playlists:", cached.length);
           setPlaylists(prev => {
             const localOnly = prev.filter(p => !p.id.startsWith("db-playlist-"));
-            const merged = [...localOnly, ...parsedCached];
+            const merged = [...localOnly, ...cached];
             
-            // Set active playlist if not already set
             setActivePlaylistId(currentId => {
               if (currentId && merged.find(p => p.id === currentId)) {
                 return currentId;
@@ -349,14 +411,13 @@ export function useIPTVPlaylists() {
             return merged;
           });
         } else {
-          console.log("[useIPTVPlaylists] No cached DB playlists found in localStorage.");
+          console.log("[useIPTVPlaylists] No cached DB playlists found.");
         }
-      } catch (e) {
-        console.error("Failed to load cached DB playlists:", e);
-      }
+      }).catch(e => console.error("Failed to load cached DB playlists:", e));
     } else if (status === "unauthenticated") {
       console.log("[useIPTVPlaylists] Unauthenticated. Clearing DB playlists.");
       // If unauthenticated, clear any DB playlists from the state
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlaylists(prev => prev.filter(p => !p.id.startsWith("db-playlist-")));
     }
 
