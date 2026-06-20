@@ -3,7 +3,6 @@
 import React from "react";
 import { Link as LinkIcon, Check, Upload, AlertCircle, Lock } from "lucide-react";
 import { useAuth } from "@/app/hooks/useAuth";
-import { FaTelegram, FaDiscord } from "react-icons/fa6";
 
 interface PlaylistManagerViewProps {
   playlistName: string;
@@ -73,35 +72,6 @@ export const PlaylistManagerView = React.memo(function PlaylistManagerView({
         </div>
       )}
 
-      {/* Community Notice */}
-      <div className="shrink-0 glass-card p-3 border border-white/10 rounded-2xl bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-3 relative overflow-hidden transition-colors hover:border-primary/20">
-        <div className="flex-1 min-w-0 px-1 text-center sm:text-left">
-          <h4 className="font-bold text-[13px] text-white">Need Playlist URLs?</h4>
-          <p className="text-[11px] text-zinc-400 leading-tight mt-0.5">
-            Join Telegram or Discord for playlists. <span className="text-zinc-500 hidden sm:inline">(Independent from this player)</span>
-          </p>
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-          <a
-            href="https://discord.gg/TtWrw8W9B"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 py-2 sm:py-1.5 px-3 bg-[#5865F2]/10 hover:bg-[#5865F2]/20 border border-[#5865F2]/30 text-[#5865F2] hover:text-white text-[11px] font-bold rounded-lg transition-all shadow-sm active:scale-95"
-          >
-            <FaDiscord size={14} />
-            <span>Discord</span>
-          </a>
-          <a
-            href="https://t.me/shajonOTT"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 py-2 sm:py-1.5 px-3 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 border border-[#0088cc]/30 text-[#0088cc] hover:text-white text-[11px] font-bold rounded-lg transition-all shadow-sm active:scale-95"
-          >
-            <FaTelegram size={14} />
-            <span>Telegram</span>
-          </a>
-        </div>
-      </div>
 
       {/* URL Import Box */}
       <form
