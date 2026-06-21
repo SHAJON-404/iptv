@@ -170,7 +170,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch with a timeout to avoid hanging on unresponsive servers
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 25000);
 
     let currentUrl = targetUrl;
     let response: Awaited<ReturnType<typeof undiciFetch>> | null = null;
@@ -379,7 +379,7 @@ export async function GET(request: NextRequest) {
     // Handle abort/timeout specifically
     if (error instanceof DOMException && error.name === "AbortError") {
       return NextResponse.json(
-        { error: "Upstream server timed out (15s)" },
+        { error: "Upstream server timed out (25s)" },
         { status: 504 }
       );
     }
