@@ -16,7 +16,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Radio,
-  Check
+  Check,
+  Zap
 } from "lucide-react";
 import { FaTelegram } from "react-icons/fa6";
 import { StreamQuality } from "../../hooks/useVideoPlayer";
@@ -59,6 +60,8 @@ interface VideoPlayerViewProps {
   handlePlayerDoubleClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   handleReload: () => void;
   handleMouseMove: () => void;
+  maxQualityMode: boolean;
+  handleToggleMaxQuality: () => void;
 }
 
 function getFriendlyErrorMessage(rawError: string): { title: string; desc: string } {
@@ -139,6 +142,8 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
   handlePlayerDoubleClick,
   handleReload,
   handleMouseMove,
+  maxQualityMode,
+  handleToggleMaxQuality,
 }: VideoPlayerViewProps) {
   const [showSettings, setShowSettings] = React.useState(false);
 
@@ -481,6 +486,25 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                           </button>
                         </div>
                       )}
+
+                      {/* Max Quality Mode Toggle */}
+                      <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleMaxQuality();
+                          }}
+                          className="w-full flex items-center justify-between text-xs transition-colors text-zinc-300 hover:text-white cursor-pointer"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Zap size={12} className={maxQualityMode ? "text-amber-400" : "text-zinc-500"} />
+                            <span className="font-semibold">Max Quality</span>
+                          </span>
+                          <div className={`w-7 h-4 rounded-full transition-colors relative ${maxQualityMode ? 'bg-primary' : 'bg-zinc-600'}`}>
+                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${maxQualityMode ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                          </div>
+                        </button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

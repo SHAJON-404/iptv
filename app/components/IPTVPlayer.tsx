@@ -78,7 +78,9 @@ export default function IPTVPlayer() {
     isPipSupported,
     availableQualities,
     currentQuality,
+    maxQualityMode,
     handleQualityChange,
+    handleToggleMaxQuality,
     handlePlayPause,
     handleMuteUnmute,
     handleVolumeChangeSlider,
@@ -307,6 +309,8 @@ export default function IPTVPlayer() {
               handlePlayerDoubleClick={handlePlayerDoubleClick}
               handleReload={handleReload}
               handleMouseMove={handleMouseMove}
+              maxQualityMode={maxQualityMode}
+              handleToggleMaxQuality={handleToggleMaxQuality}
             />
           </div>
 
