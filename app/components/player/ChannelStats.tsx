@@ -37,9 +37,8 @@ export const ChannelStats = React.memo(function ChannelStats({
             key={selectedChannel.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${
-              playerStatus === "loading" ? "animate-pulse" : ""
-            }`}
+            className={`glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl flex flex-row items-center justify-start gap-4 text-left bg-white/[0.01] w-full ${playerStatus === "loading" ? "animate-pulse" : ""
+              }`}
           >
             {selectedChannel.logo ? (
               <Image
@@ -111,7 +110,7 @@ export const ChannelStats = React.memo(function ChannelStats({
                   <FaGithub size={18} />
                 </a>
                 <a
-                  href="https://t.me/SHAJON"
+                  href="https://t.me/shajonOTT"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-zinc-300 hover:text-[#26A5E4] transition-colors"
@@ -146,7 +145,7 @@ export const ChannelStats = React.memo(function ChannelStats({
           <p className="text-[10px] sm:text-[10.5px] leading-normal text-zinc-400 font-medium select-text flex-1 pl-1 min-w-[120px]">
             For any support, contact via{" "}
             <a
-              href="https://t.me/SHAJON"
+              href="https://t.me/shajonOTT"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#26A5E4] font-bold hover:underline"
@@ -175,9 +174,8 @@ export const ChannelStats = React.memo(function ChannelStats({
 
       {/* ─── MOBILE UI LAYOUT (Visible on mobile/tablet screens only) ─── */}
       <div className="grid grid-cols-1 gap-4 w-full md:hidden">
-        <div className={`glass-card p-3 border border-white/10 rounded-2xl bg-white/[0.01] w-full flex items-center ${
-          playerStatus === "loading" ? "animate-pulse" : ""
-        }`}>
+        <div className={`glass-card p-3 border border-white/10 rounded-2xl bg-white/[0.01] w-full flex items-center ${playerStatus === "loading" ? "animate-pulse" : ""
+          }`}>
           {/* Left Side: Channel details (60% width) */}
           <div className="w-[60%] flex items-center gap-3 min-w-0 border-r border-white/10 pr-3">
             {selectedChannel ? (

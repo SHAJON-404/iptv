@@ -59,7 +59,7 @@ export default function MaintenanceView() {
           <h1 className="mt-4 text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
             We&apos;ll be back soon!
           </h1>
-          
+
           <p className="mt-3 text-sm sm:text-[15px] leading-relaxed text-zinc-300 font-medium max-w-[280px] sm:max-w-none">
             We are currently performing some scheduled maintenance. Join our official channels for the latest updates.
           </p>

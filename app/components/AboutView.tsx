@@ -90,7 +90,7 @@ export default function AboutView() {
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-xl mx-auto md:mx-0">
                   <a
-                    href="https://t.me/SHAJON"
+                    href="https://t.me/shajonOTT"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.02] hover:bg-[#26A5E4]/10 text-zinc-300 hover:text-[#26A5E4] border border-white/10 hover:border-[#26A5E4]/50 font-bold text-xs sm:text-sm transition-all duration-300 active:scale-95 shadow-sm hover:shadow-[0_0_15px_rgba(38,165,228,0.15)] cursor-pointer"

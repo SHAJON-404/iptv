@@ -140,7 +140,7 @@ export default function MainPopup({ showPopup }: MainPopupProps) {
                 <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white text-white group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
                 <span>Join Telegram Channel</span>
               </a>
-              
+
               <button
                 onClick={handleClose}
                 className="w-full flex items-center justify-center gap-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 px-4 py-3 sm:px-5 sm:py-3.5 text-xs sm:text-sm font-black text-white transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-center"
