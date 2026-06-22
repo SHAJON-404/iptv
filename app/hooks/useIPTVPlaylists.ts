@@ -219,6 +219,30 @@ export function useIPTVPlaylists() {
     if (isManual) {
       setIsUpdating(true);
       setUpdateSuccess(false);
+
+      // Immediately delete old cache for all playlists upon manual update
+      await saveToDB("iptv_db_playlists_cache", []);
+      localStorage.removeItem("iptv_db_playlists_cache");
+
+      try {
+        let savedLocal = await getFromDB<Playlist[]>("iptv_saved_playlists");
+        if (!savedLocal) {
+          const localStr = localStorage.getItem("iptv_saved_playlists");
+          if (localStr) savedLocal = JSON.parse(localStr);
+        }
+        if (savedLocal && Array.isArray(savedLocal)) {
+          const clearedLocal = savedLocal.map(p => p.type === 'url' ? { ...p, channels: [] } : p);
+          await saveToDB("iptv_saved_playlists", clearedLocal);
+          localStorage.setItem("iptv_saved_playlists", JSON.stringify(clearedLocal));
+        }
+      } catch (e) {
+        console.error("Failed to clear local cache:", e);
+      }
+
+      // Update UI state immediately to show cache is deleted
+      setPlaylists(prev => prev.map(p => 
+        (p.type === "url" || p.id.startsWith("db-playlist-")) ? { ...p, channels: [] } : p
+      ));
     }
     console.log("[useIPTVPlaylists] refreshAllPlaylists triggered. status:", status, "isManual:", isManual);
     // Refresh DB playlists (cloud-saved)
@@ -238,16 +262,18 @@ export function useIPTVPlaylists() {
 
           // Read existing cache first so we can fall back to it
           let existingCached: Playlist[] = [];
-          try {
-            const cached = await getFromDB<Playlist[]>("iptv_db_playlists_cache");
-            if (cached && Array.isArray(cached)) {
-              existingCached = cached;
-            } else {
-              const localStr = localStorage.getItem("iptv_db_playlists_cache");
-              if (localStr) existingCached = JSON.parse(localStr) as Playlist[];
+          if (!isManual) {
+            try {
+              const cached = await getFromDB<Playlist[]>("iptv_db_playlists_cache");
+              if (cached && Array.isArray(cached)) {
+                existingCached = cached;
+              } else {
+                const localStr = localStorage.getItem("iptv_db_playlists_cache");
+                if (localStr) existingCached = JSON.parse(localStr) as Playlist[];
+              }
+            } catch (e) {
+              console.error("Failed to parse cached DB playlists:", e);
             }
-          } catch (e) {
-            console.error("Failed to parse cached DB playlists:", e);
           }
 
           for (const dbp of dbPlaylists) {
