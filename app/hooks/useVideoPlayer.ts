@@ -792,7 +792,7 @@ export function useVideoPlayer(
               player.configure({
                 manifest: {
                   defaultPresentationDelay: isMaxQuality ? 22 : 15,
-                  ignoreDrmInfo: true,
+                  ignoreDrmInfo: !shakaChan.key,
                   dash: {
                     ignoreMinBufferTime: true,
                     ignoreSuggestedPresentationDelay: false, // Respect manifest-defined latency for CDN sync
