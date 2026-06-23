@@ -210,10 +210,11 @@ export async function GET(request: NextRequest) {
         });
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
-        const errCode = (err as { code?: string })?.code || "";
+        const errCode = (err as { code?: unknown })?.code;
+        const errCodeStr = errCode ? String(errCode) : "";
         
         const lowerMsg = errMsg.toLowerCase();
-        const upperCode = errCode.toUpperCase();
+        const upperCode = errCodeStr.toUpperCase();
 
         // Check if the error is SSL/TLS or certificate validation/reset related
         const isSSLError = 
