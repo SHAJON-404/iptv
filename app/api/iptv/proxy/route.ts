@@ -200,12 +200,49 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Invalid or restricted target URL" }, { status: 400 });
       }
 
-      const tempResponse = await undiciFetch(currentUrl, {
-        headers: upstreamHeaders,
-        signal: controller.signal,
-        redirect: "manual",
-        dispatcher: sslAgent,
-      });
+      let tempResponse: Awaited<ReturnType<typeof undiciFetch>>;
+      try {
+        // Attempt to fetch using the standard Node/Undici dispatcher (fast, modern TLS 1.3 / HTTP keep-alive)
+        tempResponse = await undiciFetch(currentUrl, {
+          headers: upstreamHeaders,
+          signal: controller.signal,
+          redirect: "manual",
+        });
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const errCode = (err as { code?: string })?.code || "";
+        
+        const lowerMsg = errMsg.toLowerCase();
+        const upperCode = errCode.toUpperCase();
+
+        // Check if the error is SSL/TLS or certificate validation/reset related
+        const isSSLError = 
+          upperCode.includes("ERR_TLS") ||
+          upperCode.includes("EPROTO") ||
+          upperCode.includes("ECONNRESET") ||
+          lowerMsg.includes("ssl") ||
+          lowerMsg.includes("tls") ||
+          lowerMsg.includes("certificate") ||
+          lowerMsg.includes("handshake") ||
+          lowerMsg.includes("depth") ||
+          lowerMsg.includes("unable_to_") ||
+          lowerMsg.includes("cert_") ||
+          lowerMsg.includes("unauthorized");
+
+        if (isSSLError) {
+          console.warn(`[Proxy] TLS/SSL error on standard fetch. Retrying with legacy sslAgent for: ${currentUrl}. Error:`, errMsg);
+          // Fallback to legacy sslAgent (disables certificate check, allows TLSv1 and old ciphers)
+          tempResponse = await undiciFetch(currentUrl, {
+            headers: upstreamHeaders,
+            signal: controller.signal,
+            redirect: "manual",
+            dispatcher: sslAgent,
+          });
+        } else {
+          // Rethrow other errors (e.g. timeout, DNS resolution aborts)
+          throw err;
+        }
+      }
 
       if (tempResponse.status >= 300 && tempResponse.status < 400) {
         const location = tempResponse.headers.get("location");

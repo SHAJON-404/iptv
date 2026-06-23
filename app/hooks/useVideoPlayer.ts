@@ -550,7 +550,7 @@ export function useVideoPlayer(
         player.configure({
           abr: { enabled: true },
           streaming: {
-            rebufferingGoal: isMaxQ ? 6 : 3,
+            rebufferingGoal: isMaxQ ? 8 : 4,
             bufferingGoal: isMaxQ ? 60 : 30,
             bufferBehind: isMaxQ ? 30 : 20,
           },
@@ -559,7 +559,7 @@ export function useVideoPlayer(
         player.configure({
           abr: { enabled: false },
           streaming: {
-            rebufferingGoal: isMaxQ ? 8 : 4,
+            rebufferingGoal: isMaxQ ? 10 : 5,
             bufferingGoal: isMaxQ ? 90 : 45,
             bufferBehind: isMaxQ ? 40 : 25,
           },
@@ -801,12 +801,12 @@ export function useVideoPlayer(
                     ignoreMaxSegmentDuration: true,
                     initialSegmentLimit: 1000,
                   },
-                  retryParameters: { maxAttempts: 10, baseDelay: 450, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 18000 },
+                  retryParameters: { maxAttempts: 10, baseDelay: 450, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 12000 },
                 },
                 streaming: {
                   lowLatencyMode: false,
                   inaccurateManifestTolerance: 3,
-                  rebufferingGoal: isMaxQuality ? 6 : 3, // Safe minimum buffer before resuming standard playback
+                  rebufferingGoal: isMaxQuality ? 8 : 4, // Safe minimum buffer before resuming standard playback
                   bufferingGoal: isMaxQuality ? 60 : 30, // Larger prebuffer for stability
                   bufferBehind: isMaxQuality ? 30 : 20,
                   gapDetectionThreshold: 0.4,
@@ -818,7 +818,7 @@ export function useVideoPlayer(
                   failureCallback: (_error: any) => {
                     try { player.retryStreaming(); } catch { /* ignore */ }
                   },
-                  retryParameters: { maxAttempts: 15, baseDelay: 450, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 22000 },
+                  retryParameters: { maxAttempts: 15, baseDelay: 450, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 15000 },
                 },
                 abr: {
                   enabled: true,
@@ -827,8 +827,8 @@ export function useVideoPlayer(
                   restrictToElementSize: false,
                   restrictToScreenSize: false,
                   clearBufferSwitch: false,
-                  bandwidthDowngradeTarget: 0.95,
-                  bandwidthUpgradeTarget: 0.80, // More conservative target to prevent quality oscillations
+                  bandwidthDowngradeTarget: 0.85,
+                  bandwidthUpgradeTarget: 0.70, // More conservative target to prevent quality oscillations
                   useNetworkInformation: true,
                 },
               });
@@ -1025,26 +1025,26 @@ export function useVideoPlayer(
                   lowLatencyMode: !isMaxQuality,
                   startLevel: -1,
                   // Buffer Optimization — pre-buffering
-                  maxBufferLength: isMaxQuality ? 60 : 20,
-                  maxMaxBufferLength: isMaxQuality ? 120 : 40,
+                  maxBufferLength: isMaxQuality ? 60 : 30,
+                  maxMaxBufferLength: isMaxQuality ? 120 : 60,
                   maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
                   maxBufferHole: 0.5,
                   backBufferLength: isMaxQuality ? 30 : 0,
                   // Live Stream Latency — play behind live edge to prevent buffering
-                  liveSyncDurationCount: isMaxQuality ? 6 : 4,
-                  liveMaxLatencyDurationCount: isMaxQuality ? 12 : 8,
+                  liveSyncDurationCount: isMaxQuality ? 8 : 5,
+                  liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
                   // ABR Tuning
                   abrEwmaDefaultEstimate: 2_000_000, // Moderate initial default
                   abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
-                  abrBandWidthFactor: isMaxQuality ? 0.90 : 0.85,
-                  abrBandWidthUpFactor: isMaxQuality ? 0.80 : 0.70,
+                  abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
+                  abrBandWidthUpFactor: 0.65,
                   abrMaxWithRealBitrate: true,
                   // Network Retry
-                  fragLoadingMaxRetry: 6,
+                  fragLoadingMaxRetry: 8,
                   manifestLoadingMaxRetry: 4,
                   levelLoadingMaxRetry: 4,
                   // Reduce timeouts to fail fast and retry quickly during transient glitches
-                  fragLoadingTimeOut: 10000,
+                  fragLoadingTimeOut: 6000,
                   manifestLoadingTimeOut: 10000,
                   levelLoadingTimeOut: 10000,
                   fragLoadingMaxRetryTimeout: 16000,
@@ -1139,22 +1139,22 @@ export function useVideoPlayer(
                   enableWorker: true,
                   lowLatencyMode: !isMaxQuality,
                   startLevel: -1,
-                  maxBufferLength: isMaxQuality ? 60 : 20,
-                  maxMaxBufferLength: isMaxQuality ? 120 : 40,
+                  maxBufferLength: isMaxQuality ? 60 : 30,
+                  maxMaxBufferLength: isMaxQuality ? 120 : 60,
                   maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
                   maxBufferHole: 0.5,
                   backBufferLength: isMaxQuality ? 30 : 0,
-                  liveSyncDurationCount: isMaxQuality ? 6 : 4,
-                  liveMaxLatencyDurationCount: isMaxQuality ? 12 : 8,
+                  liveSyncDurationCount: isMaxQuality ? 8 : 5,
+                  liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
                   abrEwmaDefaultEstimate: 2_000_000,
                   abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
-                  abrBandWidthFactor: isMaxQuality ? 0.90 : 0.85,
-                  abrBandWidthUpFactor: isMaxQuality ? 0.80 : 0.70,
+                  abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
+                  abrBandWidthUpFactor: 0.65,
                   abrMaxWithRealBitrate: true,
-                  fragLoadingMaxRetry: 6,
+                  fragLoadingMaxRetry: 8,
                   manifestLoadingMaxRetry: 4,
                   levelLoadingMaxRetry: 4,
-                  fragLoadingTimeOut: 10000,
+                  fragLoadingTimeOut: 6000,
                   manifestLoadingTimeOut: 10000,
                   levelLoadingTimeOut: 10000,
                   fragLoadingMaxRetryTimeout: 16000,
@@ -1275,26 +1275,26 @@ export function useVideoPlayer(
                 lowLatencyMode: !isMaxQuality,
                 startLevel: -1,
                 // Buffer Optimization — pre-buffering
-                maxBufferLength: isMaxQuality ? 60 : 20,
-                maxMaxBufferLength: isMaxQuality ? 120 : 40,
+                maxBufferLength: isMaxQuality ? 60 : 30,
+                maxMaxBufferLength: isMaxQuality ? 120 : 60,
                 maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
                 maxBufferHole: 0.5,
                 backBufferLength: isMaxQuality ? 30 : 0,
                 // Live Stream Latency — play behind live edge to prevent buffering
-                liveSyncDurationCount: isMaxQuality ? 6 : 4,
-                liveMaxLatencyDurationCount: isMaxQuality ? 12 : 8,
+                liveSyncDurationCount: isMaxQuality ? 8 : 5,
+                liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
                 // ABR Tuning
                 abrEwmaDefaultEstimate: 2_000_000, // Moderate initial default
                 abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
-                abrBandWidthFactor: isMaxQuality ? 0.90 : 0.85,
-                abrBandWidthUpFactor: isMaxQuality ? 0.80 : 0.70,
+                abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
+                abrBandWidthUpFactor: 0.65,
                 abrMaxWithRealBitrate: true,
                 // Network Retry
-                fragLoadingMaxRetry: 6,
+                fragLoadingMaxRetry: 8,
                 manifestLoadingMaxRetry: 4,
                 levelLoadingMaxRetry: 4,
                 // Reduce timeouts to fail fast and retry quickly during transient glitches
-                fragLoadingTimeOut: 10000,
+                fragLoadingTimeOut: 6000,
                 manifestLoadingTimeOut: 10000,
                 levelLoadingTimeOut: 10000,
                 fragLoadingMaxRetryTimeout: 16000,
