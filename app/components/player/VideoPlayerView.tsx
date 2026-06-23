@@ -557,7 +557,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className={`${isFullscreen ? "absolute" : "fixed"} inset-0 bg-black/60 backdrop-blur-xs z-[9998] mobile-settings-sheet pointer-events-auto`}
+                  className={`md:hidden ${isFullscreen ? "absolute" : "fixed"} inset-0 bg-black/60 backdrop-blur-xs z-[9998] mobile-settings-sheet pointer-events-auto`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowSettings(false);
@@ -571,7 +571,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
                   transition={{ type: "spring", damping: 26, stiffness: 220 }}
-                  className={`${isFullscreen ? "absolute" : "fixed"} bottom-0 left-0 right-0 max-h-[75%] bg-[#0f0f0f]/95 backdrop-blur-3xl border-t border-white/10 rounded-t-[24px] p-4 pb-6 flex flex-col z-[9999] shadow-[0_-12px_40px_rgba(0,0,0,0.8),_inset_0_1px_1px_rgba(255,255,255,0.15)] mobile-settings-sheet pointer-events-auto`}
+                  className={`md:hidden ${isFullscreen ? "absolute" : "fixed"} bottom-0 left-0 right-0 max-h-[75%] bg-[#0f0f0f]/95 backdrop-blur-3xl border-t border-white/10 rounded-t-[24px] p-4 pb-6 flex flex-col z-[9999] shadow-[0_-12px_40px_rgba(0,0,0,0.8),_inset_0_1px_1px_rgba(255,255,255,0.15)] mobile-settings-sheet pointer-events-auto`}
                   onClick={(e) => e.stopPropagation()}
                   onDoubleClick={(e) => e.stopPropagation()}
                 >
