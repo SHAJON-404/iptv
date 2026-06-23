@@ -29,6 +29,10 @@ function isPrivateOrLocalIp(ip: string): boolean {
   return false;
 }
 
+// Global in-memory cache for SSRF DNS validation
+const dnsValidationCache = new Map<string, { isValid: boolean; timestamp: number }>();
+const DNS_CACHE_TTL = 10 * 60 * 1000; // 10 minutes cache TTL
+
 async function isValidTargetUrl(urlStr: string): Promise<boolean> {
   try {
     const parsed = new URL(urlStr);
@@ -49,11 +53,19 @@ async function isValidTargetUrl(urlStr: string): Promise<boolean> {
       return false;
     }
 
+    // Check cache
+    const cached = dnsValidationCache.get(lowerHost);
+    const now = Date.now();
+    if (cached && (now - cached.timestamp < DNS_CACHE_TTL)) {
+      return cached.isValid;
+    }
+
     // Resolve DNS to verify resolved IP address
     try {
       const addresses = await dns.promises.lookup(hostname, { all: true });
       for (const addr of addresses) {
         if (isPrivateOrLocalIp(addr.address)) {
+          dnsValidationCache.set(lowerHost, { isValid: false, timestamp: now });
           return false;
         }
       }
@@ -62,6 +74,8 @@ async function isValidTargetUrl(urlStr: string): Promise<boolean> {
       return false;
     }
 
+    // Cache valid hostnames
+    dnsValidationCache.set(lowerHost, { isValid: true, timestamp: now });
     return true;
   } catch {
     return false;
@@ -69,8 +83,11 @@ async function isValidTargetUrl(urlStr: string): Promise<boolean> {
 }
 
 // Create a custom Undici Agent to handle legacy IPTV servers
-// that use older TLS versions or legacy cipher suites.
+// that use older TLS versions or legacy cipher suites, optimized with Keep-Alive connection pooling.
 const sslAgent = new Agent({
+  keepAliveTimeout: 15000, // 15 seconds Keep-Alive for continuous video chunk requests
+  keepAliveMaxTimeout: 30000,
+  connections: 200, // Increase connection pool size to handle concurrent streaming requests
   connect: {
     rejectUnauthorized: false,
     ciphers: "DEFAULT:@SECLEVEL=0",
@@ -230,12 +247,12 @@ export async function GET(request: NextRequest) {
     const isM3U8 =
       contentType.toLowerCase().includes("mpegurl") ||
       contentType.toLowerCase().includes("mpeg-url") ||
-      targetUrl.toLowerCase().split(/[?#]/)[0].endsWith(".m3u8") ||
-      targetUrl.toLowerCase().split(/[?#]/)[0].endsWith(".m3u");
+      currentUrl.toLowerCase().split(/[?#]/)[0].endsWith(".m3u8") ||
+      currentUrl.toLowerCase().split(/[?#]/)[0].endsWith(".m3u");
 
     const isMPD =
       contentType.toLowerCase().includes("dash+xml") ||
-      targetUrl.toLowerCase().split(/[?#]/)[0].endsWith(".mpd");
+      currentUrl.toLowerCase().split(/[?#]/)[0].endsWith(".mpd");
 
     if (isM3U8) {
       const text = await response.text();
@@ -268,13 +285,13 @@ export async function GET(request: NextRequest) {
             (match, qDouble, qSingle, unquoted) => {
               const uri = qDouble || qSingle || unquoted;
               if (!uri) return match;
-              const resolved = resolveUrlWithQuery(uri, targetUrl);
+              const resolved = resolveUrlWithQuery(uri, currentUrl);
               return `URI="${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${refererSuffix}"`;
             }
           );
         } else {
           // Rewrite the direct stream/segment URL line
-          const resolved = resolveUrlWithQuery(trimmed, targetUrl);
+          const resolved = resolveUrlWithQuery(trimmed, currentUrl);
           return `${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${refererSuffix}`;
         }
       });
@@ -291,7 +308,7 @@ export async function GET(request: NextRequest) {
       });
     } else if (isMPD) {
       const text = await response.text();
-      const baseUri = getBaseUrl(targetUrl);
+      const baseUri = getBaseUrl(currentUrl);
 
       // Find the first <Period tag or first <SegmentTemplate tag
       const periodIndex = text.search(/<(Period|SegmentTemplate)/i);
@@ -312,7 +329,7 @@ export async function GET(request: NextRequest) {
           if (/^https?:\/\//i.test(trimmed)) {
             return match;
           }
-          const resolved = resolveUrl(trimmed, targetUrl);
+          const resolved = resolveUrl(trimmed, currentUrl);
           return `<BaseURL${attrs}>${resolved}</BaseURL>`;
         });
       } else {
