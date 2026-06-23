@@ -95,6 +95,7 @@ export function useVideoPlayer(
   const loadedUrlRef = useRef<string | null>(null);
   const loadedChannelRef = useRef<Channel | null>(null);
   const nativeErrorCleanupRef = useRef<(() => void) | null>(null);
+  const lastRetryKeyRef = useRef(retryKey);
   const [viewerCount, setViewerCount] = useState<number | null>(null);
 
   // Listen for global viewer count updates from ViewerTracker
@@ -1508,9 +1509,11 @@ export function useVideoPlayer(
       loadedChannelRef.current?.id !== selectedChannel.id ||
       loadedChannelRef.current?.url !== selectedChannel.url ||
       loadedChannelRef.current?.no_proxy !== selectedChannel.no_proxy;
+    const hasRetryKeyChanged = lastRetryKeyRef.current !== retryKey;
 
-    if (hasChannelChanged) {
-      initializeStream(selectedChannel, false);
+    if (hasChannelChanged || hasRetryKeyChanged) {
+      lastRetryKeyRef.current = retryKey;
+      initializeStream(selectedChannel, hasRetryKeyChanged);
     }
   }, [selectedChannel, retryKey, initializeStream]);
 
