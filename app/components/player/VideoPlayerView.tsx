@@ -151,7 +151,11 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
   const settingsRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+      const target = event.target as HTMLElement;
+      if (target.closest(".mobile-settings-sheet")) {
+        return;
+      }
+      if (settingsRef.current && !settingsRef.current.contains(target)) {
         setShowSettings(false);
       }
     };
@@ -418,83 +422,98 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute bottom-full right-0 mb-3 w-48 sm:w-52 max-h-[160px] sm:max-h-[240px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/80 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
+                      className="hidden md:block absolute bottom-full right-0 mb-3 w-48 sm:w-52 max-h-[280px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/90 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
                     >
                       <div className="px-3 py-2 text-sm font-bold text-white flex items-center justify-center mb-1 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => setShowSettings(false)}>
                         Quality
                       </div>
-                      {availableQualities.filter(q => q.id !== 'auto').map((q) => (
-                        <button
-                          key={q.id}
-                          onClick={() => {
-                            handleQualityChange(q.id);
-                            setShowSettings(false);
-                          }}
-                          className={`w-full flex items-center justify-start px-3 py-2.5 text-sm transition-colors ${currentQuality === q.id
-                            ? "bg-white/10 text-white font-bold"
-                            : "text-zinc-200 hover:bg-white/10 hover:text-white"
-                            }`}
-                        >
-                          <div className="flex items-center justify-center w-6 mr-1.5">
-                            {currentQuality === q.id && <Check size={16} className="text-white" />}
-                          </div>
-                          <span className="flex items-baseline justify-start flex-1 pr-2">
-                            <span className="flex items-baseline min-w-[62px] shrink-0">
-                              <span>{q.name}</span>
-                              {q.height && q.height >= 2160 && (
-                                <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">4K</sup>
-                              )}
-                              {q.height && q.height >= 1080 && q.height < 2160 && (
-                                <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">HD</sup>
-                              )}
-                            </span>
-                            {q.bandwidth && (
-                              <span className="text-zinc-400 text-xs font-normal ml-2 select-none whitespace-nowrap">
-                                {formatBandwidth(q.bandwidth)}
-                              </span>
-                            )}
-                          </span>
-                        </button>
-                      ))}
 
-                      {/* Auto Option at the bottom */}
-                      {availableQualities.find(q => q.id === 'auto') && (
-                        <div className="mt-1 pt-1 border-t border-white/10">
-                          <button
-                            onClick={() => {
-                              handleQualityChange('auto');
-                              setShowSettings(false);
-                            }}
-                            className={`w-full flex items-center justify-start px-3 py-2.5 text-sm transition-colors ${currentQuality === 'auto'
-                              ? "bg-white/10 text-white font-bold"
-                              : "text-zinc-200 hover:bg-white/10 hover:text-white"
+                      <div className="flex flex-col">
+                        {availableQualities.filter(q => q.id !== 'auto').map((q) => {
+                          const isActive = currentQuality === q.id;
+                          return (
+                            <button
+                              key={q.id}
+                              onClick={() => {
+                                handleQualityChange(q.id);
+                                setShowSettings(false);
+                              }}
+                              className={`w-full flex items-center justify-start px-3 py-2 text-sm transition-colors ${
+                                isActive
+                                  ? "bg-white/10 text-white font-bold"
+                                  : "text-zinc-200 hover:bg-white/10 hover:text-white"
                               }`}
-                          >
-                            <div className="flex items-center justify-center w-6 mr-1.5">
-                              {currentQuality === 'auto' && <Check size={16} className="text-white" />}
+                            >
+                              <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
+                                {isActive && <Check size={16} className="text-white" />}
+                              </div>
+
+                              <span className="flex items-baseline justify-start flex-1 pr-2">
+                                <span className="flex items-baseline min-w-[62px] shrink-0">
+                                  <span>{q.name}</span>
+                                  {q.height && q.height >= 2160 && (
+                                    <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">4K</sup>
+                                  )}
+                                  {q.height && q.height >= 1440 && q.height < 2160 && (
+                                    <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">2K</sup>
+                                  )}
+                                  {q.height && q.height >= 1080 && q.height < 1440 && (
+                                    <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">HD</sup>
+                                  )}
+                                </span>
+                                {q.bandwidth && (
+                                  <span className="text-zinc-400 text-xs font-normal ml-2 select-none whitespace-nowrap">
+                                    {formatBandwidth(q.bandwidth)}
+                                  </span>
+                                )}
+                              </span>
+                            </button>
+                          );
+                        })}
+
+                        {/* Auto Option */}
+                        {availableQualities.find(q => q.id === 'auto') && (() => {
+                          const isActive = currentQuality === 'auto';
+                          return (
+                            <div className="mt-1 pt-1 border-t border-white/10">
+                              <button
+                                onClick={() => {
+                                  handleQualityChange('auto');
+                                  setShowSettings(false);
+                                }}
+                                className={`w-full flex items-center justify-start px-3 py-2.5 text-sm transition-colors ${
+                                  isActive
+                                    ? "bg-white/10 text-white font-bold"
+                                    : "text-zinc-200 hover:bg-white/10 hover:text-white"
+                                }`}
+                              >
+                                <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
+                                  {isActive && <Check size={16} className="text-white" />}
+                                </div>
+                                <span className="flex items-center text-[13px]">Auto</span>
+                              </button>
                             </div>
-                            <span className="flex items-center">Auto</span>
+                          );
+                        })()}
+
+                        {/* Max Quality Mode Toggle */}
+                        <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleMaxQuality();
+                            }}
+                            className="w-full flex items-center justify-between text-xs transition-colors text-zinc-300 hover:text-white cursor-pointer"
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <Zap size={12} className={maxQualityMode ? "text-amber-400" : "text-zinc-500"} />
+                              <span className="font-semibold text-xs">Max Quality</span>
+                            </span>
+                            <div className={`w-7 h-4 rounded-full transition-colors relative ${maxQualityMode ? 'bg-primary' : 'bg-zinc-600'}`}>
+                              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${maxQualityMode ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                            </div>
                           </button>
                         </div>
-                      )}
-
-                      {/* Max Quality Mode Toggle */}
-                      <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleMaxQuality();
-                          }}
-                          className="w-full flex items-center justify-between text-xs transition-colors text-zinc-300 hover:text-white cursor-pointer"
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <Zap size={12} className={maxQualityMode ? "text-amber-400" : "text-zinc-500"} />
-                            <span className="font-semibold">Max Quality</span>
-                          </span>
-                          <div className={`w-7 h-4 rounded-full transition-colors relative ${maxQualityMode ? 'bg-primary' : 'bg-zinc-600'}`}>
-                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${maxQualityMode ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                          </div>
-                        </button>
                       </div>
                     </motion.div>
                   )}
@@ -510,6 +529,141 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Mobile Quality Settings Drawer */}
+      {availableQualities.length > 1 && (
+        <AnimatePresence>
+          {showSettings && (
+            <>
+              {/* Backdrop Overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="block md:hidden absolute inset-0 bg-black/60 backdrop-blur-xs z-[55] mobile-settings-sheet pointer-events-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSettings(false);
+                }}
+                onDoubleClick={(e) => e.stopPropagation()}
+              />
+
+              {/* Bottom Sheet Drawer */}
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 26, stiffness: 220 }}
+                className="block md:hidden absolute bottom-0 left-0 right-0 max-h-[75%] bg-[#0f0f0f]/95 backdrop-blur-3xl border-t border-white/10 rounded-t-[24px] p-4 pb-6 flex flex-col z-[60] shadow-[0_-12px_40px_rgba(0,0,0,0.8),_inset_0_1px_1px_rgba(255,255,255,0.15)] mobile-settings-sheet pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+                onDoubleClick={(e) => e.stopPropagation()}
+              >
+                {/* Drag Notch Indicator */}
+                <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4 shrink-0 cursor-pointer" onClick={() => setShowSettings(false)} />
+
+                {/* Title Header */}
+                <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/10 shrink-0 select-none">
+                  <span className="text-xs font-bold tracking-wider text-zinc-400 uppercase">Quality Options</span>
+                  <button
+                    onClick={() => setShowSettings(false)}
+                    className="text-xs text-white/90 font-medium px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 cursor-pointer transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
+
+                {/* Options List */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 pr-0.5">
+                  {availableQualities.filter(q => q.id !== 'auto').map((q) => {
+                    const isActive = currentQuality === q.id;
+                    return (
+                      <button
+                        key={q.id}
+                        onClick={() => {
+                          handleQualityChange(q.id);
+                          setShowSettings(false);
+                        }}
+                        className={`w-full flex items-center justify-start px-3 py-3 text-sm rounded-2xl transition-all duration-200 cursor-pointer ${
+                          isActive
+                            ? "bg-primary/25 text-white font-bold border border-primary/30 shadow-sm"
+                            : "text-zinc-200 active:bg-white/10 border border-transparent"
+                        }`}
+                      >
+                        <div className="flex items-center justify-center w-5 mr-3 shrink-0">
+                          {isActive && <Check size={16} className="text-primary" />}
+                        </div>
+                        <span className="flex items-baseline justify-start flex-1 pr-2">
+                          <span className="flex items-baseline min-w-[62px] shrink-0">
+                            <span className="text-[14px]">{q.name}</span>
+                            {q.height && q.height >= 2160 && (
+                              <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">4K</sup>
+                            )}
+                            {q.height && q.height >= 1440 && q.height < 2160 && (
+                              <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">2K</sup>
+                            )}
+                            {q.height && q.height >= 1080 && q.height < 1440 && (
+                              <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">HD</sup>
+                            )}
+                          </span>
+                          {q.bandwidth && (
+                            <span className="text-zinc-400 text-xs font-normal ml-3 select-none whitespace-nowrap">
+                              {formatBandwidth(q.bandwidth)}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+
+                  {/* Auto Option */}
+                  {availableQualities.find(q => q.id === 'auto') && (() => {
+                    const isActive = currentQuality === 'auto';
+                    return (
+                      <div className="mt-1.5 pt-1.5 border-t border-white/10">
+                        <button
+                          onClick={() => {
+                            handleQualityChange('auto');
+                            setShowSettings(false);
+                          }}
+                          className={`w-full flex items-center justify-start px-3 py-3 text-sm rounded-2xl transition-all duration-200 cursor-pointer ${
+                            isActive
+                              ? "bg-primary/25 text-white font-bold border border-primary/30 shadow-sm"
+                              : "text-zinc-200 active:bg-white/10 border border-transparent"
+                          }`}
+                        >
+                          <div className="flex items-center justify-center w-5 mr-3 shrink-0">
+                            {isActive && <Check size={16} className="text-primary" />}
+                          </div>
+                          <span className="text-[14px]">Auto</span>
+                        </button>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Max Quality Toggle */}
+                  <div className="mt-1.5 pt-1.5 border-t border-white/10">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleMaxQuality();
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-3 text-xs rounded-2xl transition-all duration-200 text-zinc-300 active:bg-white/5 cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Zap size={14} className={maxQualityMode ? "text-amber-400 fill-amber-400/25" : "text-zinc-500"} />
+                        <span className="font-semibold text-[14px]">Max Quality</span>
+                      </span>
+                      <div className={`w-8 h-4.5 rounded-full transition-all duration-200 relative ${maxQualityMode ? 'bg-primary' : 'bg-zinc-700'}`}>
+                        <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow-md transition-all duration-200 ${maxQualityMode ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       )}
     </div>
   );
