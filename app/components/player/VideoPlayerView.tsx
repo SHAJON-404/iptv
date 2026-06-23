@@ -18,7 +18,11 @@ import {
   ChevronsRight,
   Radio,
   Check,
-  Zap
+  Zap,
+  Sliders,
+  Monitor,
+  Wifi,
+  Sparkles
 } from "lucide-react";
 import { FaTelegram } from "react-icons/fa6";
 import { StreamQuality } from "../../hooks/useVideoPlayer";
@@ -425,8 +429,9 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       className="hidden md:block absolute bottom-full right-0 mb-3 w-48 sm:w-52 max-h-[280px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/90 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
                     >
-                      <div className="px-3 py-2 text-sm font-bold text-white flex items-center justify-center mb-1 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => setShowSettings(false)}>
-                        Quality
+                      <div className="px-3 py-2 text-sm font-bold text-zinc-200 flex items-center justify-center gap-1.5 mb-1 border-b border-white/10 select-none">
+                        <Sliders size={14} className="text-primary" />
+                        <span>Quality</span>
                       </div>
 
                       <div className="flex flex-col">
@@ -441,12 +446,16 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                               }}
                               className={`w-full flex items-center justify-start px-3 py-2 text-sm transition-colors ${
                                 isActive
-                                  ? "bg-white/10 text-white font-bold"
-                                  : "text-zinc-200 hover:bg-white/10 hover:text-white"
+                                  ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                                  : "text-zinc-300 hover:bg-white/[0.04] hover:text-white border-l-2 border-transparent"
                               }`}
                             >
                               <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
-                                {isActive && <Check size={16} className="text-white" />}
+                                {isActive ? (
+                                  <Check size={14} className="text-primary" />
+                                ) : (
+                                  <Monitor size={14} className="text-zinc-500" />
+                                )}
                               </div>
 
                               <span className="flex items-baseline justify-start flex-1 pr-2">
@@ -463,8 +472,9 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                                   )}
                                 </span>
                                 {q.bandwidth && (
-                                  <span className="text-zinc-400 text-xs font-normal ml-2 select-none whitespace-nowrap">
-                                    {formatBandwidth(q.bandwidth)}
+                                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/5 text-[10px] text-zinc-400 font-medium select-none ml-auto">
+                                    <Wifi size={10} className="text-zinc-500" />
+                                    <span>{formatBandwidth(q.bandwidth)}</span>
                                   </span>
                                 )}
                               </span>
@@ -484,12 +494,16 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                                 }}
                                 className={`w-full flex items-center justify-start px-3 py-2.5 text-sm transition-colors ${
                                   isActive
-                                    ? "bg-white/10 text-white font-bold"
-                                    : "text-zinc-200 hover:bg-white/10 hover:text-white"
+                                    ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                                    : "text-zinc-200 hover:bg-white/10 hover:text-white border-l-2 border-transparent"
                                 }`}
                               >
                                 <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
-                                  {isActive && <Check size={16} className="text-white" />}
+                                  {isActive ? (
+                                    <Check size={16} className="text-primary" />
+                                  ) : (
+                                    <Sparkles size={14} className="text-zinc-500" />
+                                  )}
                                 </div>
                                 <span className="flex items-center text-[13px]">Auto</span>
                               </button>
@@ -565,11 +579,12 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                   <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4 shrink-0 cursor-pointer" onClick={() => setShowSettings(false)} />
 
                   {/* Title Header */}
-                  <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/10 shrink-0 select-none">
-                    <span className="text-xs font-bold tracking-wider text-zinc-400 uppercase">Quality Options</span>
+                  <div className="flex items-center gap-2 pb-3 mb-2 border-b border-white/10 shrink-0 select-none">
+                    <Sliders size={16} className="text-primary" />
+                    <span className="text-sm font-bold tracking-wider text-white">Quality Options</span>
                     <button
                       onClick={() => setShowSettings(false)}
-                      className="text-xs text-white/90 font-medium px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 cursor-pointer transition-colors"
+                      className="text-xs text-white/90 font-medium px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 cursor-pointer transition-colors ml-auto"
                     >
                       Done
                     </button>
@@ -588,12 +603,16 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                           }}
                           className={`w-full flex items-center justify-start px-3 py-3 text-sm rounded-2xl transition-all duration-200 cursor-pointer ${
                             isActive
-                              ? "bg-primary/25 text-white font-bold border border-primary/30 shadow-sm"
-                              : "text-zinc-200 active:bg-white/10 border border-transparent"
+                              ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                              : "text-zinc-300 active:bg-white/[0.04] border-l-2 border-transparent"
                           }`}
                         >
                           <div className="flex items-center justify-center w-5 mr-3 shrink-0">
-                            {isActive && <Check size={16} className="text-primary" />}
+                            {isActive ? (
+                              <Check size={16} className="text-primary" />
+                            ) : (
+                              <Monitor size={16} className="text-zinc-500" />
+                            )}
                           </div>
                           <span className="flex items-baseline justify-start flex-1 pr-2">
                             <span className="flex items-baseline min-w-[62px] shrink-0">
@@ -609,8 +628,9 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                               )}
                             </span>
                             {q.bandwidth && (
-                              <span className="text-zinc-400 text-xs font-normal ml-3 select-none whitespace-nowrap">
-                                {formatBandwidth(q.bandwidth)}
+                              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/5 text-[10px] text-zinc-400 font-medium select-none ml-auto">
+                                <Wifi size={10} className="text-zinc-500" />
+                                <span>{formatBandwidth(q.bandwidth)}</span>
                               </span>
                             )}
                           </span>
@@ -630,12 +650,16 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                             }}
                             className={`w-full flex items-center justify-start px-3 py-3 text-sm rounded-2xl transition-all duration-200 cursor-pointer ${
                               isActive
-                                ? "bg-primary/25 text-white font-bold border border-primary/30 shadow-sm"
-                                : "text-zinc-200 active:bg-white/10 border border-transparent"
+                                ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                                : "text-zinc-300 active:bg-white/[0.04] border-l-2 border-transparent"
                             }`}
                           >
                             <div className="flex items-center justify-center w-5 mr-3 shrink-0">
-                              {isActive && <Check size={16} className="text-primary" />}
+                              {isActive ? (
+                                <Check size={16} className="text-primary" />
+                              ) : (
+                                <Sparkles size={16} className="text-zinc-500" />
+                              )}
                             </div>
                             <span className="text-[14px]">Auto</span>
                           </button>
