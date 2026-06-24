@@ -9,7 +9,7 @@ interface Channel {
   logo: string;
   group: string;
   url: string;
-  no_proxy?: boolean;
+  useProxy?: boolean;
   referer?: string;
 }
 
@@ -70,7 +70,7 @@ export function getChannelsWithHash(rawType: string = "universal") {
         // Add IDs if not present and deduplicate
         const channels = raw.map(
           (
-            ch: { name: string; logo: string; group: string; url: string; type?: string; kid?: string; key?: string; no_proxy?: boolean; referer?: string },
+            ch: { name: string; logo: string; group: string; url: string; type?: string; kid?: string; key?: string; useProxy?: boolean; referer?: string },
             idx: number
           ) => ({
             id: `ch-${type}-${idx}`,
@@ -81,7 +81,7 @@ export function getChannelsWithHash(rawType: string = "universal") {
             ...(ch.type && { type: ch.type }),
             ...(ch.kid && { kid: ch.kid }),
             ...(ch.key && { key: ch.key }),
-            ...(ch.no_proxy !== undefined && { no_proxy: ch.no_proxy }),
+            ...(ch.useProxy !== undefined && { useProxy: ch.useProxy }),
             ...(ch.referer && { referer: ch.referer }),
           })
         );
