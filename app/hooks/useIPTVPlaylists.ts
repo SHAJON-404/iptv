@@ -77,10 +77,18 @@ export const getIsIOS = (): boolean => {
   if (/iPad|iPhone|iPod/.test(ua)) return true;
   // iPadOS reports as Mac but has touch — use modern userAgentData API with legacy fallback
   const platform =
-    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
-    navigator.platform ??
-    "";
-  return (platform === "macOS" || platform === "MacIntel") && navigator.maxTouchPoints > 1;
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? "";
+  const isMac = platform === "macOS" || /Macintosh|MacIntel|MacPPC|Mac68K/.test(ua);
+  return isMac && navigator.maxTouchPoints > 1;
+};
+
+export const getIsAppleDevice = (): boolean => {
+  if (typeof navigator === "undefined") return false;
+  if (getIsIOS()) return true;
+  const ua = navigator.userAgent;
+  const platform =
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? "";
+  return platform === "macOS" || /Macintosh|MacIntel|MacPPC|Mac68K/.test(ua);
 };
 
 export function useIPTVPlaylists() {
@@ -119,7 +127,7 @@ export function useIPTVPlaylists() {
   useEffect(() => {
     const currentPlaylist = playlists.find(p => p.id === activePlaylistId);
     if (currentPlaylist) {
-      const filtered = getIsIOS()
+      const filtered = getIsAppleDevice()
         ? currentPlaylist.channels.filter(c => !(c.type === "dash" || c.url.includes(".mpd") || c.url.endsWith(".mpd")))
         : currentPlaylist.channels;
 

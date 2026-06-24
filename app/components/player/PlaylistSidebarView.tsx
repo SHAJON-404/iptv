@@ -2,7 +2,7 @@
 
 import React from "react";
 import { List, Tv, Link as LinkIcon, FileText, Trash2, RefreshCw, Check } from "lucide-react";
-import { Playlist, getIsIOS } from "../../hooks/useIPTVPlaylists";
+import { Playlist, getIsAppleDevice } from "../../hooks/useIPTVPlaylists";
 
 interface PlaylistSidebarViewProps {
   playlists: Playlist[];
@@ -99,7 +99,7 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
           playlists.map((pl) => {
             const isActive = pl.id === activePlaylistId;
             const filteredCount = (
-              getIsIOS()
+              getIsAppleDevice()
                 ? pl.channels.filter(c => !(c.type === "dash" || c.url.includes(".mpd") || c.url.endsWith(".mpd")))
                 : pl.channels
             ).length;
