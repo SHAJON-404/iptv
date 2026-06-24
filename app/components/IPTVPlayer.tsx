@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Tv, Radio, Upload, AlertCircle, ShieldAlert } from "lucide-react";
 import { FaGithub, FaTelegram, FaDiscord } from "react-icons/fa6";
 
@@ -67,7 +67,6 @@ export default function IPTVPlayer() {
     playerError,
     isBuffering,
     isPaused,
-    hasPlayed,
     isMuted,
     volume,
     isFullscreen,
@@ -91,7 +90,24 @@ export default function IPTVPlayer() {
     handleReload,
     handleMouseMove,
     initializeStream,
-  } = useVideoPlayer(selectedChannel, retryKey, setRetryKey);
+  } = useVideoPlayer(selectedChannel, retryKey, setRetryKey, () => {
+    setChannels((currentChannels) => {
+      if (currentChannels.length <= 1) return currentChannels;
+
+      const currentIndex = currentChannels.findIndex(
+        (c) => c.id === selectedChannel?.id || c.url === selectedChannel?.url
+      );
+      if (currentIndex !== -1) {
+        const nextIndex = (currentIndex + 1) % currentChannels.length;
+        const nextChan = currentChannels[nextIndex];
+        setTimeout(() => {
+          setSelectedChannel(nextChan);
+          setRetryKey(k => k + 1);
+        }, 0);
+      }
+      return currentChannels;
+    });
+  });
 
   // 3. Selection handler orchestrating state & scrolling
   const handleChannelSelect = useCallback(
@@ -110,50 +126,6 @@ export default function IPTVPlayer() {
     },
     [setSelectedChannel, initializeStream, playerWrapperRef]
   );
-
-  const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // 4. Automatic channel switch if playback doesn't start in 30 seconds
-  useEffect(() => {
-    if (!selectedChannel || playerStatus === "playing" || playerStatus === "idle" || (hasPlayed && isPaused)) {
-      if (playTimeoutRef.current) {
-        clearTimeout(playTimeoutRef.current);
-        playTimeoutRef.current = null;
-      }
-      return;
-    }
-
-    if (playTimeoutRef.current) {
-      clearTimeout(playTimeoutRef.current);
-    }
-
-    playTimeoutRef.current = setTimeout(() => {
-      console.log("Playback failed to start within 30 seconds, switching to next channel...");
-
-      setChannels((currentChannels) => {
-        if (currentChannels.length <= 1) return currentChannels;
-
-        const currentIndex = currentChannels.findIndex(
-          (c) => c.id === selectedChannel.id || c.url === selectedChannel.url
-        );
-        if (currentIndex !== -1) {
-          const nextIndex = (currentIndex + 1) % currentChannels.length;
-          const nextChan = currentChannels[nextIndex];
-          setTimeout(() => {
-            handleChannelSelect(nextChan);
-          }, 0);
-        }
-        return currentChannels;
-      });
-    }, 30000);
-
-    return () => {
-      if (playTimeoutRef.current) {
-        clearTimeout(playTimeoutRef.current);
-        playTimeoutRef.current = null;
-      }
-    };
-  }, [selectedChannel, playerStatus, retryKey, handleChannelSelect, setChannels, hasPlayed, isPaused]);
 
   // 5. Memoized categories and channel collections
   const categories = useMemo(() => [
