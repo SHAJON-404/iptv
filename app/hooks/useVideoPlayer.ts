@@ -648,8 +648,10 @@ export function useVideoPlayer(
       }
 
       // Check if it is a DASH/TS stream and we are on iOS/iPadOS
-      const isDashStream = initialChan.type === "dash" || initialChan.url.endsWith(".mpd");
-      const isTsStream = !isDashStream && (initialChan.url.includes(".ts") || initialChan.type === "ts");
+      const cleanUrlStr = (initialChan.url || "").split(/[?#]/)[0].toLowerCase();
+      const isDashStream = initialChan.type === "dash" || cleanUrlStr.endsWith(".mpd");
+      const isHlsStream = initialChan.type === "hls" || cleanUrlStr.endsWith(".m3u8") || cleanUrlStr.endsWith(".m3u");
+      const isTsStream = !isDashStream && !isHlsStream && (cleanUrlStr.endsWith(".ts") || initialChan.type === "ts");
       if ((isDashStream || isTsStream) && getIsIOS()) {
         setPlayerStatus("error");
         setPlayerError("DASH/TS streams are not supported in iOS/iPad OS");
@@ -770,8 +772,10 @@ export function useVideoPlayer(
               });
           };
 
-          const isDash = chan.type === "dash" || chan.url.endsWith(".mpd");
-          const isTs = !isDash && (chan.url.includes(".ts") || chan.type === "ts");
+          const cleanChanUrlStr = (chan.url || "").split(/[?#]/)[0].toLowerCase();
+          const isDash = chan.type === "dash" || cleanChanUrlStr.endsWith(".mpd");
+          const isHls = chan.type === "hls" || cleanChanUrlStr.endsWith(".m3u8") || cleanChanUrlStr.endsWith(".m3u");
+          const isTs = !isDash && !isHls && (cleanChanUrlStr.endsWith(".ts") || chan.type === "ts");
 
           if (isDash) {
             (async () => {
