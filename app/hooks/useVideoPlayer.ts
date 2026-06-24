@@ -8,8 +8,8 @@ import { Channel, getIsIOS } from "./useIPTVPlaylists";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ShakaPlayer = any;
 
-const getPlayableUrl = (url: string, no_proxy?: boolean, referer?: string) => {
-  if (!no_proxy && url && (url.startsWith("http://") || url.startsWith("https://"))) {
+const getPlayableUrl = (url: string, useProxy?: boolean, referer?: string) => {
+  if (useProxy && url && (url.startsWith("http://") || url.startsWith("https://"))) {
     let proxyUrl = `/api/iptv/proxy?url=${encodeURIComponent(url)}`;
     if (referer) {
       proxyUrl += `&referer=${encodeURIComponent(referer)}`;
@@ -60,7 +60,8 @@ export interface StreamQuality {
 export function useVideoPlayer(
   selectedChannel: Channel | null,
   retryKey: number,
-  setRetryKey: React.Dispatch<React.SetStateAction<number>>
+  setRetryKey: React.Dispatch<React.SetStateAction<number>>,
+  onChannelFail?: () => void
 ) {
   const [playerError, setPlayerError] = useState<string | null>(null);
   const [isBuffering, setIsBuffering] = useState(false);
@@ -97,6 +98,16 @@ export function useVideoPlayer(
   const nativeErrorCleanupRef = useRef<(() => void) | null>(null);
   const lastRetryKeyRef = useRef(retryKey);
   const [viewerCount, setViewerCount] = useState<number | null>(null);
+
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fallbackAttemptRef = useRef(0);
+  const onChannelFailRef = useRef(onChannelFail);
+  useEffect(() => { onChannelFailRef.current = onChannelFail; }, [onChannelFail]);
+
+  const playerStatusRef = useRef(playerStatus);
+  useEffect(() => { playerStatusRef.current = playerStatus; }, [playerStatus]);
+  const isBufferingRef = useRef(isBuffering);
+  useEffect(() => { isBufferingRef.current = isBuffering; }, [isBuffering]);
 
   // Listen for global viewer count updates from ViewerTracker
   useEffect(() => {
@@ -544,7 +555,7 @@ export function useVideoPlayer(
   const handleQualityChange = useCallback((qualityId: number | "auto") => {
     setCurrentQuality(qualityId);
     const isMaxQ = maxQualityModeRef.current;
-  
+
     if (shakaRef.current) {
       const player = shakaRef.current;
       if (qualityId === "auto") {
@@ -589,7 +600,7 @@ export function useVideoPlayer(
         }
       }
     }
-    
+
     resetControlsTimeout();
   }, [resetControlsTimeout]);
 
@@ -597,8 +608,12 @@ export function useVideoPlayer(
     resetControlsTimeout();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const initializeStreamRef = useRef<any>(null);
   const initializeStream = useCallback(
-    (initialChan: Channel, isUserClick: boolean) => {
+    (initialChan: Channel, isUserClick: boolean, overrideProxyMode?: boolean) => {
+      // eslint-disable-next-line react-hooks/immutability
+      initializeStreamRef.current = initializeStream;
       const video = videoRef.current;
       if (!video) return;
 
@@ -620,7 +635,7 @@ export function useVideoPlayer(
         shakaRef.current.destroy().catch(() => { });
         shakaRef.current = null;
       }
-      
+
       if (mpegtsRef.current) {
         mpegtsRef.current.destroy();
         mpegtsRef.current = null;
@@ -672,704 +687,484 @@ export function useVideoPlayer(
         if (loadedUrlRef.current !== initialChan.url) return;
 
         (async () => {
-          let dynamicNoProxy = false;
+          let dynamicUseProxy = initialChan.useProxy ?? false;
           if (initialChan.referer) {
             // Referer streams must be proxied to pass custom headers
-            dynamicNoProxy = false;
+            dynamicUseProxy = true;
           } else if (getIsIOS() && (initialChan.url.includes(".m3u8") || initialChan.type === "hls")) {
             // Safari/iOS can play HLS directly bypassing JS CORS rules
-            dynamicNoProxy = true;
+            dynamicUseProxy = false;
           } else if (initialChan.url) {
             const supportsCors = await checkCorsSupport(initialChan.url);
             if (supportsCors) {
               console.log(`[CORS Check] URL supports CORS. Bypassing proxy: ${initialChan.url}`);
-              dynamicNoProxy = true;
+              dynamicUseProxy = false;
             } else {
               console.log(`[CORS Check] CORS check failed. Routing via proxy: ${initialChan.url}`);
-              dynamicNoProxy = false;
+              dynamicUseProxy = true;
             }
+          }
+
+          if (overrideProxyMode !== undefined) {
+            dynamicUseProxy = overrideProxyMode;
+            fallbackAttemptRef.current = 1;
+          } else {
+            fallbackAttemptRef.current = 0;
           }
 
           const chan = {
             ...initialChan,
-            no_proxy: dynamicNoProxy,
+            useProxy: dynamicUseProxy,
           };
 
           if (loadedUrlRef.current !== chan.url) return;
 
+          // Start fallback timer
+          if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+          fallbackTimerRef.current = setTimeout(() => {
+            if (playerStatusRef.current !== "playing" || isBufferingRef.current) {
+              if (fallbackAttemptRef.current === 0) {
+                console.log(`Stream failed to play within 10s, trying fallback proxy mode (useProxy=${!dynamicUseProxy})...`);
+                initializeStream(initialChan, false, !dynamicUseProxy);
+              } else {
+                console.log("Fallback also failed, switching channel...");
+                if (onChannelFailRef.current) onChannelFailRef.current();
+              }
+            }
+          }, 10000);
+
           const isMaxQuality = maxQualityModeRef.current;
 
-      const attemptPlay = () => {
-        video
-          .play()
-          .then(() => {
-            setPlayerStatus("playing");
-            setIsPaused(false);
-          })
-          .catch((err) => {
-            if (err.name === "NotAllowedError") {
-              video.muted = true;
-              setIsMuted(true);
-              video
-                .play()
-                .then(() => {
-                  setPlayerStatus("playing");
-                  setIsPaused(false);
-                  setupUnmuteOnInteraction();
-                })
-                .catch((playErr) => {
-                  if (playErr.name !== "AbortError") {
-                    console.error("Muted autoplay also failed:", playErr);
+          const attemptPlay = () => {
+            video
+              .play()
+              .then(() => {
+                setPlayerStatus("playing");
+                setIsPaused(false);
+              })
+              .catch((err) => {
+                if (err.name === "NotAllowedError") {
+                  video.muted = true;
+                  setIsMuted(true);
+                  video
+                    .play()
+                    .then(() => {
+                      setPlayerStatus("playing");
+                      setIsPaused(false);
+                      setupUnmuteOnInteraction();
+                    })
+                    .catch((playErr) => {
+                      if (playErr.name !== "AbortError") {
+                        console.error("Muted autoplay also failed:", playErr);
+                      }
+                      setPlayerStatus("playing");
+                      setIsPaused(true);
+                    });
+                } else {
+                  if (err.name !== "AbortError") {
+                    console.warn("Play failed:", err);
                   }
                   setPlayerStatus("playing");
-                  setIsPaused(true);
-                });
-            } else {
-              if (err.name !== "AbortError") {
-                console.warn("Play failed:", err);
-              }
-              setPlayerStatus("playing");
-              setIsPaused(video.paused);
-            }
-          });
-      };
+                  setIsPaused(video.paused);
+                }
+              });
+          };
 
-      const isDash = chan.type === "dash" || chan.url.endsWith(".mpd");
-      const isTs = !isDash && (chan.url.includes(".ts") || chan.type === "ts");
+          const isDash = chan.type === "dash" || chan.url.endsWith(".mpd");
+          const isTs = !isDash && (chan.url.includes(".ts") || chan.type === "ts");
 
-      if (isDash) {
-        (async () => {
-          let retriedShakaProxy = false;
+          if (isDash) {
+            (async () => {
 
-          const loadShakaPlayer = async (shakaChan: typeof chan) => {
-            try {
-              const shakaModule = await import("shaka-player");
-              const shaka = shakaModule.default || shakaModule;
 
-              if (loadedUrlRef.current !== initialChan.url) return;
+              const loadShakaPlayer = async (shakaChan: typeof chan) => {
+                try {
+                  const shakaModule = await import("shaka-player");
+                  const shaka = shakaModule.default || shakaModule;
 
-              shaka.polyfill.installAll();
+                  if (loadedUrlRef.current !== initialChan.url) return;
 
-              if (!shaka.Player.isBrowserSupported()) {
-                setPlayerError("Your browser does not support DASH playback.");
-                setPlayerStatus("error");
-                return;
-              }
+                  shaka.polyfill.installAll();
 
-              // Destroy any previously active Shaka instances before retrying
-              if (shakaRef.current) {
-                await shakaRef.current.destroy().catch(() => {});
-                shakaRef.current = null;
-              }
+                  if (!shaka.Player.isBrowserSupported()) {
+                    setPlayerError("Your browser does not support DASH playback.");
+                    setPlayerStatus("error");
+                    return;
+                  }
 
-              const player = new shaka.Player();
-              shakaRef.current = player;
-              await player.attach(video);
+                  // Destroy any previously active Shaka instances before retrying
+                  if (shakaRef.current) {
+                    await shakaRef.current.destroy().catch(() => { });
+                    shakaRef.current = null;
+                  }
 
-              try {
-                const net = player.getNetworkingEngine();
-                if (net) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  net.registerRequestFilter((_type: number, request: any) => {
-                    request.allowCrossSiteCredentials = false;
-                    if (request.uris && request.uris.length > 0) {
-                      request.uris = request.uris.map((uri: string) => {
-                        if (!shakaChan.no_proxy && uri && (uri.startsWith("http://") || uri.startsWith("https://")) && !uri.includes("/api/iptv/proxy")) {
-                          let proxyUri = `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
-                          if (shakaChan.referer) {
-                            proxyUri += `&referer=${encodeURIComponent(shakaChan.referer)}`;
-                          }
-                          return proxyUri;
+                  const player = new shaka.Player();
+                  shakaRef.current = player;
+                  await player.attach(video);
+
+                  try {
+                    const net = player.getNetworkingEngine();
+                    if (net) {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      net.registerRequestFilter((_type: number, request: any) => {
+                        request.allowCrossSiteCredentials = false;
+                        if (request.uris && request.uris.length > 0) {
+                          request.uris = request.uris.map((uri: string) => {
+                            if (shakaChan.useProxy && uri && (uri.startsWith("http://") || uri.startsWith("https://")) && !uri.includes("/api/iptv/proxy")) {
+                              let proxyUri = `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
+                              if (shakaChan.referer) {
+                                proxyUri += `&referer=${encodeURIComponent(shakaChan.referer)}`;
+                              }
+                              return proxyUri;
+                            }
+                            return uri;
+                          });
                         }
-                        return uri;
                       });
                     }
-                  });
-                }
-              } catch (err) {
-                console.warn("Failed to register Shaka network filters:", err);
-              }
+                  } catch (err) {
+                    console.warn("Failed to register Shaka network filters:", err);
+                  }
 
-              player.configure({
-                manifest: {
-                  defaultPresentationDelay: isMaxQuality ? 22 : 15,
-                  ignoreDrmInfo: !shakaChan.key,
-                  dash: {
-                    ignoreMinBufferTime: true,
-                    ignoreSuggestedPresentationDelay: false, // Respect manifest-defined latency for CDN sync
-                    autoCorrectDrift: true,
-                    ignoreEmptyAdaptationSet: true,
-                    ignoreMaxSegmentDuration: true,
-                    initialSegmentLimit: 1000,
-                  },
-                  retryParameters: { maxAttempts: 10, baseDelay: 450, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 12000 },
-                },
-                streaming: {
-                  lowLatencyMode: false,
-                  inaccurateManifestTolerance: 3,
-                  rebufferingGoal: isMaxQuality ? 8 : 4, // Safe minimum buffer before resuming standard playback
-                  bufferingGoal: isMaxQuality ? 60 : 30, // Larger prebuffer for stability
-                  bufferBehind: isMaxQuality ? 30 : 20,
-                  gapDetectionThreshold: 0.4,
-                  stallEnabled: true,
-                  stallThreshold: 1.2,
-                  stallSkip: 0.25,
-                  startAtSegmentBoundary: true,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-                  failureCallback: (_error: any) => {
-                    try { player.retryStreaming(); } catch { /* ignore */ }
-                  },
-                  retryParameters: { maxAttempts: 15, baseDelay: 450, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 15000 },
-                },
-                abr: {
-                  enabled: true,
-                  defaultBandwidthEstimate: 2_500_000, // Start lower for instant initial playback, then ramp up via ABR
-                  switchInterval: 2,
-                  restrictToElementSize: false,
-                  restrictToScreenSize: false,
-                  clearBufferSwitch: false,
-                  bandwidthDowngradeTarget: 0.85,
-                  bandwidthUpgradeTarget: 0.70, // More conservative target to prevent quality oscillations
-                  useNetworkInformation: true,
-                },
-              });
-
-              if (shakaChan.kid && shakaChan.key) {
-                player.configure({
-                  drm: {
-                    clearKeys: {
-                      [String(shakaChan.kid).toLowerCase()]: String(shakaChan.key).toLowerCase(),
+                  player.configure({
+                    manifest: {
+                      defaultPresentationDelay: isMaxQuality ? 22 : 15,
+                      ignoreDrmInfo: !shakaChan.key,
+                      dash: {
+                        ignoreMinBufferTime: true,
+                        ignoreSuggestedPresentationDelay: false, // Respect manifest-defined latency for CDN sync
+                        autoCorrectDrift: true,
+                        ignoreEmptyAdaptationSet: true,
+                        ignoreMaxSegmentDuration: true,
+                        initialSegmentLimit: 1000,
+                      },
+                      retryParameters: { maxAttempts: 10, baseDelay: 450, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 12000 },
                     },
-                    retryParameters: { maxAttempts: 5, baseDelay: 500, backoffFactor: 1.6, fuzzFactor: 0.3, timeout: 12000 },
-                  },
-                });
-              }
+                    streaming: {
+                      lowLatencyMode: false,
+                      inaccurateManifestTolerance: 3,
+                      rebufferingGoal: isMaxQuality ? 8 : 4, // Safe minimum buffer before resuming standard playback
+                      bufferingGoal: isMaxQuality ? 60 : 30, // Larger prebuffer for stability
+                      bufferBehind: isMaxQuality ? 30 : 20,
+                      gapDetectionThreshold: 0.4,
+                      stallEnabled: true,
+                      stallThreshold: 1.2,
+                      stallSkip: 0.25,
+                      startAtSegmentBoundary: true,
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+                      failureCallback: (_error: any) => {
+                        try { player.retryStreaming(); } catch { /* ignore */ }
+                      },
+                      retryParameters: { maxAttempts: 15, baseDelay: 450, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 15000 },
+                    },
+                    abr: {
+                      enabled: true,
+                      defaultBandwidthEstimate: 2_500_000, // Start lower for instant initial playback, then ramp up via ABR
+                      switchInterval: 2,
+                      restrictToElementSize: false,
+                      restrictToScreenSize: false,
+                      clearBufferSwitch: false,
+                      bandwidthDowngradeTarget: 0.85,
+                      bandwidthUpgradeTarget: 0.70, // More conservative target to prevent quality oscillations
+                      useNetworkInformation: true,
+                    },
+                  });
 
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              player.addEventListener("error", (event: any) => {
-                const detail = event?.detail;
-                console.error("[SHAKA] DASH error detail:", JSON.stringify(detail));
-                const code = detail?.code ?? "";
-                let errorMsg = "DASH stream error" + (code ? " • Code: " + code : "");
-                if (code === 6020) {
-                  errorMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
+                  if (shakaChan.kid && shakaChan.key) {
+                    player.configure({
+                      drm: {
+                        clearKeys: {
+                          [String(shakaChan.kid).toLowerCase()]: String(shakaChan.key).toLowerCase(),
+                        },
+                        retryParameters: { maxAttempts: 5, baseDelay: 500, backoffFactor: 1.6, fuzzFactor: 0.3, timeout: 12000 },
+                      },
+                    });
+                  }
+
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  player.addEventListener("error", (event: any) => {
+                    const detail = event?.detail;
+                    console.error("[SHAKA] DASH error detail:", JSON.stringify(detail));
+                    const code = detail?.code ?? "";
+                    let errorMsg = "DASH stream error" + (code ? " • Code: " + code : "");
+                    if (code === 6020) {
+                      errorMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
+                    }
+                    setPlayerStatus("error");
+                    setPlayerError(errorMsg);
+                  });
+
+                  await player.load(shakaChan.url);
+
+                  if (loadedUrlRef.current !== initialChan.url) {
+                    await player.destroy().catch(() => { });
+                    return;
+                  }
+
+                  // Extract qualities
+                  try {
+                    const tracks = player.getVariantTracks();
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const videoTracks = tracks.filter((t: any) => t.type === "variant" && t.videoId !== null);
+                    const qualitiesMap = new Map();
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    videoTracks.forEach((t: any) => {
+                      if (t.height) {
+                        const key = `${t.height}_${t.bandwidth}`;
+                        qualitiesMap.set(key, {
+                          id: t.id,
+                          name: `${t.height}p`,
+                          height: t.height,
+                          bandwidth: t.bandwidth
+                        });
+                      } else if (t.bandwidth) {
+                        qualitiesMap.set(t.bandwidth, {
+                          id: t.id,
+                          name: `${Math.round(t.bandwidth / 1000)} kbps`,
+                          height: 0,
+                          bandwidth: t.bandwidth
+                        });
+                      }
+                    });
+                    const extractedQualities = Array.from(qualitiesMap.values())
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      .filter((q: any) => q.height > 0)
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      .sort((a: any, b: any) => {
+                        if (b.height !== a.height) return b.height - a.height;
+                        return b.bandwidth - a.bandwidth;
+                      });
+                    if (extractedQualities.length > 0) {
+                      setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
+                    }
+                  } catch (e) {
+                    console.warn("Failed to extract Shaka qualities", e);
+                  }
+
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  player.addEventListener("buffering", (event: any) => {
+                    if (event.buffering) {
+                      setIsBuffering(true);
+                    } else {
+                      setIsBuffering(false);
+                      setPlayerStatus("playing");
+                      setIsPaused(false);
+                    }
+                  });
+
+                  attemptPlay();
+                } catch (err: unknown) {
+                  if (loadedUrlRef.current !== initialChan.url) return;
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const errObj = err as any;
+
+                  // Fallback to opposite proxy if load failed
+                  if (fallbackAttemptRef.current === 0) {
+                    console.warn(`[SHAKA] Load failed, retrying via opposite proxy...`, errObj);
+                    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+                    initializeStreamRef.current(initialChan, false, !chan.useProxy);
+                    return;
+                  }
+
+                  let errMsg = "DASH / TS load failed";
+                  if (errObj) {
+                    if (errObj.code) errMsg += ` (Code: ${errObj.code})`;
+                    if (errObj.category) errMsg += ` (Category: ${errObj.category})`;
+                    if (errObj.severity) errMsg += ` (Severity: ${errObj.severity})`;
+                    if (errObj.message) errMsg += ` - ${errObj.message}`;
+                    if (errObj.code === 6020) {
+                      errMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
+                    }
+                  }
+                  console.error("[SHAKA] Load error detail:", JSON.stringify(errObj), errMsg);
+                  setPlayerError(errMsg);
+                  setPlayerStatus("error");
                 }
-                setPlayerStatus("error");
-                setPlayerError(errorMsg);
-              });
+              };
 
-              await player.load(shakaChan.url);
-
-              if (loadedUrlRef.current !== initialChan.url) {
-                await player.destroy().catch(() => { });
-                return;
-              }
-
-              // Extract qualities
+              loadShakaPlayer(chan);
+            })();
+          } else if (isTs) {
+            (async () => {
               try {
-                const tracks = player.getVariantTracks();
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const videoTracks = tracks.filter((t: any) => t.type === "variant" && t.videoId !== null);
-                const qualitiesMap = new Map();
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                videoTracks.forEach((t: any) => {
-                  if (t.height) {
-                    const key = `${t.height}_${t.bandwidth}`;
-                    qualitiesMap.set(key, {
-                      id: t.id,
-                      name: `${t.height}p`,
-                      height: t.height,
-                      bandwidth: t.bandwidth
-                    });
-                  } else if (t.bandwidth) {
-                    qualitiesMap.set(t.bandwidth, {
-                      id: t.id,
-                      name: `${Math.round(t.bandwidth / 1000)} kbps`,
-                      height: 0,
-                      bandwidth: t.bandwidth
-                    });
-                  }
-                });
-                const extractedQualities = Array.from(qualitiesMap.values())
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  .filter((q: any) => q.height > 0)
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  .sort((a: any, b: any) => {
-                    if (b.height !== a.height) return b.height - a.height;
-                    return b.bandwidth - a.bandwidth;
-                  });
-                if (extractedQualities.length > 0) {
-                  setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
-                }
-              } catch (e) {
-                console.warn("Failed to extract Shaka qualities", e);
-              }
+                const mpegtsModule = await import("mpegts.js");
+                const mpegts = mpegtsModule.default || mpegtsModule;
 
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              player.addEventListener("buffering", (event: any) => {
-                if (event.buffering) {
-                  setIsBuffering(true);
-                } else {
-                  setIsBuffering(false);
-                  setPlayerStatus("playing");
-                  setIsPaused(false);
-                }
-              });
-
-              attemptPlay();
-            } catch (err: unknown) {
-              if (loadedUrlRef.current !== initialChan.url) return;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const errObj = err as any;
-
-              // Fallback to proxy if direct load failed
-              if (shakaChan.no_proxy && !retriedShakaProxy) {
-                retriedShakaProxy = true;
-                console.warn("[SHAKA] Direct load failed, retrying via proxy...", errObj);
-                const proxiedChan = {
-                  ...shakaChan,
-                  no_proxy: false,
-                };
-                loadShakaPlayer(proxiedChan);
-                return;
-              }
-
-              let errMsg = "DASH / TS load failed";
-              if (errObj) {
-                if (errObj.code) errMsg += ` (Code: ${errObj.code})`;
-                if (errObj.category) errMsg += ` (Category: ${errObj.category})`;
-                if (errObj.severity) errMsg += ` (Severity: ${errObj.severity})`;
-                if (errObj.message) errMsg += ` - ${errObj.message}`;
-                if (errObj.code === 6020) {
-                  errMsg += " • Missing browser DRM/EME support. If accessing over a local network IP (e.g. http://192.168.x.x), EME is blocked by Chrome/browsers. Please use http://localhost:3000 or configure HTTPS.";
-                }
-              }
-              console.error("[SHAKA] Load error detail:", JSON.stringify(errObj), errMsg);
-              setPlayerError(errMsg);
-              setPlayerStatus("error");
-            }
-          };
-
-          loadShakaPlayer(chan);
-        })();
-      } else if (isTs) {
-        (async () => {
-          try {
-            const mpegtsModule = await import("mpegts.js");
-            const mpegts = mpegtsModule.default || mpegtsModule;
-            
-            if (!mpegts.getFeatureList().mseLivePlayback) {
-              setPlayerError("Your browser does not support MPEG-TS playback.");
-              setPlayerStatus("error");
-              return;
-            }
-
-            if (loadedUrlRef.current !== chan.url) return;
-
-            const playableUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
-            // Convert to absolute URL because mpegts.js Web Worker fails to parse relative URLs
-            const absoluteUrl = new URL(playableUrl, window.location.origin).href;
-
-            const player = mpegts.createPlayer({
-              type: 'mpegts',
-              isLive: true,
-              url: absoluteUrl,
-            }, {
-              enableWorker: true,
-              lazyLoadMaxDuration: isMaxQuality ? 5 * 60 : 3 * 60,
-              seekType: 'range',
-              stashInitialSize: isMaxQuality ? 1024 * 384 : undefined,
-              autoCleanupMinBackwardDuration: isMaxQuality ? 30 : undefined,
-              autoCleanupMaxBackwardDuration: isMaxQuality ? 60 : undefined,
-            });
-
-            mpegtsRef.current = player;
-            player.attachMediaElement(video);
-            player.load();
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            player.on(mpegts.Events.ERROR, (errorType: string, errorDetail: string, errorInfo: any) => {
-              console.error("[MPEGTS] Error:", errorType, errorDetail, errorInfo);
-              setPlayerError(`TS stream error: ${errorDetail}`);
-              setPlayerStatus("error");
-            });
-
-            attemptPlay();
-
-          } catch (err) {
-            console.error("Failed to load mpegts.js", err);
-            setPlayerError("Failed to load TS player module.");
-            setPlayerStatus("error");
-          }
-        })();
-      } else if (chan.no_proxy) {
-        const directUrl = chan.url;
-        const proxiedUrl = getPlayableUrl(chan.url, false, chan.referer);
-
-        let errorCleanedUp = false;
-        let retriedHlsProxy = false;
-
-        const loadHlsJsFallback = () => {
-          (async () => {
-            try {
-              const HlsModule = await import("hls.js");
-              const Hls = HlsModule.default || HlsModule;
-
-              if (hlsRef.current) {
-                hlsRef.current.destroy();
-                hlsRef.current = null;
-              }
-
-              if (Hls.isSupported()) {
-                const hls = new Hls({
-                  enableWorker: true,
-                  lowLatencyMode: !isMaxQuality,
-                  startLevel: -1,
-                  // Buffer Optimization — pre-buffering
-                  maxBufferLength: isMaxQuality ? 60 : 30,
-                  maxMaxBufferLength: isMaxQuality ? 120 : 60,
-                  maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
-                  maxBufferHole: 0.5,
-                  backBufferLength: isMaxQuality ? 30 : 0,
-                  // Live Stream Latency — play behind live edge to prevent buffering
-                  liveSyncDurationCount: isMaxQuality ? 8 : 5,
-                  liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
-                  // ABR Tuning
-                  abrEwmaDefaultEstimate: 2_000_000, // Moderate initial default
-                  abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
-                  abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
-                  abrBandWidthUpFactor: 0.65,
-                  abrMaxWithRealBitrate: true,
-                  // Network Retry
-                  fragLoadingMaxRetry: 8,
-                  manifestLoadingMaxRetry: 4,
-                  levelLoadingMaxRetry: 4,
-                  // Reduce timeouts to fail fast and retry quickly during transient glitches
-                  fragLoadingTimeOut: 6000,
-                  manifestLoadingTimeOut: 10000,
-                  levelLoadingTimeOut: 10000,
-                  fragLoadingMaxRetryTimeout: 16000,
-                });
-                hlsRef.current = hls;
-
-                hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                  hls.loadSource(directUrl);
-                });
-
-                hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
-                  try {
-                    const levels = data.levels;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const extractedQualities = levels.map((l: any, i: number) => ({
-                      id: i,
-                      name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
-                      height: l.height,
-                      bandwidth: l.bitrate
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    })).filter((q: any) => q.height > 0)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .sort((a: any, b: any) => {
-                      if (b.height !== a.height) return b.height - a.height;
-                      return b.bandwidth - a.bandwidth;
-                    });
-                    if (extractedQualities.length > 0) {
-                      setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
-                    }
-                  } catch (e) {
-                    console.warn("Failed to extract HLS qualities", e);
-                  }
-
-                  if (!video.paused) {
-                    setPlayerStatus("playing");
-                    setIsPaused(false);
-                    return;
-                  }
-                  attemptPlay();
-                });
-
-                hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
-                  if (data.fatal) {
-                    switch (data.type) {
-                      case Hls.ErrorTypes.NETWORK_ERROR:
-                        if (!retriedHlsProxy) {
-                          retriedHlsProxy = true;
-                          console.warn("Fatal HLS network error (direct), retrying via proxy...");
-                          hls.destroy();
-                          hlsRef.current = null;
-                          retryWithHlsJsProxy();
-                        } else {
-                          console.error("Fatal HLS network error (direct and proxy fallback failed).");
-                          setPlayerError("Stream blocked by CORS or network failure.");
-                          setPlayerStatus("error");
-                        }
-                        break;
-                      case Hls.ErrorTypes.MEDIA_ERROR:
-                        console.warn("Fatal HLS media error, attempting to recover...");
-                        hls.recoverMediaError();
-                        break;
-                      default:
-                        console.error("Fatal unrecoverable HLS error:", data);
-                        setPlayerError(`Fatal HLS stream error (${data.type})`);
-                        setPlayerStatus("error");
-                        break;
-                    }
-                  }
-                });
-
-                hls.attachMedia(video);
-              } else {
-                setPlayerError("Your browser does not support stream playback for this channel.");
-                setPlayerStatus("error");
-              }
-            } catch (err) {
-              console.error("Failed to load hls.js for no_proxy channel", err);
-              setPlayerError("Failed to load player module.");
-              setPlayerStatus("error");
-            }
-          })();
-        };
-
-        const retryWithHlsJsProxy = () => {
-          (async () => {
-            try {
-              const HlsModule = await import("hls.js");
-              const Hls = HlsModule.default || HlsModule;
-
-              if (Hls.isSupported()) {
-                const hls = new Hls({
-                  enableWorker: true,
-                  lowLatencyMode: !isMaxQuality,
-                  startLevel: -1,
-                  maxBufferLength: isMaxQuality ? 60 : 30,
-                  maxMaxBufferLength: isMaxQuality ? 120 : 60,
-                  maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
-                  maxBufferHole: 0.5,
-                  backBufferLength: isMaxQuality ? 30 : 0,
-                  liveSyncDurationCount: isMaxQuality ? 8 : 5,
-                  liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
-                  abrEwmaDefaultEstimate: 2_000_000,
-                  abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
-                  abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
-                  abrBandWidthUpFactor: 0.65,
-                  abrMaxWithRealBitrate: true,
-                  fragLoadingMaxRetry: 8,
-                  manifestLoadingMaxRetry: 4,
-                  levelLoadingMaxRetry: 4,
-                  fragLoadingTimeOut: 6000,
-                  manifestLoadingTimeOut: 10000,
-                  levelLoadingTimeOut: 10000,
-                  fragLoadingMaxRetryTimeout: 16000,
-                });
-                hlsRef.current = hls;
-
-                hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                  hls.loadSource(proxiedUrl);
-                });
-
-                hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
-                  try {
-                    const levels = data.levels;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const extractedQualities = levels.map((l: any, i: number) => ({
-                      id: i,
-                      name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
-                      height: l.height,
-                      bandwidth: l.bitrate
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    })).filter((q: any) => q.height > 0)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .sort((a: any, b: any) => {
-                      if (b.height !== a.height) return b.height - a.height;
-                      return b.bandwidth - a.bandwidth;
-                    });
-                    if (extractedQualities.length > 0) {
-                      setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
-                    }
-                  } catch (e) {
-                    console.warn("Failed to extract HLS qualities", e);
-                  }
-
-                  if (!video.paused) {
-                    setPlayerStatus("playing");
-                    setIsPaused(false);
-                    return;
-                  }
-                  attemptPlay();
-                });
-
-                hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
-                  if (data.fatal) {
-                    switch (data.type) {
-                      case Hls.ErrorTypes.NETWORK_ERROR:
-                        console.error("Fatal HLS network error on proxy fallback.");
-                        setPlayerError("Stream blocked by CORS (Proxy fallback failed).");
-                        setPlayerStatus("error");
-                        break;
-                      case Hls.ErrorTypes.MEDIA_ERROR:
-                        hls.recoverMediaError();
-                        break;
-                      default:
-                        setPlayerError(`Fatal HLS stream error (${data.type})`);
-                        setPlayerStatus("error");
-                        break;
-                    }
-                  }
-                });
-
-                hls.attachMedia(video);
-              }
-            } catch (err) {
-              console.error("Failed to load hls.js proxy fallback", err);
-            }
-          })();
-        };
-
-        if (video.canPlayType("application/vnd.apple.mpegurl") || video.canPlayType("application/x-mpegURL")) {
-          video.src = directUrl;
-          try {
-            video.load();
-          } catch { /* ignore */ }
-
-          const onLoadedMetadata = () => {
-            if (errorCleanedUp) return;
-            video.removeEventListener("error", onError);
-            errorCleanedUp = true;
-            nativeErrorCleanupRef.current = null;
-            if (!video.paused) {
-              setPlayerStatus("playing");
-              setIsPaused(false);
-              return;
-            }
-            attemptPlay();
-          };
-
-          const onError = (e: Event) => {
-            if (errorCleanedUp) return;
-            video.removeEventListener("loadedmetadata", onLoadedMetadata);
-            errorCleanedUp = true;
-            nativeErrorCleanupRef.current = null;
-            console.warn("Native HLS player error, falling back to hls.js:", e);
-            
-            // Native failed, try hls.js with directUrl first
-            loadHlsJsFallback();
-          };
-
-          video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
-          video.addEventListener("error", onError, { once: true });
-          nativeErrorCleanupRef.current = () => {
-            video.removeEventListener("loadedmetadata", onLoadedMetadata);
-            video.removeEventListener("error", onError);
-          };
-        } else {
-          // No native HLS, go straight to hls.js
-          loadHlsJsFallback();
-        }
-      } else {
-        (async () => {
-          try {
-            const HlsModule = await import("hls.js");
-            const Hls = HlsModule.default || HlsModule;
-
-            if (Hls.isSupported()) {
-              const hls = new Hls({
-                enableWorker: true,
-                lowLatencyMode: !isMaxQuality,
-                startLevel: -1,
-                // Buffer Optimization — pre-buffering
-                maxBufferLength: isMaxQuality ? 60 : 30,
-                maxMaxBufferLength: isMaxQuality ? 120 : 60,
-                maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
-                maxBufferHole: 0.5,
-                backBufferLength: isMaxQuality ? 30 : 0,
-                // Live Stream Latency — play behind live edge to prevent buffering
-                liveSyncDurationCount: isMaxQuality ? 8 : 5,
-                liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
-                // ABR Tuning
-                abrEwmaDefaultEstimate: 2_000_000, // Moderate initial default
-                abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
-                abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
-                abrBandWidthUpFactor: 0.65,
-                abrMaxWithRealBitrate: true,
-                // Network Retry
-                fragLoadingMaxRetry: 8,
-                manifestLoadingMaxRetry: 4,
-                levelLoadingMaxRetry: 4,
-                // Reduce timeouts to fail fast and retry quickly during transient glitches
-                fragLoadingTimeOut: 6000,
-                manifestLoadingTimeOut: 10000,
-                levelLoadingTimeOut: 10000,
-                fragLoadingMaxRetryTimeout: 16000,
-              });
-              hlsRef.current = hls;
-
-              hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                const playableUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
-                hls.loadSource(playableUrl);
-              });
-
-              hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
-                try {
-                  const levels = data.levels;
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const extractedQualities = levels.map((l: any, i: number) => ({
-                    id: i,
-                    name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
-                    height: l.height,
-                    bandwidth: l.bitrate
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  })).filter((q: any) => q.height > 0)
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  .sort((a: any, b: any) => {
-                    if (b.height !== a.height) return b.height - a.height;
-                    return b.bandwidth - a.bandwidth;
-                  });
-                  if (extractedQualities.length > 0) {
-                    setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
-                  }
-                } catch (e) {
-                  console.warn("Failed to extract HLS qualities", e);
-                }
-
-                if (!video.paused) {
-                  setPlayerStatus("playing");
-                  setIsPaused(false);
+                if (!mpegts.getFeatureList().mseLivePlayback) {
+                  setPlayerError("Your browser does not support MPEG-TS playback.");
+                  setPlayerStatus("error");
                   return;
                 }
+
+                if (loadedUrlRef.current !== chan.url) return;
+
+                const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                // Convert to absolute URL because mpegts.js Web Worker fails to parse relative URLs
+                const absoluteUrl = new URL(playableUrl, window.location.origin).href;
+
+                const player = mpegts.createPlayer({
+                  type: 'mpegts',
+                  isLive: true,
+                  url: absoluteUrl,
+                }, {
+                  enableWorker: true,
+                  lazyLoadMaxDuration: isMaxQuality ? 5 * 60 : 3 * 60,
+                  seekType: 'range',
+                  stashInitialSize: isMaxQuality ? 1024 * 384 : undefined,
+                  autoCleanupMinBackwardDuration: isMaxQuality ? 30 : undefined,
+                  autoCleanupMaxBackwardDuration: isMaxQuality ? 60 : undefined,
+                });
+
+                mpegtsRef.current = player;
+                player.attachMediaElement(video);
+                player.load();
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                player.on(mpegts.Events.ERROR, (errorType: string, errorDetail: string, errorInfo: any) => {
+                  console.error("[MPEGTS] Error:", errorType, errorDetail, errorInfo);
+                  setPlayerError(`TS stream error: ${errorDetail}`);
+                  setPlayerStatus("error");
+                });
+
                 attemptPlay();
-              });
 
-              hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
-                if (data.fatal) {
-                  switch (data.type) {
-                    case Hls.ErrorTypes.NETWORK_ERROR:
-                      console.warn("Fatal HLS network error, attempting to recover...");
-                      hls.startLoad();
-                      break;
-                    case Hls.ErrorTypes.MEDIA_ERROR:
-                      console.warn("Fatal HLS media error, attempting to recover...");
-                      hls.recoverMediaError();
-                      break;
-                    default:
-                      console.error("Fatal unrecoverable HLS error:", data);
-                      setPlayerError(`Fatal HLS stream error (${data.type})`);
-                      setPlayerStatus("error");
-                      break;
+              } catch (err) {
+                console.error("Failed to load mpegts.js", err);
+                setPlayerError("Failed to load TS player module.");
+                setPlayerStatus("error");
+              }
+            })();
+          } else if (!chan.useProxy) {
+            const directUrl = chan.url;
+            
+            let errorCleanedUp = false;
+
+
+            const loadHlsJsFallback = () => {
+              (async () => {
+                try {
+                  const HlsModule = await import("hls.js");
+                  const Hls = HlsModule.default || HlsModule;
+
+                  if (hlsRef.current) {
+                    hlsRef.current.destroy();
+                    hlsRef.current = null;
                   }
+
+                  if (Hls.isSupported()) {
+                    const hls = new Hls({
+                      enableWorker: true,
+                      lowLatencyMode: !isMaxQuality,
+                      startLevel: -1,
+                      // Buffer Optimization — pre-buffering
+                      maxBufferLength: isMaxQuality ? 60 : 30,
+                      maxMaxBufferLength: isMaxQuality ? 120 : 60,
+                      maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
+                      maxBufferHole: 0.5,
+                      backBufferLength: isMaxQuality ? 30 : 0,
+                      // Live Stream Latency — play behind live edge to prevent buffering
+                      liveSyncDurationCount: isMaxQuality ? 8 : 5,
+                      liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
+                      // ABR Tuning
+                      abrEwmaDefaultEstimate: 2_000_000, // Moderate initial default
+                      abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
+                      abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
+                      abrBandWidthUpFactor: 0.65,
+                      abrMaxWithRealBitrate: true,
+                      // Network Retry
+                      fragLoadingMaxRetry: 8,
+                      manifestLoadingMaxRetry: 4,
+                      levelLoadingMaxRetry: 4,
+                      // Reduce timeouts to fail fast and retry quickly during transient glitches
+                      fragLoadingTimeOut: 6000,
+                      manifestLoadingTimeOut: 10000,
+                      levelLoadingTimeOut: 10000,
+                      fragLoadingMaxRetryTimeout: 16000,
+                    });
+                    hlsRef.current = hls;
+
+                    hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+                      hls.loadSource(directUrl);
+                    });
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
+                      try {
+                        const levels = data.levels;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const extractedQualities = levels.map((l: any, i: number) => ({
+                          id: i,
+                          name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
+                          height: l.height,
+                          bandwidth: l.bitrate
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        })).filter((q: any) => q.height > 0)
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          .sort((a: any, b: any) => {
+                            if (b.height !== a.height) return b.height - a.height;
+                            return b.bandwidth - a.bandwidth;
+                          });
+                        if (extractedQualities.length > 0) {
+                          setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
+                        }
+                      } catch (e) {
+                        console.warn("Failed to extract HLS qualities", e);
+                      }
+
+                      if (!video.paused) {
+                        setPlayerStatus("playing");
+                        setIsPaused(false);
+                        return;
+                      }
+                      attemptPlay();
+                    });
+
+                    hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
+                      if (data.fatal) {
+                        switch (data.type) {
+                          case Hls.ErrorTypes.NETWORK_ERROR:
+                            if (fallbackAttemptRef.current === 0) {
+                              console.warn("Fatal HLS network error, retrying via fallback proxy mode...");
+                              hls.destroy();
+                              hlsRef.current = null;
+                              if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+                              initializeStreamRef.current(initialChan, false, !chan.useProxy);
+                            } else {
+                              console.error("Fatal HLS network error (direct and proxy fallback failed).");
+                              setPlayerError("Stream blocked by CORS or network failure.");
+                              setPlayerStatus("error");
+                            }
+                            break;
+                          case Hls.ErrorTypes.MEDIA_ERROR:
+                            console.warn("Fatal HLS media error, attempting to recover...");
+                            hls.recoverMediaError();
+                            break;
+                          default:
+                            console.error("Fatal unrecoverable HLS error:", data);
+                            setPlayerError(`Fatal HLS stream error (${data.type})`);
+                            setPlayerStatus("error");
+                            break;
+                        }
+                      }
+                    });
+
+                    hls.attachMedia(video);
+                  } else {
+                    setPlayerError("Your browser does not support stream playback for this channel.");
+                    setPlayerStatus("error");
+                  }
+                } catch (err) {
+                  console.error("Failed to load hls.js for useProxy channel", err);
+                  setPlayerError("Failed to load player module.");
+                  setPlayerStatus("error");
                 }
-              });
+              })();
+            };
 
-              hls.attachMedia(video);
-            } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-              const isIOS = getIsIOS();
-              const directUrl = chan.url;
-              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
-
-              video.src = isIOS ? directUrl : proxiedUrl;
+            if (video.canPlayType("application/vnd.apple.mpegurl") || video.canPlayType("application/x-mpegURL")) {
+              video.src = directUrl;
               try {
                 video.load();
               } catch { /* ignore */ }
-
-              let errorCleanedUp = false;
 
               const onLoadedMetadata = () => {
                 if (errorCleanedUp) return;
@@ -1389,18 +1184,150 @@ export function useVideoPlayer(
                 video.removeEventListener("loadedmetadata", onLoadedMetadata);
                 errorCleanedUp = true;
                 nativeErrorCleanupRef.current = null;
+                console.warn("Native HLS player error, falling back to hls.js:", e);
 
-                if (isIOS && video.src !== proxiedUrl && video.src.indexOf("/api/iptv/proxy") === -1) {
-                  console.warn("[iOS] Direct stream failed, retrying via proxy...");
-                  video.src = proxiedUrl;
+                // Native failed, try hls.js with directUrl first
+                loadHlsJsFallback();
+              };
+
+              video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
+              video.addEventListener("error", onError, { once: true });
+              nativeErrorCleanupRef.current = () => {
+                video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                video.removeEventListener("error", onError);
+              };
+            } else {
+              // No native HLS, go straight to hls.js
+              loadHlsJsFallback();
+            }
+          } else {
+            (async () => {
+              try {
+                const HlsModule = await import("hls.js");
+                const Hls = HlsModule.default || HlsModule;
+
+                if (Hls.isSupported()) {
+                  const hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: !isMaxQuality,
+                    startLevel: isMaxQuality ? -1 : 0, // Start at lowest quality (0) for instant playback
+                    // Buffer Optimization — pre-buffering
+                    maxBufferLength: isMaxQuality ? 60 : 30,
+                    maxMaxBufferLength: isMaxQuality ? 120 : 60,
+                    maxBufferSize: isMaxQuality ? 120 * 1000 * 1000 : 40 * 1000 * 1000,
+                    maxBufferHole: 0.5,
+                    backBufferLength: isMaxQuality ? 30 : 0,
+                    // Live Stream Latency — play behind live edge to prevent buffering
+                    liveSyncDurationCount: isMaxQuality ? 8 : 5,
+                    liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
+                    // ABR Tuning
+                    abrEwmaDefaultEstimate: 500_000, // 500kbps initial estimate to force lightweight first fragment
+                    abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
+                    abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
+                    abrBandWidthUpFactor: 0.65,
+                    abrMaxWithRealBitrate: true,
+                    // Network Retry
+                    fragLoadingMaxRetry: 8,
+                    manifestLoadingMaxRetry: 4,
+                    levelLoadingMaxRetry: 4,
+                    // Reduce timeouts to fail fast and retry quickly during transient glitches
+                    fragLoadingTimeOut: 6000,
+                    manifestLoadingTimeOut: 10000,
+                    levelLoadingTimeOut: 10000,
+                    fragLoadingMaxRetryTimeout: 16000,
+                  });
+                  hlsRef.current = hls;
+
+                  hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+                    const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                    hls.loadSource(playableUrl);
+                  });
+
+                  hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
+                    try {
+                      const levels = data.levels;
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const extractedQualities = levels.map((l: any, i: number) => ({
+                        id: i,
+                        name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
+                        height: l.height,
+                        bandwidth: l.bitrate
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      })).filter((q: any) => q.height > 0)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        .sort((a: any, b: any) => {
+                          if (b.height !== a.height) return b.height - a.height;
+                          return b.bandwidth - a.bandwidth;
+                        });
+                      if (extractedQualities.length > 0) {
+                        setAvailableQualities([{ id: "auto", name: "Auto" }, ...extractedQualities]);
+                      }
+                    } catch (e) {
+                      console.warn("Failed to extract HLS qualities", e);
+                    }
+
+                    if (!video.paused) {
+                      setPlayerStatus("playing");
+                      setIsPaused(false);
+                      return;
+                    }
+                    attemptPlay();
+                  });
+
+                  let recoverDecodingErrorDate = 0;
+                  let recoverSwapAudioCodecDate = 0;
+
+                  hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
+                    if (data.fatal) {
+                      switch (data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                          console.warn("Fatal HLS network error, attempting to recover...");
+                          hls.startLoad();
+                          break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                          const now = performance.now();
+                          if (!recoverDecodingErrorDate || now - recoverDecodingErrorDate > 3000) {
+                            recoverDecodingErrorDate = now;
+                            console.warn("Fatal HLS media error, attempting to recover...");
+                            hls.recoverMediaError();
+                          } else if (!recoverSwapAudioCodecDate || now - recoverSwapAudioCodecDate > 3000) {
+                            recoverSwapAudioCodecDate = now;
+                            console.warn("Fatal HLS media error, swapping audio codec...");
+                            hls.swapAudioCodec();
+                            hls.recoverMediaError();
+                          } else {
+                            console.error("Fatal unrecoverable HLS error (repeated media errors).");
+                            setPlayerError("Fatal HLS stream error (repeated media errors)");
+                            setPlayerStatus("error");
+                            hls.destroy();
+                          }
+                          break;
+                        default:
+                          console.error("Fatal unrecoverable HLS error:", data);
+                          setPlayerError(`Fatal HLS stream error (${data.type})`);
+                          setPlayerStatus("error");
+                          hls.destroy();
+                          break;
+                      }
+                    }
+                  });
+
+                  hls.attachMedia(video);
+                } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                  const isIOS = getIsIOS();
+                  const directUrl = chan.url;
+                  const proxiedUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                  
+                  video.src = isIOS ? directUrl : proxiedUrl;
                   try {
                     video.load();
                   } catch { /* ignore */ }
-                  errorCleanedUp = false;
 
-                  const onProxyMetadata = () => {
+                  let errorCleanedUp = false;
+
+                  const onLoadedMetadata = () => {
                     if (errorCleanedUp) return;
-                    video.removeEventListener("error", onProxyError);
+                    video.removeEventListener("error", onError);
                     errorCleanedUp = true;
                     nativeErrorCleanupRef.current = null;
                     if (!video.paused) {
@@ -1411,91 +1338,118 @@ export function useVideoPlayer(
                     attemptPlay();
                   };
 
-                  const onProxyError = (ev: Event) => {
+                  const onError = (e: Event) => {
                     if (errorCleanedUp) return;
-                    video.removeEventListener("loadedmetadata", onProxyMetadata);
+                    video.removeEventListener("loadedmetadata", onLoadedMetadata);
                     errorCleanedUp = true;
                     nativeErrorCleanupRef.current = null;
-                    console.error("Native video player error (proxy fallback):", ev);
+
+                    if (isIOS && video.src !== proxiedUrl && video.src.indexOf("/api/iptv/proxy") === -1) {
+                      console.warn("[iOS] Direct stream failed, retrying via proxy...");
+                      video.src = proxiedUrl;
+                      try {
+                        video.load();
+                      } catch { /* ignore */ }
+                      errorCleanedUp = false;
+
+                      const onProxyMetadata = () => {
+                        if (errorCleanedUp) return;
+                        video.removeEventListener("error", onProxyError);
+                        errorCleanedUp = true;
+                        nativeErrorCleanupRef.current = null;
+                        if (!video.paused) {
+                          setPlayerStatus("playing");
+                          setIsPaused(false);
+                          return;
+                        }
+                        attemptPlay();
+                      };
+
+                      const onProxyError = (ev: Event) => {
+                        if (errorCleanedUp) return;
+                        video.removeEventListener("loadedmetadata", onProxyMetadata);
+                        errorCleanedUp = true;
+                        nativeErrorCleanupRef.current = null;
+                        console.error("Native video player error (proxy fallback):", ev);
+                        setPlayerError("Native video player playback error");
+                        setPlayerStatus("error");
+                      };
+
+                      video.addEventListener("loadedmetadata", onProxyMetadata, { once: true });
+                      video.addEventListener("error", onProxyError, { once: true });
+                      nativeErrorCleanupRef.current = () => {
+                        video.removeEventListener("loadedmetadata", onProxyMetadata);
+                        video.removeEventListener("error", onProxyError);
+                      };
+                      return;
+                    }
+
+                    console.error("Native video player error:", e);
                     setPlayerError("Native video player playback error");
                     setPlayerStatus("error");
                   };
 
-                  video.addEventListener("loadedmetadata", onProxyMetadata, { once: true });
-                  video.addEventListener("error", onProxyError, { once: true });
+                  video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
+                  video.addEventListener("error", onError, { once: true });
                   nativeErrorCleanupRef.current = () => {
-                    video.removeEventListener("loadedmetadata", onProxyMetadata);
-                    video.removeEventListener("error", onProxyError);
+                    video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                    video.removeEventListener("error", onError);
                   };
-                  return;
+                } else {
+                  setPlayerError("Your browser does not support stream playback.");
+                  setPlayerStatus("error");
                 }
+              } catch (err) {
+                console.error("Failed to load hls.js", err);
 
-                console.error("Native video player error:", e);
-                setPlayerError("Native video player playback error");
-                setPlayerStatus("error");
-              };
+                // Fallback to native Apple HLS playback if hls.js fails to load
+                if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                  const isIOS = getIsIOS();
+                  const directUrl = chan.url;
+                  const proxiedUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                  
+                  video.src = isIOS ? directUrl : proxiedUrl;
+                  try {
+                    video.load();
+                  } catch { /* ignore */ }
 
-              video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
-              video.addEventListener("error", onError, { once: true });
-              nativeErrorCleanupRef.current = () => {
-                video.removeEventListener("loadedmetadata", onLoadedMetadata);
-                video.removeEventListener("error", onError);
-              };
-            } else {
-              setPlayerError("Your browser does not support stream playback.");
-              setPlayerStatus("error");
-            }
-          } catch (err) {
-            console.error("Failed to load hls.js", err);
-            
-            // Fallback to native Apple HLS playback if hls.js fails to load
-            if (video.canPlayType("application/vnd.apple.mpegurl")) {
-              const isIOS = getIsIOS();
-              const directUrl = chan.url;
-              const proxiedUrl = getPlayableUrl(chan.url, chan.no_proxy, chan.referer);
+                  let errorCleanedUp = false;
 
-              video.src = isIOS ? directUrl : proxiedUrl;
-              try {
-                video.load();
-              } catch { /* ignore */ }
+                  const onLoadedMetadata = () => {
+                    if (errorCleanedUp) return;
+                    video.removeEventListener("error", onError);
+                    errorCleanedUp = true;
+                    nativeErrorCleanupRef.current = null;
+                    if (!video.paused) {
+                      setPlayerStatus("playing");
+                      setIsPaused(false);
+                      return;
+                    }
+                    attemptPlay();
+                  };
 
-              let errorCleanedUp = false;
+                  const onError = () => {
+                    if (errorCleanedUp) return;
+                    video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                    errorCleanedUp = true;
+                    nativeErrorCleanupRef.current = null;
+                    setPlayerError("Native video player playback error");
+                    setPlayerStatus("error");
+                  };
 
-              const onLoadedMetadata = () => {
-                if (errorCleanedUp) return;
-                video.removeEventListener("error", onError);
-                errorCleanedUp = true;
-                nativeErrorCleanupRef.current = null;
-                if (!video.paused) {
-                  setPlayerStatus("playing");
-                  setIsPaused(false);
-                  return;
+                  video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
+                  video.addEventListener("error", onError, { once: true });
+                  nativeErrorCleanupRef.current = () => {
+                    video.removeEventListener("loadedmetadata", onLoadedMetadata);
+                    video.removeEventListener("error", onError);
+                  };
+                } else {
+                  setPlayerError("Failed to load HLS player module.");
+                  setPlayerStatus("error");
                 }
-                attemptPlay();
-              };
-
-              const onError = () => {
-                if (errorCleanedUp) return;
-                video.removeEventListener("loadedmetadata", onLoadedMetadata);
-                errorCleanedUp = true;
-                nativeErrorCleanupRef.current = null;
-                setPlayerError("Native video player playback error");
-                setPlayerStatus("error");
-              };
-
-              video.addEventListener("loadedmetadata", onLoadedMetadata, { once: true });
-              video.addEventListener("error", onError, { once: true });
-              nativeErrorCleanupRef.current = () => {
-                video.removeEventListener("loadedmetadata", onLoadedMetadata);
-                video.removeEventListener("error", onError);
-              };
-            } else {
-              setPlayerError("Failed to load HLS player module.");
-              setPlayerStatus("error");
-            }
+              }
+            })();
           }
-        })();
-      }
         })();
       }, 50);
     },
@@ -1508,7 +1462,7 @@ export function useVideoPlayer(
     const hasChannelChanged =
       loadedChannelRef.current?.id !== selectedChannel.id ||
       loadedChannelRef.current?.url !== selectedChannel.url ||
-      loadedChannelRef.current?.no_proxy !== selectedChannel.no_proxy;
+      loadedChannelRef.current?.useProxy !== selectedChannel.useProxy;
     const hasRetryKeyChanged = lastRetryKeyRef.current !== retryKey;
 
     if (hasChannelChanged || hasRetryKeyChanged) {
