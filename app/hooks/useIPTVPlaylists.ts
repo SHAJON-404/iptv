@@ -58,7 +58,7 @@ export interface Channel {
   type?: "dash" | "hls" | "ts";
   kid?: string;
   key?: string;
-  no_proxy?: boolean;
+  useProxy?: boolean;
   referer?: string;
 }
 
