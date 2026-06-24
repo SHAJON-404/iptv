@@ -7,7 +7,7 @@ export interface Channel {
   type?: "dash" | "hls" | "ts";
   kid?: string;
   key?: string;
-  no_proxy?: boolean;
+  useProxy?: boolean;
   referer?: string;
 }
 
@@ -80,7 +80,7 @@ interface RawChannelInput {
   type?: "dash" | "hls" | "ts";
   kid?: string;
   key?: string;
-  no_proxy?: boolean;
+  useProxy?: boolean;
   referer?: string;
 }
 
@@ -102,7 +102,7 @@ export const parseJSON = (text: string): Channel[] => {
       ...(ch.type && { type: ch.type }),
       ...(ch.kid && { kid: ch.kid }),
       ...(ch.key && { key: ch.key }),
-      ...(ch.no_proxy !== undefined && { no_proxy: ch.no_proxy }),
+      ...(ch.useProxy !== undefined && { useProxy: ch.useProxy }),
       ...(ch.referer && { referer: ch.referer }),
     };
   });
