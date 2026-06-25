@@ -86,7 +86,7 @@ export function useFixtures() {
   // Convert time for all matches
   const processedMatches = data
     ? data.matches.map((match) => {
-        const { date, time, formattedDateTime } = convertTimeToDhaka(match.date, match.time);
+        const { date, time, formattedDateTime, timestamp } = convertTimeToDhaka(match.date, match.time);
         return {
           ...match,
           originalDate: match.date,
@@ -94,6 +94,7 @@ export function useFixtures() {
           date,
           time,
           formattedDateTime,
+          timestamp,
         };
       })
     : [];
@@ -137,7 +138,8 @@ export function useFixtures() {
         (statusFilter === "upcoming" && !hasScore);
 
       return matchesSearch && matchesGroup && matchesStatus;
-    });
+    })
+    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
   // Knockout stage matches mapping for the bracket
   const getKnockoutMatch = (num: number) => {

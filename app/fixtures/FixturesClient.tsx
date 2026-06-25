@@ -338,16 +338,16 @@ export default function FixturesClient() {
                       className="space-y-4"
                     >
                       {/* Swipe Hint for mobile screens */}
-                      <div className="hidden md:flex items-center justify-center gap-2 py-1 px-3.5 rounded-full border border-white/10 bg-white/[0.02] text-[10px] font-bold text-primary max-w-xs mx-auto animate-pulse">
+                      <div className="hidden md:flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-primary/30 bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10 text-xs sm:text-sm font-bold text-white max-w-sm mx-auto animate-pulse">
                         <span>Swipe horizontally to view progression</span>
-                        <ChevronRight size={10} />
+                        <ChevronRight size={14} />
                       </div>
 
                       {/* Horizontal Tree Scroll View - Desktop only */}
                       <div className="hidden md:flex relative overflow-x-auto py-6 custom-scrollbar no-scrollbar items-start select-none max-w-full gap-2">
                         {/* Round of 32 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 32 (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -370,7 +370,7 @@ export default function FixturesClient() {
 
                         {/* Round of 16 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 16 (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -391,7 +391,7 @@ export default function FixturesClient() {
 
                         {/* Quarter-finals */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Quarter-finals (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -411,7 +411,7 @@ export default function FixturesClient() {
 
                         {/* Semi-finals */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Semi-finals (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -421,7 +421,7 @@ export default function FixturesClient() {
 
                         {/* Finals / Winner Area */}
                         <div className="flex flex-col min-w-[240px] px-2">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-yellow-500 uppercase border-b border-yellow-500/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-yellow-500 uppercase border border-yellow-500/30 rounded-xl bg-yellow-500/10 backdrop-blur-md shadow-lg shadow-yellow-500/10">
                             Finals
                           </div>
                           <div className="flex flex-col justify-center items-center h-[1200px] space-y-12">
@@ -452,7 +452,7 @@ export default function FixturesClient() {
 
                         {/* Right Semi-finals */}
                         <div className="flex flex-col min-w-[210px] hidden lg:flex">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Semi-finals (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -470,7 +470,7 @@ export default function FixturesClient() {
 
                         {/* Right Quarter-finals */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Quarter-finals (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -491,7 +491,7 @@ export default function FixturesClient() {
 
                         {/* Right Round of 16 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 16 (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -514,7 +514,7 @@ export default function FixturesClient() {
 
                         {/* Right Round of 32 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border-b border-primary/20 pb-2">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 32 (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">

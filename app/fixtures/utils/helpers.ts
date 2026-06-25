@@ -1,13 +1,13 @@
 import { Match, TeamStats } from "../types";
 
-export function convertTimeToDhaka(dateStr: string, timeStr: string): { date: string; time: string; formattedDateTime: string } {
+export function convertTimeToDhaka(dateStr: string, timeStr: string): { date: string; time: string; formattedDateTime: string; timestamp: number } {
   if (!dateStr || !timeStr) {
-    return { date: dateStr, time: timeStr, formattedDateTime: "" };
+    return { date: dateStr, time: timeStr, formattedDateTime: "", timestamp: 0 };
   }
 
   const match = timeStr.match(/(\d{2}):(\d{2})\s+UTC(?:([+-]\d+))?/);
   if (!match) {
-    return { date: dateStr, time: timeStr, formattedDateTime: `${dateStr} ${timeStr}` };
+    return { date: dateStr, time: timeStr, formattedDateTime: `${dateStr} ${timeStr}`, timestamp: 0 };
   }
 
   const offsetHours = match[3] ? parseInt(match[3], 10) : 0;
@@ -46,7 +46,7 @@ export function convertTimeToDhaka(dateStr: string, timeStr: string): { date: st
 
   const formattedDateTime = `${dayName}, ${dateNum} ${monthName} ${year} at ${newHours}:${newMinutes} ${ampm} (BST)`;
 
-  return { date: newDate, time: newTime, formattedDateTime };
+  return { date: newDate, time: newTime, formattedDateTime, timestamp: dt.getTime() };
 }
 
 export const isWinner = (match: Match, teamIndex: 1 | 2) => {

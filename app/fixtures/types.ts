@@ -25,6 +25,7 @@ export interface Match {
   originalDate?: string;
   originalTime?: string;
   formattedDateTime?: string;
+  timestamp?: number;
 }
 
 export interface WorldCupData {

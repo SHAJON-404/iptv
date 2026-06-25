@@ -17,7 +17,7 @@ export const BracketMatchCard = ({
   allMatches,
   standings,
 }: BracketMatchCardProps) => {
-  if (!match) return <div className="p-3 border border-dashed border-white/10 rounded-xl bg-white/[0.01] text-xs text-center text-zinc-500">Match {matchNum} Pending</div>;
+  if (!match) return <div className="w-[210px] p-3 border border-dashed border-white/20 rounded-xl bg-[#0c0824]/80 backdrop-blur-md text-xs font-semibold text-center text-zinc-400">Match {matchNum} Pending</div>;
 
   const hasPlayed = !!match.score;
   const score1 = hasPlayed ? match.score?.ft[0] : "-";
@@ -27,41 +27,41 @@ export const BracketMatchCard = ({
   const displayTeam2 = resolveTeamName(match.team2, allMatches, standings);
 
   return (
-    <div className="w-[210px] rounded-xl border transition-all duration-300 shadow-md bg-linear-to-b from-[#150e3d]/50 to-[#0c0824]/60 border-white/10 hover:border-white/20 hover:from-[#150e3d]/70 hover:to-[#0c0824]/80">
+    <div className="w-[210px] rounded-xl border transition-all duration-300 shadow-lg bg-[#0c0824]/90 backdrop-blur-md border-white/20 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)] hover:-translate-y-0.5">
       {/* Match Header */}
-      <div className="flex items-center justify-between border-b border-white/5 px-3 py-1.5 bg-white/[0.02] text-[9px] font-bold text-zinc-400">
-        <span className="uppercase">Match {match.num}</span>
-        <span className="truncate max-w-[100px]">{match.ground.split(" (")[0]}</span>
+      <div className="flex items-center justify-between border-b border-white/10 px-3 py-1.5 bg-white/[0.04] text-[9px] font-bold text-zinc-300">
+        <span className="uppercase text-primary">Match {match.num}</span>
+        <span className="truncate max-w-[100px] text-zinc-400">{match.ground.split(" (")[0]}</span>
       </div>
 
       {/* Teams List */}
       <div className="p-2.5 space-y-2">
         {/* Team 1 */}
         <div className="flex items-center justify-between text-xs">
-          <div className={`flex items-center gap-2 font-bold ${hasPlayed && !isWinner(match, 1) ? "text-zinc-500" : "text-white"}`}>
+          <div className={`flex items-center gap-2 font-bold ${hasPlayed && !isWinner(match, 1) ? "text-zinc-500" : "text-zinc-100"}`}>
             <TeamFlag teamName={displayTeam1} className="w-5 h-3.5 flex-shrink-0" />
             <span className="truncate max-w-[120px]">{displayTeam1}</span>
           </div>
-          <span className={`font-black px-1.5 py-0.5 rounded-sm bg-white/[0.04] ${hasPlayed && isWinner(match, 1) ? "text-emerald-400" : "text-zinc-300"}`}>
+          <span className={`font-black px-1.5 py-0.5 rounded-sm bg-white/[0.08] ${hasPlayed && isWinner(match, 1) ? "text-emerald-400" : "text-zinc-200"}`}>
             {score1}
           </span>
         </div>
 
         {/* Team 2 */}
         <div className="flex items-center justify-between text-xs">
-          <div className={`flex items-center gap-2 font-bold ${hasPlayed && !isWinner(match, 2) ? "text-zinc-500" : "text-white"}`}>
+          <div className={`flex items-center gap-2 font-bold ${hasPlayed && !isWinner(match, 2) ? "text-zinc-500" : "text-zinc-100"}`}>
             <TeamFlag teamName={displayTeam2} className="w-5 h-3.5 flex-shrink-0" />
             <span className="truncate max-w-[120px]">{displayTeam2}</span>
           </div>
-          <span className={`font-black px-1.5 py-0.5 rounded-sm bg-white/[0.04] ${hasPlayed && isWinner(match, 2) ? "text-emerald-400" : "text-zinc-300"}`}>
+          <span className={`font-black px-1.5 py-0.5 rounded-sm bg-white/[0.08] ${hasPlayed && isWinner(match, 2) ? "text-emerald-400" : "text-zinc-200"}`}>
             {score2}
           </span>
         </div>
       </div>
 
       {/* Match DateTime */}
-      <div className="flex items-center gap-1 border-t border-white/5 px-3 py-1.5 bg-white/[0.02] text-[8px] font-semibold text-zinc-300">
-        <Clock size={8} className="text-zinc-400 flex-shrink-0" />
+      <div className="flex items-center gap-1 border-t border-white/10 px-3 py-1.5 bg-white/[0.04] text-[8px] font-semibold text-zinc-300">
+        <Clock size={8} className="text-primary flex-shrink-0" />
         <span className="truncate">
           {match.formattedDateTime
             ? match.formattedDateTime.replace(/^[A-Za-z]+, /, "").replace(/ \d{4} at/, ",")
