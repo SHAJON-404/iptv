@@ -81,10 +81,10 @@ export const ChannelListView = React.memo(function ChannelListView({
                 setSearchQuery("");
                 setDisplayCount(80);
               }}
-              className="p-1 mr-1.5 sm:mr-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 mr-1 sm:mr-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer flex-shrink-0"
               title="Clear Search"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           )}
         </div>
