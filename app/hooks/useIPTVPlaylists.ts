@@ -133,6 +133,11 @@ export function useIPTVPlaylists() {
 
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setChannels(filtered);
+      
+      // Reset search and filters when playlist changes
+      setSearchQuery("");
+      setSelectedCategory("All");
+      setDisplayCount(80);
 
       if (filtered.length > 0) {
         setSelectedChannel(prev => {
