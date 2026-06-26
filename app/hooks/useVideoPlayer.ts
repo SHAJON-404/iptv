@@ -131,6 +131,7 @@ export function useVideoPlayer(
   // Quality Customization States
   const [availableQualities, setAvailableQualities] = useState<StreamQuality[]>([{ id: "auto", name: "Auto" }]);
   const [currentQuality, setCurrentQuality] = useState<number | "auto">("auto");
+  const [activeAutoQualityId, setActiveAutoQualityId] = useState<number | null>(null);
 
   // Max Quality Mode — by default ON, prioritizes quality over latency
   const [maxQualityMode, setMaxQualityMode] = useState(true);
@@ -632,6 +633,7 @@ export function useVideoPlayer(
       setHasPlayed(false);
       setAvailableQualities([{ id: "auto", name: "Auto" }]);
       setCurrentQuality("auto");
+      setActiveAutoQualityId(null);
       loadedUrlRef.current = initialChan.url;
       loadedChannelRef.current = initialChan;
 
@@ -1023,7 +1025,7 @@ export function useVideoPlayer(
                         const key = `${t.height}_${t.bandwidth}`;
                         qualitiesMap.set(key, {
                           id: t.id,
-                          name: `${t.height}p`,
+                          name: `${t.height}p${t.frameRate ? Math.round(t.frameRate) : ""}`,
                           height: t.height,
                           bandwidth: t.bandwidth
                         });
@@ -1050,6 +1052,24 @@ export function useVideoPlayer(
                   } catch (e) {
                     console.warn("Failed to extract Shaka qualities", e);
                   }
+
+                  player.addEventListener("adaptation", () => {
+                    const tracks = player.getVariantTracks();
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const activeTrack = tracks.find((t: any) => t.active);
+                    if (activeTrack) {
+                      setActiveAutoQualityId(activeTrack.id);
+                    }
+                  });
+                  
+                  player.addEventListener("variantchanged", () => {
+                    const tracks = player.getVariantTracks();
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const activeTrack = tracks.find((t: any) => t.active);
+                    if (activeTrack) {
+                      setActiveAutoQualityId(activeTrack.id);
+                    }
+                  });
 
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   player.addEventListener("buffering", (event: any) => {
@@ -1203,7 +1223,7 @@ export function useVideoPlayer(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const extractedQualities = levels.map((l: any, i: number) => ({
                           id: i,
-                          name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
+                          name: l.height ? `${l.height}p${l.frameRate ? Math.round(l.frameRate) : ""}` : `${Math.round(l.bitrate / 1000)} kbps`,
                           height: l.height,
                           bandwidth: l.bitrate
                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1226,6 +1246,11 @@ export function useVideoPlayer(
                         return;
                       }
                       attemptPlay();
+                    });
+
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    hls.on(Hls.Events.LEVEL_SWITCHED, (_event: string, data: any) => {
+                      setActiveAutoQualityId(data.level);
                     });
 
                     hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
@@ -1359,7 +1384,7 @@ export function useVideoPlayer(
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       const extractedQualities = levels.map((l: any, i: number) => ({
                         id: i,
-                        name: l.height ? `${l.height}p` : `${Math.round(l.bitrate / 1000)} kbps`,
+                        name: l.height ? `${l.height}p${l.frameRate ? Math.round(l.frameRate) : ""}` : `${Math.round(l.bitrate / 1000)} kbps`,
                         height: l.height,
                         bandwidth: l.bitrate
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1382,6 +1407,11 @@ export function useVideoPlayer(
                       return;
                     }
                     attemptPlay();
+                  });
+
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  hls.on(Hls.Events.LEVEL_SWITCHED, (_event: string, data: any) => {
+                    setActiveAutoQualityId(data.level);
                   });
 
                   let recoverDecodingErrorDate = 0;
@@ -1647,6 +1677,7 @@ export function useVideoPlayer(
     isPipSupported,
     availableQualities,
     currentQuality,
+    activeAutoQualityId,
     maxQualityMode,
     handleQualityChange,
     handleToggleMaxQuality,
