@@ -66,9 +66,6 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
                 }`}>
                   {isUpdating ? "Updating Playlists..." : updateSuccess ? "Updated Successfully" : "Update Playlist"}
                 </h5>
-                <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase tracking-wider group-hover/btn:text-zinc-300 transition-colors">
-                  {isUpdating ? "Fetching live sources" : updateSuccess ? "Cache synced" : "Sync channels & cache"}
-                </p>
               </div>
             </div>
           </button>
