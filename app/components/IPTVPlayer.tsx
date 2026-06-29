@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Tv, Radio, Upload, AlertCircle, ShieldAlert } from "lucide-react";
 import { FaGithub, FaTelegram, FaDiscord } from "react-icons/fa6";
 
@@ -14,6 +14,7 @@ import { ChannelStats } from "./player/ChannelStats";
 import { PlaylistSidebarView } from "./player/PlaylistSidebarView";
 import { ChannelListView } from "./player/ChannelListView";
 import { PlaylistManagerView } from "./player/PlaylistManagerView";
+import { TrendingChannels } from "./player/TrendingChannels";
 
 export default function IPTVPlayer() {
   const [retryKey, setRetryKey] = useState(0);
@@ -74,6 +75,7 @@ export default function IPTVPlayer() {
     showControls,
     activeSeekIndicator,
     viewerCount,
+    topChannels,
     isPipSupported,
     availableQualities,
     currentQuality,
@@ -111,6 +113,15 @@ export default function IPTVPlayer() {
       return currentChannels;
     });
   });
+
+  // Dispatch channel changes to ViewerTracker
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("iptv-channel-changed", {
+        detail: { name: selectedChannel?.name || "" }
+      })
+    );
+  }, [selectedChannel]);
 
   // 3. Selection handler orchestrating state & scrolling
   const handleChannelSelect = useCallback(
@@ -256,44 +267,53 @@ export default function IPTVPlayer() {
         </div>
       ) : (
         <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full items-center">
-          {/* Video Player */}
-          <div ref={playerWrapperRef} className="w-full flex justify-center">
-            <VideoPlayerView
-              videoRef={videoRef}
-              playerContainerRef={playerContainerRef}
-              playerStatus={playerStatus}
-              playerError={playerError}
-              isBuffering={isBuffering}
-              isPaused={isPaused}
-              isMuted={isMuted}
-              volume={volume}
-              isFullscreen={isFullscreen}
-              isPip={isPip}
-              showControls={showControls}
-              activeSeekIndicator={activeSeekIndicator}
-              isPipSupported={isPipSupported}
-              availableQualities={availableQualities}
-              currentQuality={currentQuality}
-              activeAutoQualityId={activeAutoQualityId}
-              handleQualityChange={handleQualityChange}
-              handlePlayPause={handlePlayPause}
-              handleMuteUnmute={handleMuteUnmute}
-              handleVolumeChangeSlider={handleVolumeChangeSlider}
-              handleFullscreen={handleFullscreen}
-              handlePip={handlePip}
-              handlePlayerClick={handlePlayerClick}
-              handlePlayerDoubleClick={handlePlayerDoubleClick}
-              handleReload={handleReload}
-              handleMouseMove={handleMouseMove}
-              maxQualityMode={maxQualityMode}
-              handleToggleMaxQuality={handleToggleMaxQuality}
-              playerEngine={playerEngine}
-              setPlayerEngine={setPlayerEngine}
-            />
+          {/* Video Player & Trending sidebar */}
+          <div ref={playerWrapperRef} className="w-full flex flex-col lg:flex-row gap-6 items-stretch justify-center">
+            <div className="w-full lg:w-3/4 flex justify-center">
+              <VideoPlayerView
+                videoRef={videoRef}
+                playerContainerRef={playerContainerRef}
+                playerStatus={playerStatus}
+                playerError={playerError}
+                isBuffering={isBuffering}
+                isPaused={isPaused}
+                isMuted={isMuted}
+                volume={volume}
+                isFullscreen={isFullscreen}
+                isPip={isPip}
+                showControls={showControls}
+                activeSeekIndicator={activeSeekIndicator}
+                isPipSupported={isPipSupported}
+                availableQualities={availableQualities}
+                currentQuality={currentQuality}
+                activeAutoQualityId={activeAutoQualityId}
+                handleQualityChange={handleQualityChange}
+                handlePlayPause={handlePlayPause}
+                handleMuteUnmute={handleMuteUnmute}
+                handleVolumeChangeSlider={handleVolumeChangeSlider}
+                handleFullscreen={handleFullscreen}
+                handlePip={handlePip}
+                handlePlayerClick={handlePlayerClick}
+                handlePlayerDoubleClick={handlePlayerDoubleClick}
+                handleReload={handleReload}
+                handleMouseMove={handleMouseMove}
+                maxQualityMode={maxQualityMode}
+                handleToggleMaxQuality={handleToggleMaxQuality}
+                playerEngine={playerEngine}
+                setPlayerEngine={setPlayerEngine}
+              />
+            </div>
+            <div className="w-full lg:w-1/4">
+              <TrendingChannels
+                topChannels={topChannels}
+                selectedChannel={selectedChannel}
+                handleChannelSelect={handleChannelSelect}
+              />
+            </div>
           </div>
 
           {/* Notice Cards */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          <div className="w-full hidden md:grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {/* Troubleshooting Tip */}
             <div className="group relative glass-card border border-amber-500/15 rounded-2xl md:rounded-3xl bg-white/[0.01] overflow-hidden transition-all duration-300 hover:border-amber-500/25">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/[0.04] to-transparent pointer-events-none" />
@@ -346,18 +366,20 @@ export default function IPTVPlayer() {
 
           {/* Main Content Area: Sidebar + Playlist Browser */}
           <div className="flex flex-col lg:flex-row gap-6 w-full">
-            <PlaylistSidebarView
-              playlists={playlists}
-              activePlaylistId={activePlaylistId}
-              setActivePlaylistId={setActivePlaylistId}
-              setPlaylistTab={setPlaylistTab}
-              handleDeletePlaylist={handleDeletePlaylist}
-              isUpdating={isUpdating}
-              updateSuccess={updateSuccess}
-              onUpdatePlaylists={() => refreshAllPlaylists(true)}
-            />
+            {playlists.length > 0 && (
+              <PlaylistSidebarView
+                playlists={playlists}
+                activePlaylistId={activePlaylistId}
+                setActivePlaylistId={setActivePlaylistId}
+                setPlaylistTab={setPlaylistTab}
+                handleDeletePlaylist={handleDeletePlaylist}
+                isUpdating={isUpdating}
+                updateSuccess={updateSuccess}
+                onUpdatePlaylists={() => refreshAllPlaylists(true)}
+              />
+            )}
 
-            <div className="w-full lg:w-2/3 xl:w-3/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]">
+            <div className={`w-full ${playlists.length > 0 ? "lg:w-2/3 xl:w-3/4" : ""} glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-[600px] sm:h-[700px]`}>
               <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-wrap gap-2">
                 <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full sm:w-auto">
                   <button
