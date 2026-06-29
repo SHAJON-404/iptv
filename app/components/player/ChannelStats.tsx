@@ -176,14 +176,14 @@ export const ChannelStats = React.memo(function ChannelStats({
       <div className="grid grid-cols-1 gap-4 w-full md:hidden">
         <div className={`glass-card p-3 border border-white/10 rounded-2xl bg-white/[0.01] w-full flex items-center ${playerStatus === "loading" ? "animate-pulse" : ""
           }`}>
-          {/* Left Side: Channel details (60% width) */}
-          <div className="w-[60%] flex items-center gap-3 min-w-0 border-r border-white/10 pr-3">
+          {/* Left Side: Channel details (65% width) */}
+          <div className="w-[65%] flex items-center gap-3 min-w-0 border-r border-white/10 pr-3">
             {selectedChannel ? (
               <motion.div
                 key={selectedChannel.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-3 min-w-0 w-full"
+                className="flex items-center gap-2.5 min-w-0 w-full"
               >
                 {selectedChannel.logo ? (
                   <Image
@@ -198,24 +198,27 @@ export const ChannelStats = React.memo(function ChannelStats({
                     className="w-10 h-10 object-contain rounded-xl bg-white/5 p-0.5 border border-white/10 flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary/30 to-violet-500/30 flex items-center justify-center font-bold text-sm text-primary border border-primary/20 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary/30 to-violet-500/30 flex items-center justify-center font-bold text-xs text-primary border border-primary/20 flex-shrink-0">
                     {getInitials(selectedChannel.name)}
                   </div>
                 )}
                 <div className="space-y-0.5 min-w-0">
-                  <h2 className="text-sm font-bold truncate">
+                  <h2 className="text-sm font-black truncate leading-tight">
                     {selectedChannel.name}
                   </h2>
+                  <span className="text-[8px] uppercase font-bold tracking-wider text-primary bg-primary/10 px-1 py-0.5 rounded border border-primary/20 block w-fit">
+                    {selectedChannel.group}
+                  </span>
                 </div>
               </motion.div>
             ) : (
-              <div className="flex items-center gap-3 min-w-0 w-full">
+              <div className="flex items-center gap-2.5 min-w-0 w-full">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex-shrink-0 flex items-center justify-center">
                   <Tv size={18} className="text-primary" />
                 </div>
                 <div className="space-y-0.5 min-w-0">
-                  <h2 className="text-sm font-bold text-gray-300">Select</h2>
-                  <span className="text-[8px] uppercase font-bold tracking-widest text-zinc-400">
+                  <h2 className="text-sm font-black text-white leading-tight">Select Channel</h2>
+                  <span className="text-[9px] font-semibold text-zinc-400">
                     Choose below
                   </span>
                 </div>
@@ -223,16 +226,16 @@ export const ChannelStats = React.memo(function ChannelStats({
             )}
           </div>
 
-          {/* Right Side: Total Count (40% width) */}
-          <div className="w-[40%] flex items-center gap-2 min-w-0 pl-3">
+          {/* Right Side: Total Count (35% width) */}
+          <div className="w-[35%] flex items-center gap-2 min-w-0 pl-3">
             <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
               <Tv size={15} />
             </div>
             <div className="space-y-0.5 min-w-0">
-              <p className="text-[9px] font-bold text-zinc-400 truncate">
-                Total Channels
+              <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">
+                Channels
               </p>
-              <h3 className="text-xs font-bold text-emerald-400 truncate">
+              <h3 className="text-sm font-black text-emerald-400 truncate">
                 {totalChannels}
               </h3>
             </div>
