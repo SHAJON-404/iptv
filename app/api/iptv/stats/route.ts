@@ -92,6 +92,15 @@ async function fetchPlaylistChannels(url: string): Promise<ChannelInfo[]> {
 }
 
 async function getStatsData(userId?: string) {
+  // If no active session is watching a channel, return early with count to avoid unnecessary playlist fetches
+  const hasActiveViewers = Array.from(activeSessions.values()).some((s) => !!s.channelName);
+  if (!hasActiveViewers) {
+    return {
+      count: activeSessions.size,
+      topChannels: [],
+    };
+  }
+
   const domain = process.env.PLAYLIST_DOMAIN || "iamshajon.com";
   const urlsToFetch: string[] = [];
 
@@ -127,14 +136,7 @@ async function getStatsData(userId?: string) {
     }
   }
 
-  // 3. Fallback to default playlist URLs from the configured domain if no URLs are imported
-  if (urlsToFetch.length === 0) {
-    const protocol = domain.includes("localhost") || domain.includes("127.0.0.1") ? "http" : "https";
-    const defaultFiles = ["sports.json", "bangla.json", "fifa.json", "channels.json"];
-    defaultFiles.forEach((file) => {
-      urlsToFetch.push(`${protocol}://${domain}/playlist/${file}`);
-    });
-  }
+
 
   // 4. Fetch and combine channels from all active playlists
   const channelsMap = new Map<string, ChannelInfo>();
