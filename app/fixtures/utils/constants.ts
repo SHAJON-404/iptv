@@ -14,7 +14,7 @@ export const COUNTRY_CODES: Record<string, string> = {
   "Brazil": "br",
   "Morocco": "ma",
   "Haiti": "ht",
-  "Scotland": "gb-sct",
+  "Scotland": "GB_SCT",
   // Group D
   "USA": "us",
   "Paraguay": "py",
@@ -56,7 +56,7 @@ export const COUNTRY_CODES: Record<string, string> = {
   "Uzbekistan": "uz",
   "Colombia": "co",
   // Group L
-  "England": "gb-eng",
+  "England": "GB_ENG",
   "Croatia": "hr",
   "Ghana": "gh",
   "Panama": "pa",
