@@ -8,6 +8,8 @@ export interface GoalScorer {
 export interface MatchScore {
   ft: [number, number];
   ht: [number, number];
+  et?: [number, number];
+  p?: [number, number];
 }
 
 export interface Match {
