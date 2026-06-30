@@ -51,6 +51,20 @@ export function convertTimeToDhaka(dateStr: string, timeStr: string): { date: st
 
 export const isWinner = (match: Match, teamIndex: 1 | 2) => {
   if (!match.score) return false;
+  
+  // 1. Check penalties first if they exist
+  if (match.score.p) {
+    if (teamIndex === 1) return match.score.p[0] > match.score.p[1];
+    return match.score.p[1] > match.score.p[0];
+  }
+  
+  // 2. Check extra time if it exists
+  if (match.score.et) {
+    if (teamIndex === 1) return match.score.et[0] > match.score.et[1];
+    return match.score.et[1] > match.score.et[0];
+  }
+  
+  // 3. Otherwise check full time
   const scores = match.score.ft;
   if (teamIndex === 1) return scores[0] > scores[1];
   return scores[1] > scores[0];
@@ -190,11 +204,9 @@ export const resolveTeamName = (
     if (!isNaN(matchNum)) {
       const prevMatch = matches.find((m) => m.num === matchNum);
       if (prevMatch && prevMatch.score) {
-        const score1 = prevMatch.score.ft[0];
-        const score2 = prevMatch.score.ft[1];
-        if (score1 > score2) {
+        if (isWinner(prevMatch, 1)) {
           return resolveTeamName(prevMatch.team1, matches, standings);
-        } else if (score2 > score1) {
+        } else if (isWinner(prevMatch, 2)) {
           return resolveTeamName(prevMatch.team2, matches, standings);
         }
       }
@@ -208,11 +220,9 @@ export const resolveTeamName = (
     if (!isNaN(matchNum)) {
       const prevMatch = matches.find((m) => m.num === matchNum);
       if (prevMatch && prevMatch.score) {
-        const score1 = prevMatch.score.ft[0];
-        const score2 = prevMatch.score.ft[1];
-        if (score1 < score2) {
+        if (isWinner(prevMatch, 2)) {
           return resolveTeamName(prevMatch.team1, matches, standings);
-        } else if (score2 < score1) {
+        } else if (isWinner(prevMatch, 1)) {
           return resolveTeamName(prevMatch.team2, matches, standings);
         }
       }
