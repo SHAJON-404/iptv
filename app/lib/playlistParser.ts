@@ -9,6 +9,7 @@ export interface Channel {
   key?: string;
   useProxy?: boolean;
   referer?: string;
+  customHeaders?: Record<string, string>;
 }
 
 export interface Playlist {
@@ -65,6 +66,10 @@ export const parseM3U = (text: string): Channel[] => {
   return parsedChannels;
 };
 
+// Known custom header keys that some streams require for playback.
+// These are extracted from the raw JSON and forwarded to the proxy.
+const CUSTOM_HEADER_KEYS = ["user-agent", "origin", "x-playback-session-id"];
+
 interface RawChannelInput {
   id?: string;
   name?: string;
@@ -82,6 +87,11 @@ interface RawChannelInput {
   key?: string;
   useProxy?: boolean;
   referer?: string;
+  // Custom header fields
+  "user-agent"?: string;
+  "origin"?: string;
+  "x-playback-session-id"?: string;
+  [key: string]: unknown;
 }
 
 export const parseJSON = (text: string): Channel[] => {
@@ -93,6 +103,16 @@ export const parseJSON = (text: string): Channel[] => {
   return list.map((ch: RawChannelInput, idx: number) => {
     const url = ch.url || ch.streamUrl || ch.link;
     if (!url) throw new Error(`Channel at index ${idx} is missing a streaming URL ('url')`);
+
+    // Extract known custom headers from the raw JSON
+    const customHeaders: Record<string, string> = {};
+    for (const key of CUSTOM_HEADER_KEYS) {
+      const value = ch[key];
+      if (typeof value === "string" && value.trim()) {
+        customHeaders[key] = value.trim();
+      }
+    }
+
     return {
       id: ch.id || `custom-json-${idx}-${Date.now()}`,
       name: ch.name || ch.title || `Channel ${idx + 1}`,
@@ -104,6 +124,7 @@ export const parseJSON = (text: string): Channel[] => {
       ...(ch.key && { key: ch.key }),
       ...(ch.useProxy !== undefined && { useProxy: ch.useProxy }),
       ...(ch.referer && { referer: ch.referer }),
+      ...(Object.keys(customHeaders).length > 0 && { customHeaders }),
     };
   });
 };

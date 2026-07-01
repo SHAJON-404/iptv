@@ -16,11 +16,16 @@ export interface TrendingChannel {
   viewers: number;
 }
 
-const getPlayableUrl = (url: string, useProxy?: boolean, referer?: string) => {
+const getPlayableUrl = (url: string, useProxy?: boolean, referer?: string, customHeaders?: Record<string, string>) => {
   if (useProxy && url && (url.startsWith("http://") || url.startsWith("https://"))) {
     let proxyUrl = `/api/iptv/proxy?url=${encodeURIComponent(url)}`;
     if (referer) {
       proxyUrl += `&referer=${encodeURIComponent(referer)}`;
+    }
+    // Forward custom headers (user-agent, origin, x-playback-session-id) as base64-encoded JSON
+    if (customHeaders && Object.keys(customHeaders).length > 0) {
+      const b64 = btoa(JSON.stringify(customHeaders));
+      proxyUrl += `&headers=${encodeURIComponent(b64)}`;
     }
     return proxyUrl;
   }
@@ -823,7 +828,7 @@ export function useVideoPlayer(
 
                 if (loadedUrlRef.current !== initialChan.url) return;
 
-                const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer, chan.customHeaders);
                 
                 // Initialize video.js on the videoRef
                 const player = videojs(video, {
@@ -938,6 +943,10 @@ export function useVideoPlayer(
                               let proxyUri = `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
                               if (shakaChan.referer) {
                                 proxyUri += `&referer=${encodeURIComponent(shakaChan.referer)}`;
+                              }
+                              if (shakaChan.customHeaders && Object.keys(shakaChan.customHeaders).length > 0) {
+                                const b64 = btoa(JSON.stringify(shakaChan.customHeaders));
+                                proxyUri += `&headers=${encodeURIComponent(b64)}`;
                               }
                               return proxyUri;
                             }
@@ -1140,7 +1149,7 @@ export function useVideoPlayer(
 
                 if (loadedUrlRef.current !== chan.url) return;
 
-                const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer, chan.customHeaders);
                 // Convert to absolute URL because mpegts.js Web Worker fails to parse relative URLs
                 const absoluteUrl = new URL(playableUrl, window.location.origin).href;
 
@@ -1387,7 +1396,7 @@ export function useVideoPlayer(
                   hlsRef.current = hls;
 
                   hls.on(Hls.Events.MEDIA_ATTACHED, () => {
-                    const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                    const playableUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer, chan.customHeaders);
                     hls.loadSource(playableUrl);
                   });
 
@@ -1469,7 +1478,7 @@ export function useVideoPlayer(
                 } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
                   const isIOS = getIsIOS();
                   const directUrl = chan.url;
-                  const proxiedUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                  const proxiedUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer, chan.customHeaders);
                   
                   video.src = isIOS ? directUrl : proxiedUrl;
                   try {
@@ -1559,7 +1568,7 @@ export function useVideoPlayer(
                 if (video.canPlayType("application/vnd.apple.mpegurl")) {
                   const isIOS = getIsIOS();
                   const directUrl = chan.url;
-                  const proxiedUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer);
+                  const proxiedUrl = getPlayableUrl(chan.url, chan.useProxy, chan.referer, chan.customHeaders);
                   
                   video.src = isIOS ? directUrl : proxiedUrl;
                   try {

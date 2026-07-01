@@ -60,6 +60,7 @@ export interface Channel {
   key?: string;
   useProxy?: boolean;
   referer?: string;
+  customHeaders?: Record<string, string>;
 }
 
 export interface Playlist {

@@ -185,6 +185,37 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Support custom User-Agent override via 'ua' query parameter
+    const customUA = searchParams.get("ua");
+    if (customUA) {
+      upstreamHeaders["User-Agent"] = customUA;
+    }
+
+    // Support additional custom headers via base64-encoded JSON 'headers' query parameter.
+    // Only a whitelisted set of headers are forwarded to prevent arbitrary header injection.
+    const ALLOWED_CUSTOM_HEADERS = new Set([
+      "user-agent", "origin", "x-playback-session-id",
+      "x-forwarded-for", "accept-encoding",
+    ]);
+    const customHeadersB64 = searchParams.get("headers");
+    if (customHeadersB64) {
+      try {
+        const decoded = Buffer.from(customHeadersB64, "base64").toString("utf-8");
+        const parsed = JSON.parse(decoded) as Record<string, string>;
+        for (const [key, value] of Object.entries(parsed)) {
+          if (ALLOWED_CUSTOM_HEADERS.has(key.toLowerCase()) && typeof value === "string") {
+            // Map lowercase keys to their standard casing
+            const headerName = key.toLowerCase() === "user-agent" ? "User-Agent"
+              : key.toLowerCase() === "origin" ? "Origin"
+              : key; // Keep other keys as-is (e.g., x-playback-session-id)
+            upstreamHeaders[headerName] = value;
+          }
+        }
+      } catch {
+        // Invalid base64/JSON headers, skip silently
+      }
+    }
+
     // Fetch with a timeout to avoid hanging on unresponsive servers
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000);
@@ -310,7 +341,14 @@ export async function GET(request: NextRequest) {
       }
 
       const proxyBaseUrl = `${resolvedOrigin}/api/iptv/proxy`;
-      const refererSuffix = customReferer ? `&referer=${encodeURIComponent(customReferer)}` : "";
+      let paramSuffix = customReferer ? `&referer=${encodeURIComponent(customReferer)}` : "";
+      // Propagate custom headers through rewritten playlist URLs
+      if (customHeadersB64) {
+        paramSuffix += `&headers=${encodeURIComponent(customHeadersB64)}`;
+      }
+      if (customUA) {
+        paramSuffix += `&ua=${encodeURIComponent(customUA)}`;
+      }
 
       const rewrittenLines = lines.map((line) => {
         const trimmed = line.trim();
@@ -324,13 +362,13 @@ export async function GET(request: NextRequest) {
               const uri = qDouble || qSingle || unquoted;
               if (!uri) return match;
               const resolved = resolveUrlWithQuery(uri, currentUrl);
-              return `URI="${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${refererSuffix}"`;
+              return `URI="${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${paramSuffix}"`;
             }
           );
         } else {
           // Rewrite the direct stream/segment URL line
           const resolved = resolveUrlWithQuery(trimmed, currentUrl);
-          return `${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${refererSuffix}`;
+          return `${proxyBaseUrl}?url=${encodeURIComponent(resolved)}${paramSuffix}`;
         }
       });
 
