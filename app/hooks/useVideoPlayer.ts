@@ -40,19 +40,33 @@ const checkCorsSupport = async (url: string): Promise<boolean> => {
     return corsSupportCache.get(url)!;
   }
 
+  // If the target URL is HTTP but the page is HTTPS, fetch will fail due to Mixed Content
+  const isHttpsPage = typeof window !== "undefined" && window.location.protocol === "https:";
+  if (isHttpsPage && url.startsWith("http://")) {
+    corsSupportCache.set(url, false);
+    return false;
+  }
+
   try {
-    // Attempt a HEAD request first (lightweight)
-    const res = await fetch(url, { method: "HEAD" });
+    // Attempt a HEAD request first (lightweight) with a 3-second timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(url, { method: "HEAD", signal: controller.signal });
+    clearTimeout(timeoutId);
     const supportsCors = res.ok;
     corsSupportCache.set(url, supportsCors);
     return supportsCors;
   } catch {
     try {
-      // Fallback: Some CDNs block HEAD requests. Attempt GET with a small range.
+      // Fallback: Some CDNs block HEAD requests. Attempt GET with a small range and 3-second timeout.
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       const res = await fetch(url, {
         method: "GET",
         headers: { Range: "bytes=0-0" },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const supportsCors = res.ok;
       corsSupportCache.set(url, supportsCors);
       return supportsCors;
@@ -62,6 +76,7 @@ const checkCorsSupport = async (url: string): Promise<boolean> => {
     }
   }
 };
+
 
 export interface StreamQuality {
   id: number | "auto";
@@ -131,6 +146,8 @@ export function useVideoPlayer(
   useEffect(() => { playerStatusRef.current = playerStatus; }, [playerStatus]);
   const isBufferingRef = useRef(isBuffering);
   useEffect(() => { isBufferingRef.current = isBuffering; }, [isBuffering]);
+  const hasPlayedRef = useRef(hasPlayed);
+  useEffect(() => { hasPlayedRef.current = hasPlayed; }, [hasPlayed]);
 
   // Listen for global viewer count updates from ViewerTracker
   useEffect(() => {
@@ -727,29 +744,44 @@ export function useVideoPlayer(
 
         (async () => {
           let dynamicUseProxy = initialChan.useProxy ?? false;
+          let corsStatusText = "Initial setting";
+
           if (initialChan.referer) {
             // Referer streams must be proxied to pass custom headers
             dynamicUseProxy = true;
+            corsStatusText = "Referer set (forcing proxy)";
           } else if (getIsIOS() && (initialChan.url.includes(".m3u8") || initialChan.type === "hls")) {
             // Safari/iOS can play HLS directly bypassing JS CORS rules
             dynamicUseProxy = false;
+            corsStatusText = "iOS native HLS (bypassing proxy)";
           } else if (initialChan.url) {
             const supportsCors = await checkCorsSupport(initialChan.url);
             if (supportsCors) {
-              console.log(`[CORS Check] URL supports CORS. Bypassing proxy: ${initialChan.url}`);
               dynamicUseProxy = false;
+              corsStatusText = "URL supports CORS (bypassing proxy)";
             } else {
-              console.log(`[CORS Check] CORS check failed. Routing via proxy: ${initialChan.url}`);
               dynamicUseProxy = true;
+              corsStatusText = "CORS check failed (routing via proxy)";
             }
           }
 
           if (overrideProxyMode !== undefined) {
             dynamicUseProxy = overrideProxyMode;
             fallbackAttemptRef.current = 1;
+            corsStatusText = `Override active: useProxy=${overrideProxyMode}`;
           } else {
             fallbackAttemptRef.current = 0;
           }
+
+          // Force proxy for HTTP URLs if we are on HTTPS to prevent Mixed Content blocking
+          const isHttpsPage = typeof window !== "undefined" && window.location.protocol === "https:";
+          const isHttpStream = (initialChan.url || "").startsWith("http://");
+          if (isHttpsPage && isHttpStream) {
+            dynamicUseProxy = true;
+            corsStatusText = "Insecure HTTP stream on HTTPS page (forcing proxy to avoid Mixed Content)";
+          }
+
+          console.log(`[CORS Check] ${corsStatusText}. Result url: ${dynamicUseProxy ? "via proxy" : "direct"}`);
 
           const chan = {
             ...initialChan,
@@ -761,16 +793,22 @@ export function useVideoPlayer(
           // Start fallback timer
           if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
           fallbackTimerRef.current = setTimeout(() => {
-            if (playerStatusRef.current !== "playing" || isBufferingRef.current) {
+            if (!hasPlayedRef.current) {
               if (fallbackAttemptRef.current === 0) {
-                console.log(`Stream failed to play within 10s, trying fallback proxy mode (useProxy=${!dynamicUseProxy})...`);
-                initializeStream(initialChan, false, !dynamicUseProxy);
+                if (dynamicUseProxy && isHttpsPage && isHttpStream) {
+                  // Cannot fallback to direct (useProxy = false) due to Mixed Content
+                  console.log(`Stream failed to play within 15s. Cannot fallback to direct HTTP under HTTPS, retrying proxy reload...`);
+                  initializeStream(initialChan, false, true);
+                } else {
+                  console.log(`Stream failed to play within 15s, trying fallback proxy mode (useProxy=${!dynamicUseProxy})...`);
+                  initializeStream(initialChan, false, !dynamicUseProxy);
+                }
               } else {
                 console.log("Fallback also failed, switching channel...");
                 if (onChannelFailRef.current) onChannelFailRef.current();
               }
             }
-          }, 10000);
+          }, 15000);
 
           const isMaxQuality = maxQualityModeRef.current;
 
