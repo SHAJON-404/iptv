@@ -999,7 +999,7 @@ export function useVideoPlayer(
 
                   player.configure({
                     manifest: {
-                      defaultPresentationDelay: isMaxQuality ? 22 : 15,
+                      defaultPresentationDelay: isMaxQuality ? 30 : 18,
                       ignoreDrmInfo: !shakaChan.key,
                       dash: {
                         ignoreMinBufferTime: true,
@@ -1014,7 +1014,7 @@ export function useVideoPlayer(
                     streaming: {
                       lowLatencyMode: false,
                       inaccurateManifestTolerance: 3,
-                      rebufferingGoal: isMaxQuality ? 8 : 4, // Safe minimum buffer before resuming standard playback
+                      rebufferingGoal: isMaxQuality ? 12 : 6, // Safe minimum buffer before resuming standard playback
                       bufferingGoal: isMaxQuality ? 60 : 30, // Larger prebuffer for stability
                       bufferBehind: isMaxQuality ? 30 : 20,
                       gapDetectionThreshold: 0.4,
@@ -1252,8 +1252,9 @@ export function useVideoPlayer(
                       maxBufferHole: 0.5,
                       backBufferLength: isMaxQuality ? 30 : 0,
                       // Live Stream Latency — play behind live edge to prevent buffering
-                      liveSyncDurationCount: isMaxQuality ? 8 : 5,
-                      liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
+                      liveSyncDuration: isMaxQuality ? 25 : 15,
+                      liveMaxLatencyDuration: isMaxQuality ? 60 : 35,
+                      liveDurationInfinity: true,
                       // ABR Tuning
                       abrEwmaDefaultEstimate: 2_000_000, // Moderate initial default
                       abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
@@ -1412,8 +1413,9 @@ export function useVideoPlayer(
                     maxBufferHole: 0.5,
                     backBufferLength: isMaxQuality ? 30 : 0,
                     // Live Stream Latency — play behind live edge to prevent buffering
-                    liveSyncDurationCount: isMaxQuality ? 8 : 5,
-                    liveMaxLatencyDurationCount: isMaxQuality ? 15 : 10,
+                    liveSyncDuration: isMaxQuality ? 25 : 15,
+                    liveMaxLatencyDuration: isMaxQuality ? 60 : 35,
+                    liveDurationInfinity: true,
                     // ABR Tuning
                     abrEwmaDefaultEstimate: 500_000, // 500kbps initial estimate to force lightweight first fragment
                     abrEwmaDefaultEstimateMax: 50_000_000, // 50 Mbps max estimate to allow 4K scaling
