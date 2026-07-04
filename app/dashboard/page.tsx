@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import Image from "next/image";
-import { Plus, Trash2, LogOut, Check, Loader2, Sparkles, RefreshCw, Link as LinkIcon, Database, Tag, List, Edit2 } from "lucide-react";
+import { Plus, Trash2, LogOut, Check, Loader2, Sparkles, RefreshCw, Link as LinkIcon, Database, Tag, List, Edit2, Tv } from "lucide-react";
 import BackgroundScene from "../components/BackgroundScene";
 import Header from "../components/Header";
 
@@ -35,6 +35,12 @@ export default function DashboardPage() {
   const [syncSuccessMsg, setSyncSuccessMsg] = useState<string | null>(null);
   const [syncErrorMsg, setSyncErrorMsg] = useState<string | null>(null);
 
+  // Admin settings states
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [vlcUrl, setVlcUrl] = useState("");
+  const [savingVlcUrl, setSavingVlcUrl] = useState(false);
+  const [vlcMsg, setVlcMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
   const fetchPlaylists = async () => {
     setLoadingPlaylists(true);
     setError(null);
@@ -63,6 +69,15 @@ export default function DashboardPage() {
     if (status === "authenticated") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchPlaylists();
+
+      // Fetch VLC URL and admin status
+      fetch("/api/settings?key=vlcLiveUrl")
+        .then(res => res.json())
+        .then(data => {
+          if (data.isAdmin) setIsAdmin(true);
+          if (data.value) setVlcUrl(data.value);
+        })
+        .catch(console.error);
     }
   }, [status]);
 
@@ -329,6 +344,30 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSaveVlcUrl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingVlcUrl(true);
+    setVlcMsg(null);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "vlcLiveUrl", value: vlcUrl.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setVlcMsg({ type: "success", text: "VLC Live URL saved successfully!" });
+      } else {
+        setVlcMsg({ type: "error", text: data.error || "Failed to save VLC URL." });
+      }
+    } catch {
+      setVlcMsg({ type: "error", text: "Failed to save VLC URL." });
+    } finally {
+      setSavingVlcUrl(false);
+      setTimeout(() => setVlcMsg(null), 3000);
+    }
+  };
+
   const handleLogout = async () => {
     await logout();
     router.push("/login");
@@ -386,6 +425,68 @@ export default function DashboardPage() {
         {/* Main Content Layout */}
         <div className="flex flex-col gap-6 lg:gap-8 flex-1 min-h-0">
           
+          {/* Admin Settings: VLC Live URL */}
+          {isAdmin && (
+            <div className="flex flex-col gap-6">
+              <div className="glass-card border border-primary/20 rounded-3xl bg-primary/[0.02] p-6 sm:p-8 shadow-lg backdrop-blur-xl text-left flex flex-col flex-1">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-inner">
+                    <Tv size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-primary">Admin: VLC Live URL</h3>
+                    <p className="text-xs text-zinc-400 mt-0.5">Configure the VLC URL displayed on the main player</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveVlcUrl} className="space-y-4">
+                  <div>
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 mb-1.5 ml-1">
+                      <LinkIcon size={13} className="text-primary/70" />
+                      <span>VLC M3U/Live URL</span>
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://example.com/vlc-live.m3u"
+                      value={vlcUrl}
+                      onChange={(e) => setVlcUrl(e.target.value)}
+                      required
+                      className="w-full bg-white/[0.03] border border-white/10 focus-within:border-primary/50 focus-within:bg-white/[0.05] rounded-2xl py-3.5 px-4 text-sm text-white placeholder:text-zinc-500 outline-none transition-all"
+                    />
+                  </div>
+
+                  {vlcMsg && (
+                    <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center gap-1.5 ${
+                      vlcMsg.type === 'success' 
+                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                        : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                    }`}>
+                      {vlcMsg.type === 'success' && <Check size={14} />}
+                      <span>{vlcMsg.text}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      disabled={savingVlcUrl}
+                      className="flex items-center justify-center gap-2 py-3.5 px-6 bg-primary hover:bg-primary/95 text-white text-sm font-black rounded-2xl transition-all shadow-lg shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
+                    >
+                      {savingVlcUrl ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Check size={16} />
+                          <span>Save Settings</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           {/* Add Playlist Form */}
           <div className="flex flex-col gap-6">
             <div className="glass-card border border-white/10 rounded-3xl bg-white/[0.02] p-6 sm:p-8 shadow-lg backdrop-blur-xl text-left flex flex-col flex-1">
