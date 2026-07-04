@@ -25,7 +25,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { FaTelegram } from "react-icons/fa6";
-import { StreamQuality, PlayerEngine } from "../../hooks/useVideoPlayer";
+import { StreamQuality, PlayerEngine, DetectedResolution } from "../../hooks/useVideoPlayer";
 
 const formatBandwidth = (bps?: number) => {
   if (!bps) return "";
@@ -37,6 +37,63 @@ const formatBandwidth = (bps?: number) => {
     mbpsStr = mbps.slice(0, -1);
   }
   return `${mbpsStr} Mbps`;
+};
+
+interface ResolutionInfo {
+  label: string;
+  fullName: string;
+  badge: string;
+  badgeColorClass: string;
+}
+
+const getResolutionInfo = (width: number, height: number): ResolutionInfo => {
+  const h = height;
+  if (h >= 2160) {
+    return {
+      label: `${h}p`,
+      fullName: `${width}x${height} (4K Ultra HD)`,
+      badge: "4K",
+      badgeColorClass: "bg-rose-500/20 text-rose-400 border-rose-500/30",
+    };
+  }
+  if (h >= 1440) {
+    return {
+      label: `${h}p`,
+      fullName: `${width}x${height} (2K Quad HD)`,
+      badge: "2K",
+      badgeColorClass: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    };
+  }
+  if (h >= 1080) {
+    return {
+      label: `${h}p`,
+      fullName: `${width}x${height} (1080p Full HD)`,
+      badge: "FHD",
+      badgeColorClass: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    };
+  }
+  if (h >= 720) {
+    return {
+      label: `${h}p`,
+      fullName: `${width}x${height} (720p HD)`,
+      badge: "HD",
+      badgeColorClass: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    };
+  }
+  if (h >= 480) {
+    return {
+      label: `${h}p`,
+      fullName: `${width}x${height} (480p SD)`,
+      badge: "SD",
+      badgeColorClass: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+    };
+  }
+  return {
+    label: `${h}p`,
+    fullName: `${width}x${height}`,
+    badge: "SD",
+    badgeColorClass: "bg-zinc-600/20 text-zinc-500 border-zinc-600/25",
+  };
 };
 
 interface VideoPlayerViewProps {
@@ -56,6 +113,7 @@ interface VideoPlayerViewProps {
   availableQualities: StreamQuality[];
   currentQuality: number | "auto";
   activeAutoQualityId: number | null;
+  detectedResolution: DetectedResolution | null;
   handleQualityChange: (qualityId: number | "auto") => void;
   handlePlayPause: () => void;
   handleMuteUnmute: () => void;
@@ -141,6 +199,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
   availableQualities,
   currentQuality,
   activeAutoQualityId,
+  detectedResolution,
   handleQualityChange,
   handlePlayPause,
   handleMuteUnmute,
@@ -395,31 +454,42 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
             </button>
 
             {/* Settings / Quality Menu */}
-            {availableQualities.length > 1 && (
-              <div className="relative" ref={settingsRef}>
-                <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className={`px-1.5 py-1 rounded-lg hover:bg-white/10 text-white transition-colors ${showSettings ? "bg-white/10" : ""
-                    }`}
-                  title="Quality"
-                >
-                  <span className="text-[13px] sm:text-[15px] font-medium tracking-wide drop-shadow-md flex items-baseline gap-0.5">
-                    {currentQuality === 'auto' ? (
+            <div className="relative" ref={settingsRef}>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className={`px-1.5 py-1 rounded-lg hover:bg-white/10 text-white transition-colors flex items-center gap-1 ${showSettings ? "bg-white/10" : ""
+                  }`}
+                title="Settings"
+              >
+                <Sliders size={13} className="text-zinc-400 shrink-0" />
+                <span className="text-[13px] sm:text-[14px] font-medium tracking-wide drop-shadow-md flex items-baseline gap-0.5">
+                  {availableQualities.length > 1 ? (
+                    currentQuality === 'auto' ? (
                       activeAutoQualityId !== null ? (() => {
                         const q = availableQualities.find(q => q.id === activeAutoQualityId);
                         if (!q) return 'Auto';
                         return (
                           <>
-                            <span>{q.name}</span>
+                            <span>Auto • {q.name}</span>
                             {q.height && q.height >= 2160 && (
-                              <sup className="text-[9px] font-black text-rose-500 select-none">4K</sup>
+                              <sup className="text-[9px] font-black text-rose-500 select-none ml-0.5">4K</sup>
                             )}
                             {q.height && q.height >= 1080 && q.height < 2160 && (
-                              <sup className="text-[9px] font-black text-rose-500 select-none">HD</sup>
+                              <sup className="text-[9px] font-black text-rose-500 select-none ml-0.5">HD</sup>
                             )}
                           </>
                         );
-                      })() : 'Auto'
+                      })() : (
+                        detectedResolution ? (() => {
+                          const resInfo = getResolutionInfo(detectedResolution.width, detectedResolution.height);
+                          return (
+                            <>
+                              <span>Auto • {resInfo.label}</span>
+                              <sup className="text-[9px] font-black text-rose-500 select-none ml-0.5">{resInfo.badge}</sup>
+                            </>
+                          );
+                        })() : 'Auto'
+                      )
                     ) : (() => {
                       const q = availableQualities.find(q => q.id === currentQuality);
                       if (!q) return 'Auto';
@@ -427,116 +497,140 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                         <>
                           <span>{q.name}</span>
                           {q.height && q.height >= 2160 && (
-                            <sup className="text-[9px] font-black text-rose-500 select-none">4K</sup>
+                            <sup className="text-[9px] font-black text-rose-500 select-none ml-0.5">4K</sup>
                           )}
                           {q.height && q.height >= 1080 && q.height < 2160 && (
-                            <sup className="text-[9px] font-black text-rose-500 select-none">HD</sup>
-                          )}
-                          {q.bandwidth && (
-                            <span className="text-white/70 text-xs font-normal">
-                              &nbsp;&nbsp;{formatBandwidth(q.bandwidth)}
-                            </span>
+                            <sup className="text-[9px] font-black text-rose-500 select-none ml-0.5">HD</sup>
                           )}
                         </>
                       );
+                    })()
+                  ) : (
+                    detectedResolution ? (() => {
+                      const resInfo = getResolutionInfo(detectedResolution.width, detectedResolution.height);
+                      return (
+                        <>
+                          <span>{detectedResolution.width}x{detectedResolution.height}</span>
+                          <sup className="text-[9px] font-black text-rose-500 select-none ml-0.5">{resInfo.badge}</sup>
+                        </>
+                      );
+                    })() : 'Settings'
+                  )}
+                </span>
+              </button>
+
+              <AnimatePresence>
+                {showSettings && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="hidden md:block absolute bottom-full right-0 mb-3 w-48 sm:w-52 max-h-[340px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/90 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
+                  >
+                    <div className="px-3 py-2 text-sm font-bold text-zinc-200 flex items-center justify-center gap-1.5 mb-1 border-b border-white/10 select-none">
+                      <Sliders size={14} className="text-primary" />
+                      <span>Stream Settings</span>
+                    </div>
+
+                    {detectedResolution && (() => {
+                      const resInfo = getResolutionInfo(detectedResolution.width, detectedResolution.height);
+                      return (
+                        <div className="px-3 py-2 border-b border-white/15 bg-white/[0.02] flex flex-col gap-0.5 select-none text-left">
+                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Active Stream</span>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <span className="text-xs font-black text-white font-mono tracking-tight">
+                              {detectedResolution.width}×{detectedResolution.height}
+                            </span>
+                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${resInfo.badgeColorClass} bg-white/5 leading-none`}>
+                              {resInfo.badge}
+                            </span>
+                          </div>
+                          <span className="text-[9px] text-zinc-400 font-bold tracking-tight">{resInfo.fullName}</span>
+                        </div>
+                      );
                     })()}
-                  </span>
-                </button>
 
-                <AnimatePresence>
-                  {showSettings && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="hidden md:block absolute bottom-full right-0 mb-3 w-48 sm:w-52 max-h-[280px] overflow-y-auto custom-scrollbar bg-[#0f0f0f]/90 backdrop-blur-2xl border border-white/10 rounded-2xl py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 origin-bottom-right"
-                    >
-                      <div className="px-3 py-2 text-sm font-bold text-zinc-200 flex items-center justify-center gap-1.5 mb-1 border-b border-white/10 select-none">
-                        <Sliders size={14} className="text-primary" />
-                        <span>Quality</span>
-                      </div>
+                    <div className="flex flex-col">
+                      {availableQualities.length > 1 && availableQualities.filter(q => q.id !== 'auto').map((q) => {
+                        const isActive = currentQuality === q.id;
+                        return (
+                          <button
+                            key={q.id}
+                            onClick={() => {
+                              handleQualityChange(q.id);
+                              setShowSettings(false);
+                            }}
+                            className={`w-full flex items-center justify-start px-3 py-2 text-sm transition-colors ${isActive
+                                ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                                : "text-zinc-300 hover:bg-white/[0.04] hover:text-white border-l-2 border-transparent"
+                              }`}
+                          >
+                            <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
+                              {isActive ? (
+                                <Check size={14} className="text-primary" />
+                              ) : (
+                                <Monitor size={14} className="text-zinc-500" />
+                              )}
+                            </div>
 
-                      <div className="flex flex-col">
-                        {availableQualities.filter(q => q.id !== 'auto').map((q) => {
-                          const isActive = currentQuality === q.id;
-                          return (
+                            <span className="flex items-baseline justify-start flex-1 pr-2">
+                              <span className="flex items-baseline min-w-[62px] shrink-0">
+                                <span>{q.name}</span>
+                                {q.height && q.height >= 2160 && (
+                                  <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">4K</sup>
+                                )}
+                                {q.height && q.height >= 1440 && q.height < 2160 && (
+                                  <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">2K</sup>
+                                )}
+                                {q.height && q.height >= 1080 && q.height < 1440 && (
+                                  <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">HD</sup>
+                                )}
+                              </span>
+                              {q.bandwidth && (
+                                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/5 text-[10px] text-zinc-400 font-medium select-none ml-auto whitespace-nowrap shrink-0">
+                                  <Wifi size={10} className="text-zinc-500" />
+                                  <span>{formatBandwidth(q.bandwidth)}</span>
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+
+                      {/* Auto Option */}
+                      {availableQualities.length > 1 && availableQualities.find(q => q.id === 'auto') && (() => {
+                        const isActive = currentQuality === 'auto';
+                        return (
+                          <div className="mt-1 pt-1 border-t border-white/10">
                             <button
-                              key={q.id}
                               onClick={() => {
-                                handleQualityChange(q.id);
+                                handleQualityChange('auto');
                                 setShowSettings(false);
                               }}
-                              className={`w-full flex items-center justify-start px-3 py-2 text-sm transition-colors ${isActive
+                              className={`w-full flex items-center justify-start px-3 py-2.5 text-sm transition-colors ${isActive
                                   ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
-                                  : "text-zinc-300 hover:bg-white/[0.04] hover:text-white border-l-2 border-transparent"
+                                  : "text-zinc-200 hover:bg-white/10 hover:text-white border-l-2 border-transparent"
                                 }`}
                             >
                               <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
                                 {isActive ? (
-                                  <Check size={14} className="text-primary" />
+                                  <Check size={16} className="text-primary" />
                                 ) : (
-                                  <Monitor size={14} className="text-zinc-500" />
+                                  <Sparkles size={14} className="text-zinc-500" />
                                 )}
                               </div>
-
-                              <span className="flex items-baseline justify-start flex-1 pr-2">
-                                <span className="flex items-baseline min-w-[62px] shrink-0">
-                                  <span>{q.name}</span>
-                                  {q.height && q.height >= 2160 && (
-                                    <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">4K</sup>
-                                  )}
-                                  {q.height && q.height >= 1440 && q.height < 2160 && (
-                                    <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">2K</sup>
-                                  )}
-                                  {q.height && q.height >= 1080 && q.height < 1440 && (
-                                    <sup className="text-[9px] font-black text-rose-500 ml-0.5 select-none">HD</sup>
-                                  )}
-                                </span>
-                                {q.bandwidth && (
-                                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/5 text-[10px] text-zinc-400 font-medium select-none ml-auto whitespace-nowrap shrink-0">
-                                    <Wifi size={10} className="text-zinc-500" />
-                                    <span>{formatBandwidth(q.bandwidth)}</span>
-                                  </span>
-                                )}
+                              <span className="flex items-center text-[13px]">
+                                Auto
+                                {isActive && activeAutoQualityId !== null && (() => {
+                                  const q = availableQualities.find(q => q.id === activeAutoQualityId);
+                                  if (!q) return null;
+                                  return <span className="ml-1 text-white/50">• {q.name}</span>;
+                                })()}
                               </span>
                             </button>
-                          );
-                        })}
-
-                        {/* Auto Option */}
-                        {availableQualities.find(q => q.id === 'auto') && (() => {
-                          const isActive = currentQuality === 'auto';
-                          return (
-                            <div className="mt-1 pt-1 border-t border-white/10">
-                              <button
-                                onClick={() => {
-                                  handleQualityChange('auto');
-                                  setShowSettings(false);
-                                }}
-                                className={`w-full flex items-center justify-start px-3 py-2.5 text-sm transition-colors ${isActive
-                                    ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
-                                    : "text-zinc-200 hover:bg-white/10 hover:text-white border-l-2 border-transparent"
-                                  }`}
-                              >
-                                <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
-                                  {isActive ? (
-                                    <Check size={16} className="text-primary" />
-                                  ) : (
-                                    <Sparkles size={14} className="text-zinc-500" />
-                                  )}
-                                </div>
-                                <span className="flex items-center text-[13px]">
-                                  Auto
-                                  {isActive && activeAutoQualityId !== null && (() => {
-                                    const q = availableQualities.find(q => q.id === activeAutoQualityId);
-                                    if (!q) return null;
-                                    return <span className="ml-1 text-white/50">• {q.name}</span>;
-                                  })()}
-                                </span>
-                              </button>
-                            </div>
-                          );
-                        })()}
+                          </div>
+                        );
+                      })()}
 
                         {/* Max Quality Mode Toggle */}
                         <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2">
@@ -583,9 +677,8 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                   )}
                 </AnimatePresence>
               </div>
-            )}
 
-            <button
+              <button
               onClick={handleFullscreen}
               className="p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors"
             >
@@ -596,7 +689,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
       )}
 
       {/* Mobile Quality Settings Drawer */}
-      {availableQualities.length > 1 && (() => {
+      {(availableQualities.length > 1 || detectedResolution) && (() => {
         const drawerContent = (
           <AnimatePresence>
             {showSettings && (
@@ -630,7 +723,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                   {/* Title Header */}
                   <div className="flex items-center gap-2 pb-3 mb-2 border-b border-white/10 shrink-0 select-none">
                     <Sliders size={16} className="text-primary" />
-                    <span className="text-sm font-bold tracking-wider text-white">Quality Options</span>
+                    <span className="text-sm font-bold tracking-wider text-white">Stream Settings</span>
                     <button
                       onClick={() => setShowSettings(false)}
                       className="text-xs text-white/90 font-medium px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 cursor-pointer transition-colors ml-auto"
@@ -641,7 +734,25 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
 
                   {/* Options List */}
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1.5 pr-0.5">
-                    {availableQualities.filter(q => q.id !== 'auto').map((q) => {
+                    {detectedResolution && (() => {
+                      const resInfo = getResolutionInfo(detectedResolution.width, detectedResolution.height);
+                      return (
+                        <div className="px-3.5 py-3.5 mb-2.5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-1 select-none text-left">
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Active Stream</span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-black text-white font-mono tracking-tight">
+                              {detectedResolution.width}×{detectedResolution.height}
+                            </span>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${resInfo.badgeColorClass} bg-white/5 leading-none`}>
+                              {resInfo.badge}
+                            </span>
+                          </div>
+                          <span className="text-[10.5px] text-zinc-400 font-bold tracking-tight">{resInfo.fullName}</span>
+                        </div>
+                      );
+                    })()}
+
+                    {availableQualities.length > 1 && availableQualities.filter(q => q.id !== 'auto').map((q) => {
                       const isActive = currentQuality === q.id;
                       return (
                         <button
@@ -687,7 +798,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                     })}
 
                     {/* Auto Option */}
-                    {availableQualities.find(q => q.id === 'auto') && (() => {
+                    {availableQualities.length > 1 && availableQualities.find(q => q.id === 'auto') && (() => {
                       const isActive = currentQuality === 'auto';
                       return (
                         <div className="mt-1.5 pt-1.5 border-t border-white/10">

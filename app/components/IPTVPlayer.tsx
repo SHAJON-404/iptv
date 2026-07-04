@@ -91,6 +91,7 @@ export default function IPTVPlayer() {
     availableQualities,
     currentQuality,
     activeAutoQualityId,
+    detectedResolution,
     maxQualityMode,
     handleQualityChange,
     handleToggleMaxQuality,
@@ -348,6 +349,7 @@ export default function IPTVPlayer() {
                 availableQualities={availableQualities}
                 currentQuality={currentQuality}
                 activeAutoQualityId={activeAutoQualityId}
+                detectedResolution={detectedResolution}
                 handleQualityChange={handleQualityChange}
                 handlePlayPause={handlePlayPause}
                 handleMuteUnmute={handleMuteUnmute}

@@ -85,6 +85,11 @@ export interface StreamQuality {
   bandwidth?: number;
 }
 
+export interface DetectedResolution {
+  width: number;
+  height: number;
+}
+
 export type PlayerEngine = "auto" | "hls.js" | "shaka" | "video.js";
 
 export function useVideoPlayer(
@@ -166,6 +171,7 @@ export function useVideoPlayer(
   const [availableQualities, setAvailableQualities] = useState<StreamQuality[]>([{ id: "auto", name: "Auto" }]);
   const [currentQuality, setCurrentQuality] = useState<number | "auto">("auto");
   const [activeAutoQualityId, setActiveAutoQualityId] = useState<number | null>(null);
+  const [detectedResolution, setDetectedResolution] = useState<DetectedResolution | null>(null);
 
   // Max Quality Mode — by default ON, prioritizes quality over latency
   const [maxQualityMode, setMaxQualityMode] = useState(true);
@@ -344,9 +350,29 @@ export function useVideoPlayer(
     video.addEventListener("seeked", handleSeeked);
     video.addEventListener("canplay", handleCanPlay);
 
+    const handleResolutionChange = () => {
+      if (video.videoWidth && video.videoHeight) {
+        setDetectedResolution({
+          width: video.videoWidth,
+          height: video.videoHeight,
+        });
+      }
+    };
+
+    video.addEventListener("resize", handleResolutionChange);
+    video.addEventListener("loadedmetadata", handleResolutionChange);
+    video.addEventListener("playing", handleResolutionChange);
+
     setIsPaused(video.paused);
     setIsMuted(video.muted);
     setVolume(video.volume);
+
+    if (video.videoWidth && video.videoHeight) {
+      setDetectedResolution({
+        width: video.videoWidth,
+        height: video.videoHeight,
+      });
+    }
 
     return () => {
       video.removeEventListener("play", handlePlay);
@@ -357,6 +383,9 @@ export function useVideoPlayer(
       video.removeEventListener("seeking", handleSeeking);
       video.removeEventListener("seeked", handleSeeked);
       video.removeEventListener("canplay", handleCanPlay);
+      video.removeEventListener("resize", handleResolutionChange);
+      video.removeEventListener("loadedmetadata", handleResolutionChange);
+      video.removeEventListener("playing", handleResolutionChange);
     };
   }, [selectedChannel, retryKey]);
 
@@ -668,6 +697,7 @@ export function useVideoPlayer(
       setAvailableQualities([{ id: "auto", name: "Auto" }]);
       setCurrentQuality("auto");
       setActiveAutoQualityId(null);
+      setDetectedResolution(null);
       loadedUrlRef.current = initialChan.url;
       loadedChannelRef.current = initialChan;
 
@@ -1741,6 +1771,7 @@ export function useVideoPlayer(
     availableQualities,
     currentQuality,
     activeAutoQualityId,
+    detectedResolution,
     maxQualityMode,
     handleQualityChange,
     handleToggleMaxQuality,
