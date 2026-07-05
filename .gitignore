@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Cloudflare Tunnel config
 config.yml
+
+# Electron builds
+/dist/

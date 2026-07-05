@@ -1,12 +1,21 @@
 {
   "name": "iptv",
-  "version": "3.0",
+  "version": "3.0.0",
+  "description": "A modern, high-performance, and premium web-based IPTV player built with Next.js 16, React 19, and Tailwind CSS v4.",
+  "author": "S. SHAJON",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "electron:dev": "electron .",
+    "electron:build-next": "next build --webpack && node scripts/copy-next-assets.js",
+    "electron:pack": "npm run electron:build-next && electron-builder --dir",
+    "electron:dist": "npm run electron:build-next && electron-builder",
+    "electron:dist-win": "npm run electron:build-next && electron-builder --win",
+    "electron:dist-linux": "npm run electron:build-next && electron-builder --linux"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -24,7 +33,8 @@
     "react-world-flags": "^1.6.0",
     "shaka-player": "^5.1.8",
     "undici": "^8.4.1",
-    "video.js": "^8.23.8"
+    "video.js": "^8.23.8",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -32,6 +42,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-world-flags": "^1.6.0",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "postcss-preset-env": "^11.3.0",
@@ -51,5 +63,55 @@
   "allowScripts": {
     "sharp@0.34.5": true,
     "unrs-resolver@1.12.2": true
+  },
+  "build": {
+    "appId": "com.shajon.iptv",
+    "productName": "IPTV Player",
+    "copyright": "Copyright © 2026 Shajon",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      ".next/standalone/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/.prisma",
+        "to": "node_modules/.prisma"
+      },
+      {
+        "from": "node_modules/@prisma/client",
+        "to": "node_modules/@prisma/client"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      ".next/standalone/**"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "public/logo.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "IPTV Player"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "zip"
+      ],
+      "category": "Video",
+      "icon": "public/logo.png"
+    }
   }
 }
