@@ -21,15 +21,77 @@ function getBaseUrl(request: Request) {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const code = url.searchParams.get('code');
   const baseUrl = getBaseUrl(request);
 
+  // If we receive a token directly, it means the auth was completed on the production server
+  // and we are being redirected back to the local dev server/Electron environment.
+  const token = url.searchParams.get('token');
+  if (token) {
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 10); // 10 days
+
+    const host = request.headers.get("host") || url.host;
+    const rootDomain = process.env.ROOT_DOMAIN || "shajon.dev";
+    const isRootDomain = host.includes(rootDomain);
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cookieOptions: any = {
+      httpOnly: true,
+      secure: isRootDomain || process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      expires: expires,
+    };
+
+    if (isRootDomain) {
+      cookieOptions.domain = `.${rootDomain}`;
+    }
+
+    (await cookies()).set('iptv_session', token, cookieOptions);
+
+    if (host.startsWith('127.0.0.1') || host.startsWith('localhost')) {
+      return NextResponse.redirect(`iptv-app://login?token=${token}`);
+    }
+
+    return NextResponse.redirect(new URL('/', baseUrl));
+  }
+
+  const code = url.searchParams.get('code');
   if (!code) {
     return NextResponse.redirect(new URL('/login?error=NoCode', baseUrl));
   }
 
-  const redirectUri = `${baseUrl}/__/oauth/google/callback`;
+  // Parse state to check for local dev/Electron URL redirect
+  let originalBaseUrl = baseUrl;
+  let isLocalRedirect = false;
+  const stateParam = url.searchParams.get('state');
+  if (stateParam) {
+    try {
+      const decodedState = JSON.parse(Buffer.from(stateParam, 'base64').toString('utf-8'));
+      if (decodedState.baseUrl) {
+        const parsedBase = new URL(decodedState.baseUrl);
+        const isLocal = parsedBase.hostname === 'localhost' || parsedBase.hostname === '127.0.0.1';
+        const rootDomain = process.env.ROOT_DOMAIN || "shajon.dev";
+        const isUnderRootDomain = parsedBase.hostname === rootDomain || parsedBase.hostname.endsWith(`.${rootDomain}`);
+        if (isLocal || isUnderRootDomain) {
+          originalBaseUrl = decodedState.baseUrl;
+          if (isLocal) {
+            isLocalRedirect = true;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to parse state param:', e);
+    }
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || baseUrl;
+  const redirectUri = `${siteUrl}/__/oauth/google/callback`;
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
+
+  if (!GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    console.error('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing from the environment variables in callback!');
+  }
 
   const client = new OAuth2Client(
     GOOGLE_CLIENT_ID,
@@ -142,9 +204,20 @@ export async function GET(request: Request) {
     // Set Cookie
     (await cookies()).set('iptv_session', sessionToken, cookieOptions);
 
-    return NextResponse.redirect(new URL('/', baseUrl));
+    // If this is a local redirect (login was initiated from Electron/local dev, but handled by production),
+    // redirect the user's browser back to their local server callback with the token.
+    if (isLocalRedirect && originalBaseUrl !== baseUrl) {
+      return NextResponse.redirect(new URL(`/api/auth/callback/google?token=${sessionToken}`, originalBaseUrl));
+    }
+
+    // If it's a local/desktop environment (Electron), redirect to custom protocol to pass session back to Electron
+    if (host.startsWith('127.0.0.1') || host.startsWith('localhost')) {
+      return NextResponse.redirect(`iptv-app://login?token=${sessionToken}`);
+    }
+
+    return NextResponse.redirect(new URL('/', originalBaseUrl));
   } catch (error) {
     console.error('Google OAuth Error:', error);
-    return NextResponse.redirect(new URL('/login?error=OAuthFailed', baseUrl));
+    return NextResponse.redirect(new URL('/login?error=OAuthFailed', originalBaseUrl));
   }
 }
