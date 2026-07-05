@@ -1,0 +1,91 @@
+name: Build Desktop Application
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+
+jobs:
+  build:
+    name: Build & Package
+    strategy:
+      matrix:
+        include:
+          - platform: windows
+            os: "windows-2022"
+          - platform: linux
+            os: "ubuntu-22.04"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Next.js & Package Electron
+        run: |
+          if [ "${{ matrix.platform }}" = "windows" ]; then
+            npm run electron:dist-win
+          else
+            npm run electron:dist-linux
+          fi
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_DISABLE_TURNSTILE: ${{ secrets.NEXT_PUBLIC_DISABLE_TURNSTILE }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+      - name: Upload Windows Artifacts
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v6
+        with:
+          name: IPTV-Player-windows
+          path: |
+            dist/*.exe
+            dist/*.zip
+          if-no-files-found: error
+
+      - name: Upload Linux Artifacts
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v6
+        with:
+          name: IPTV-Player-linux
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish a release
+    runs-on: "ubuntu-22.04"
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Get all distributables
+        uses: actions/download-artifact@v6
+
+      - name: Publish to GitHub Releases
+        uses: svenstaro/upload-release-action@v2
+        with:
+          tag: ${{ github.ref }}
+          prerelease: true
+          file: ./**/*
+          file_glob: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
