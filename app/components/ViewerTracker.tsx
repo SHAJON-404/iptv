@@ -106,8 +106,10 @@ export default function ViewerTracker() {
     const sendHeartbeat = async () => {
       try {
         const localUrls = await getPlaylistUrls();
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+        const statsUrl = siteUrl ? `${siteUrl.replace(/\/$/, "")}/api/iptv/stats` : "/api/iptv/stats";
 
-        const response = await fetch("/api/iptv/stats", {
+        const response = await fetch(statsUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

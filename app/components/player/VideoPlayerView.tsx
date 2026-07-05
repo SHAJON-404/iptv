@@ -535,17 +535,21 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                     {detectedResolution && (() => {
                       const resInfo = getResolutionInfo(detectedResolution.width, detectedResolution.height);
                       return (
-                        <div className="px-3 py-2 border-b border-white/15 bg-white/[0.02] flex flex-col gap-0.5 select-none text-left">
-                          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Active Stream</span>
-                          <div className="flex items-center justify-between mt-0.5">
-                            <span className="text-xs font-black text-white font-mono tracking-tight">
-                              {detectedResolution.width}×{detectedResolution.height}
+                        <div className="px-4 py-3 border-b border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent flex flex-col gap-1 select-none text-left relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
+                          <div className="flex items-center gap-1.5">
+                            <Sparkles size={10} className="text-primary/70" />
+                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Active Stream</span>
+                          </div>
+                          <div className="flex items-end justify-between mt-1 z-10 relative">
+                            <span className="text-base font-black text-white tracking-tighter drop-shadow-sm">
+                              {detectedResolution.width}<span className="text-zinc-500 mx-0.5 font-light">×</span>{detectedResolution.height}
                             </span>
-                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${resInfo.badgeColorClass} bg-white/5 leading-none`}>
+                            <span className={`text-[10px] font-black px-2 py-1 rounded-md border ${resInfo.badgeColorClass} bg-white/5 leading-none shadow-sm backdrop-blur-md`}>
                               {resInfo.badge}
                             </span>
                           </div>
-                          <span className="text-[9px] text-zinc-400 font-bold tracking-tight">{resInfo.fullName}</span>
+                          <span className="text-[10px] text-zinc-500 font-semibold tracking-wide z-10 relative">{resInfo.fullName}</span>
                         </div>
                       );
                     })()}
@@ -561,8 +565,8 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                               setShowSettings(false);
                             }}
                             className={`w-full flex items-center justify-start px-3 py-2 text-sm transition-colors ${isActive
-                                ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
-                                : "text-zinc-300 hover:bg-white/[0.04] hover:text-white border-l-2 border-transparent"
+                              ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                              : "text-zinc-300 hover:bg-white/[0.04] hover:text-white border-l-2 border-transparent"
                               }`}
                           >
                             <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
@@ -608,8 +612,8 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                                 setShowSettings(false);
                               }}
                               className={`w-full flex items-center justify-start px-3 py-2.5 text-sm transition-colors ${isActive
-                                  ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
-                                  : "text-zinc-200 hover:bg-white/10 hover:text-white border-l-2 border-transparent"
+                                ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                                : "text-zinc-200 hover:bg-white/10 hover:text-white border-l-2 border-transparent"
                                 }`}
                             >
                               <div className="flex items-center justify-center w-6 mr-1.5 shrink-0">
@@ -632,53 +636,53 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                         );
                       })()}
 
-                        {/* Max Quality Mode Toggle */}
-                        <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleMaxQuality();
-                            }}
-                            className="w-full flex items-center justify-between text-xs transition-colors text-zinc-300 hover:text-white cursor-pointer"
-                          >
-                            <span className="flex items-center gap-1.5">
-                              <Zap size={12} className={maxQualityMode ? "text-amber-400" : "text-zinc-500"} />
-                              <span className="font-semibold text-xs">Max Quality</span>
-                            </span>
-                            <div className={`w-7 h-4 rounded-full transition-colors relative ${maxQualityMode ? 'bg-primary' : 'bg-zinc-600'}`}>
-                              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${maxQualityMode ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                            </div>
-                          </button>
-                        </div>
-
-                        {/* Player Engine Selector */}
-                        <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2 flex flex-col gap-1.5">
-                          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Engine</span>
-                          <div className="grid grid-cols-2 gap-1.5">
-                            {(['auto', 'hls.js', 'shaka', 'video.js'] as const).map(engine => (
-                              <button
-                                key={engine}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPlayerEngine(engine);
-                                }}
-                                className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${playerEngine === engine
-                                    ? 'bg-primary/20 text-primary border border-primary/30'
-                                    : 'bg-white/5 text-zinc-300 hover:bg-white/10 border border-transparent'
-                                  }`}
-                              >
-                                {engine === 'auto' ? 'Auto' : engine === 'hls.js' ? 'HLS.js' : engine === 'shaka' ? 'Shaka' : 'Video.js'}
-                              </button>
-                            ))}
+                      {/* Max Quality Mode Toggle */}
+                      <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleMaxQuality();
+                          }}
+                          className="w-full flex items-center justify-between text-xs transition-colors text-zinc-300 hover:text-white cursor-pointer"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <Zap size={12} className={maxQualityMode ? "text-amber-400" : "text-zinc-500"} />
+                            <span className="font-semibold text-xs">Max Quality</span>
+                          </span>
+                          <div className={`w-7 h-4 rounded-full transition-colors relative ${maxQualityMode ? 'bg-primary' : 'bg-zinc-600'}`}>
+                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform ${maxQualityMode ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                           </div>
+                        </button>
+                      </div>
+
+                      {/* Player Engine Selector */}
+                      <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2 flex flex-col gap-1.5">
+                        <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Engine</span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {(['auto', 'hls.js', 'shaka', 'video.js'] as const).map(engine => (
+                            <button
+                              key={engine}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPlayerEngine(engine);
+                              }}
+                              className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${playerEngine === engine
+                                ? 'bg-primary/20 text-primary border border-primary/30'
+                                : 'bg-white/5 text-zinc-300 hover:bg-white/10 border border-transparent'
+                                }`}
+                            >
+                              {engine === 'auto' ? 'Auto' : engine === 'hls.js' ? 'HLS.js' : engine === 'shaka' ? 'Shaka' : 'Video.js'}
+                            </button>
+                          ))}
                         </div>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-              <button
+            <button
               onClick={handleFullscreen}
               className="p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors"
             >
@@ -737,17 +741,21 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                     {detectedResolution && (() => {
                       const resInfo = getResolutionInfo(detectedResolution.width, detectedResolution.height);
                       return (
-                        <div className="px-3.5 py-3.5 mb-2.5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-1 select-none text-left">
-                          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Active Stream</span>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-black text-white font-mono tracking-tight">
-                              {detectedResolution.width}×{detectedResolution.height}
+                        <div className="px-4 py-4 mb-3 rounded-2xl bg-gradient-to-br from-white/[0.06] to-white/[0.01] border border-white/10 flex flex-col gap-1 select-none text-left relative overflow-hidden shadow-lg shadow-black/20">
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                          <div className="flex items-center gap-1.5 mb-0.5 relative z-10">
+                            <Sparkles size={12} className="text-primary/70" />
+                            <span className="text-[11px] font-black text-zinc-400 uppercase tracking-widest">Active Stream</span>
+                          </div>
+                          <div className="flex items-end justify-between relative z-10">
+                            <span className="text-xl font-black text-white tracking-tighter drop-shadow-sm">
+                              {detectedResolution.width}<span className="text-zinc-500 mx-0.5 font-light">×</span>{detectedResolution.height}
                             </span>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${resInfo.badgeColorClass} bg-white/5 leading-none`}>
+                            <span className={`text-[11px] font-black px-2.5 py-1 rounded-md border ${resInfo.badgeColorClass} bg-white/5 leading-none shadow-sm backdrop-blur-md`}>
                               {resInfo.badge}
                             </span>
                           </div>
-                          <span className="text-[10.5px] text-zinc-400 font-bold tracking-tight">{resInfo.fullName}</span>
+                          <span className="text-xs text-zinc-400 font-medium tracking-wide mt-0.5 relative z-10">{resInfo.fullName}</span>
                         </div>
                       );
                     })()}
@@ -762,8 +770,8 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                             setShowSettings(false);
                           }}
                           className={`w-full flex items-center justify-start px-3 py-3 text-sm rounded-2xl transition-all duration-200 cursor-pointer ${isActive
-                              ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
-                              : "text-zinc-300 active:bg-white/[0.04] border-l-2 border-transparent"
+                            ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                            : "text-zinc-300 active:bg-white/[0.04] border-l-2 border-transparent"
                             }`}
                         >
                           <div className="flex items-center justify-center w-5 mr-3 shrink-0">
@@ -808,8 +816,8 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                               setShowSettings(false);
                             }}
                             className={`w-full flex items-center justify-start px-3 py-3 text-sm rounded-2xl transition-all duration-200 cursor-pointer ${isActive
-                                ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
-                                : "text-zinc-300 active:bg-white/[0.04] border-l-2 border-transparent"
+                              ? "bg-white/[0.06] text-white font-bold border-l-2 border-primary"
+                              : "text-zinc-300 active:bg-white/[0.04] border-l-2 border-transparent"
                               }`}
                           >
                             <div className="flex items-center justify-center w-5 mr-3 shrink-0">
@@ -864,8 +872,8 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                               setShowSettings(false);
                             }}
                             className={`px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all ${playerEngine === engine
-                                ? 'bg-primary/20 text-primary border border-primary/30'
-                                : 'bg-white/5 text-zinc-300 active:bg-white/10 border border-transparent'
+                              ? 'bg-primary/20 text-primary border border-primary/30'
+                              : 'bg-white/5 text-zinc-300 active:bg-white/10 border border-transparent'
                               }`}
                           >
                             {engine === 'auto' ? 'Auto' : engine === 'hls.js' ? 'HLS.js' : engine === 'shaka' ? 'Shaka' : 'Video.js'}

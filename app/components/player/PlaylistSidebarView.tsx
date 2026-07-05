@@ -108,7 +108,7 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
                   setActivePlaylistId(pl.id);
                   setPlaylistTab("browse");
                 }}
-                className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item ${
+                className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item h-[62px] sm:h-[72px] ${
                   isActive
                     ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
                     : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"

@@ -21,6 +21,74 @@ interface ChannelListViewProps {
   hasMore: boolean;
 }
 
+interface ChannelCardProps {
+  chan: Channel;
+  isSelected: boolean;
+  onSelect: (chan: Channel) => void;
+  getInitials: (name: string) => string;
+}
+
+const ChannelCard = React.memo(function ChannelCard({
+  chan,
+  isSelected,
+  onSelect,
+  getInitials,
+}: ChannelCardProps) {
+  const [imageError, setImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageError(false);
+  }, [chan.logo]);
+
+  return (
+    <button
+      onClick={() => onSelect(chan)}
+      className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group h-[60px] sm:h-[68px] ${
+        isSelected
+          ? "bg-primary/10 border-primary text-primary"
+          : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
+      }`}
+    >
+      {chan.logo && !imageError ? (
+        <div className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 relative">
+          <Image
+            src={chan.logo}
+            alt={chan.name}
+            fill
+            unoptimized
+            onError={() => setImageError(true)}
+            className="object-contain rounded-lg sm:rounded-xl bg-white/5 p-0.5 border border-white/10 group-hover:scale-105 transition-transform"
+          />
+        </div>
+      ) : (
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-bold text-xs border border-white/10 text-zinc-300 group-hover:text-white transition-colors flex-shrink-0">
+          {getInitials(chan.name)}
+        </div>
+      )}
+
+      <div className="flex-1 min-w-0">
+        <p
+          className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate ${
+            isSelected ? "text-primary/75" : "text-zinc-400"
+          }`}
+        >
+          {chan.group}
+        </p>
+        <p className="text-[13px] sm:text-sm font-bold truncate">
+          {chan.name}
+        </p>
+      </div>
+
+      {isSelected && (
+        <Play
+          size={13}
+          className="sm:w-3.5 sm:h-3.5 fill-primary text-primary animate-pulse flex-shrink-0"
+        />
+      )}
+    </button>
+  );
+});
+
 export const ChannelListView = React.memo(function ChannelListView({
   categories,
   selectedCategory,
@@ -117,9 +185,9 @@ export const ChannelListView = React.memo(function ChannelListView({
             {Array.from({ length: 12 }).map((_, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/10 sm:border-white/5 animate-pulse"
+                className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/10 sm:border-white/5 animate-pulse h-[60px] sm:h-[68px]"
               >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10 flex-shrink-0" />
                 <div className="flex-1 space-y-1.5 sm:space-y-2">
                   <div className="h-2.5 sm:h-3 w-1/3 bg-white/10 rounded" />
                   <div className="h-3.5 sm:h-4 w-2/3 bg-white/10 rounded" />
@@ -134,58 +202,15 @@ export const ChannelListView = React.memo(function ChannelListView({
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {visibleChannels.map((chan) => {
-                const isSelected = selectedChannel?.id === chan.id;
-                return (
-                  <button
-                    key={chan.id}
-                    onClick={() => handleChannelSelect(chan)}
-                    className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group ${
-                      isSelected
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
-                    }`}
-                  >
-                    {chan.logo ? (
-                      <Image
-                        src={chan.logo}
-                        alt={chan.name}
-                        width={40}
-                        height={40}
-                        unoptimized
-                        onError={(e) => {
-                          (e.currentTarget as HTMLElement).style.display = "none";
-                        }}
-                        className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-lg sm:rounded-xl bg-white/5 p-0.5 border border-white/10 group-hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-white/5 to-white/10 flex items-center justify-center font-bold text-xs border border-white/10 text-zinc-300 group-hover:text-white transition-colors">
-                        {getInitials(chan.name)}
-                      </div>
-                    )}
-
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
-                          isSelected ? "text-primary/75" : "text-zinc-400"
-                        }`}
-                      >
-                        {chan.group}
-                      </p>
-                      <p className="text-[13px] sm:text-sm font-bold truncate">
-                        {chan.name}
-                      </p>
-                    </div>
-
-                    {isSelected && (
-                      <Play
-                        size={13}
-                        className="sm:w-3.5 sm:h-3.5 fill-primary text-primary animate-pulse"
-                      />
-                    )}
-                  </button>
-                );
-              })}
+              {visibleChannels.map((chan) => (
+                <ChannelCard
+                  key={chan.id}
+                  chan={chan}
+                  isSelected={selectedChannel?.id === chan.id}
+                  onSelect={handleChannelSelect}
+                  getInitials={getInitials}
+                />
+              ))}
             </div>
 
             {/* Load More Button */}

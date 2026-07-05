@@ -5,14 +5,15 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HelpCircle, User, Trophy, LogIn, Menu, X, AlertCircle, Tv } from "lucide-react";
+import { HelpCircle, Trophy, Menu, X, AlertCircle, Tv, Info, Server } from "lucide-react";
 import { FaTelegram, FaDiscord } from "react-icons/fa6";
-import { useAuth } from "@/app/hooks/useAuth";
 
 export default function Header() {
   const pathname = usePathname();
-  const { session } = useAuth();
+  // No auth session required
   const isFaqPage = pathname === "/faq";
+  const isAboutPage = pathname === "/about";
+  const isFtpPage = pathname === "/ftp";
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
@@ -101,32 +102,31 @@ export default function Header() {
                 <span>FAQ</span>
               </Link>
 
-              {/* Auth Button (Desktop) */}
-              {session ? (
-                <Link href="/dashboard">
-                  <button
-                    className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
-                    title={session.user?.name || "User"}
-                  >
-                    {session.user?.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={session.user.image} alt="Profile" className="w-4 h-4 sm:w-5 sm:h-5 rounded-full" />
-                    ) : (
-                      <User size={15} className="text-primary" />
-                    )}
-                    <span>Dashboard</span>
-                  </button>
-                </Link>
-              ) : (
-                <Link href="/login">
-                  <button
-                    className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-primary/30 hover:border-primary/50 bg-primary/10 hover:bg-primary/20 text-white font-bold text-xs sm:text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer"
-                  >
-                    <LogIn size={15} className="text-primary" />
-                    <span>Login</span>
-                  </button>
-                </Link>
-              )}
+              <Link
+                href="/about"
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
+                  isAboutPage
+                    ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                    : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+                } font-bold text-xs sm:text-sm`}
+              >
+                <Info size={15} className="text-primary" />
+                <span>About</span>
+              </Link>
+
+              <Link
+                href="/ftp"
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
+                  isFtpPage
+                    ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                    : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+                } font-bold text-xs sm:text-sm`}
+              >
+                <Server size={15} className="text-primary" />
+                <span>FTP</span>
+              </Link>
+
+              {/* Login and Dashboard buttons removed */}
             </motion.div>
 
             {/* Mobile Hamburger Button */}
@@ -240,30 +240,33 @@ export default function Header() {
                   FAQ
                 </Link>
 
-                {session ? (
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/5 bg-white/[0.02] text-white text-sm font-bold"
-                  >
-                    {session.user?.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={session.user.image} alt="Profile" className="w-5 h-5 rounded-full" />
-                    ) : (
-                      <User size={16} className="text-primary" />
-                    )}
-                    Dashboard
-                  </Link>
-                ) : (
-                  <Link
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-primary/20 bg-primary/10 text-white text-sm font-bold text-center justify-center"
-                  >
-                    <LogIn size={16} className="text-primary" />
-                    Login
-                  </Link>
-                )}
+                <Link
+                  href="/about"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${
+                    isAboutPage
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-white/5 bg-white/[0.02] text-white"
+                  }`}
+                >
+                  <Info size={16} className="text-primary" />
+                  About
+                </Link>
+
+                <Link
+                  href="/ftp"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${
+                    isFtpPage
+                      ? "border-primary/50 bg-primary/10 text-primary"
+                      : "border-white/5 bg-white/[0.02] text-white"
+                  }`}
+                >
+                  <Server size={16} className="text-primary" />
+                  FTP
+                </Link>
+
+                {/* Mobile Login and Dashboard buttons removed */}
               </div>
             </div>
           </motion.div>
