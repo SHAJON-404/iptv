@@ -27,8 +27,12 @@ This project is a modern, responsive, and high-performance IPTV web player built
     - `player/` - Video player sub-components (`VideoPlayerView`, `ChannelListView`, etc.).
   - `hooks/` - Custom React hooks (`useVideoPlayer`, `useIPTVPlaylists`, `useAuth`).
   - `data/` - Static JSON files (e.g., `fifa.json`).
+- `electron/` - Electron desktop app wrappers.
+  - `main.js` - Main process launcher (manages Next.js server process and windows).
+  - `preload.js` - Context bridge preload script.
 - `prisma/` - Prisma database schema.
 - `public/` - Static assets.
+- `scripts/` - Custom build scripts (e.g., `copy-next-assets.js` for copying Next.js static files).
 
 ## 📜 Coding Standards & Rules
 
@@ -59,6 +63,10 @@ This project is a modern, responsive, and high-performance IPTV web player built
 - When dealing with CORS issues on live streams, route the streams through the built-in proxy (`/api/iptv/proxy`).
 - Ensure proxy routes (`Undici`) maintain anti-SSRF protections and handle URL/query parameter propagation correctly.
 - Be aware of the Turnstile and Auth implementations when modifying API routes that require protection or user context.
+### 6. Electron & Desktop Application Context
+- **Standalone server**: In production, Electron spawns the built Next.js server locally (`.next/standalone/server.js`) on a dynamic free port.
+- **Prisma & ASAR**: Because Prisma query engines are binary files, they must run unpacked from disk. They are excluded from the ASAR archive in `package.json` under `"asarUnpack"`.
+- **Environment variables**: Config settings (like `DATABASE_URL` and `NEXTAUTH_SECRET`) are read from a `.env` file located in the user's AppData directory or next to the executable.
 
 ## 🤝 AI Agent Workflow
 When asked to implement a feature or fix a bug:

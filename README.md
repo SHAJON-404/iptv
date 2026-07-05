@@ -102,6 +102,41 @@ npm run build
 npm start
 ```
 
+### 🖥️ Desktop Application (Windows & Linux)
+
+This repository includes support for compiling the player into a standalone desktop application (`.exe` for Windows, and installers like `.deb`, `.rpm`, `.AppImage` for Linux) using Electron.
+
+The desktop application runs the Next.js production server locally in a background process on a dynamically allocated port, serving the dynamic pages, secure CORS stream proxies, and local API handlers directly inside a native window.
+
+#### Local Development
+1. Start the Next.js dev server:
+   ```bash
+   npm run dev
+   ```
+2. Launch Electron (in a separate terminal) pointed to the local dev server:
+   ```bash
+   npm run electron:dev
+   ```
+
+#### Compiling Installers Locally
+- **Local Unpacked Dry-Run (Fast testing):**
+   ```bash
+   npm run electron:pack
+   ```
+- **Compile Windows installer (`dist/IPTV Player Setup 3.0.0.exe`):**
+   ```bash
+   npm run electron:dist-win
+   ```
+- **Compile Linux installers (AppImage, deb, rpm):**
+   ```bash
+   npm run electron:dist-linux
+   ```
+
+#### Configuration & Database Setup
+When launched, the desktop app searches for a configuration `.env` file in the user's home folder config path (`%APPDATA%/iptv` on Windows or `~/.config/iptv` on Linux). If it doesn't exist, a default template is generated.
+Ensure you update this `.env` with your **DATABASE_URL** (PostgreSQL instance connection string) before launching the compiled app.
+
+
 ### Docker Deployment
 
 You can deploy the application using the preconfigured multi-stage `Dockerfile` (optimized for Node.js 22):
