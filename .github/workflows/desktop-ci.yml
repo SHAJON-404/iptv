@@ -1,13 +1,7 @@
 name: Build Desktop Application
 
 on:
-  push:
-    branches:
-      - main
-      - master
-    tags:
-      - 'v*'
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -69,7 +63,7 @@ jobs:
     name: Publish a release
     runs-on: "ubuntu-22.04"
     needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     steps:
