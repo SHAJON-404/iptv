@@ -16,4 +16,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Get total and free system memory for intelligent buffer sizing
   // Returns: Promise<{ totalMemoryMB: number, freeMemoryMB: number }>
   getSystemMemory: () => ipcRenderer.invoke('get-system-memory'),
+
+  // ── Update Checker ──────────────────────────────────────────────────────
+  // Check for new app updates using public GitHub Releases API
+  // Returns: Promise<{ success: boolean, updateAvailable: boolean, currentVersion: string, latestVersion: string, url: string, notes: string, error?: string }>
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
 });

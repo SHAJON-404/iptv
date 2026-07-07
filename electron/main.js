@@ -5,6 +5,7 @@ const fs = require('fs');
 const child_process = require('child_process');
 const net = require('net');
 const http = require('http');
+const https = require('https');
 const dotenv = require('dotenv');
 
 let serverProcess = null;
@@ -369,6 +370,84 @@ ipcMain.handle('get-system-memory', () => {
     totalMemoryMB: Math.round(os.totalmem() / (1024 * 1024)),
     freeMemoryMB: Math.round(os.freemem() / (1024 * 1024)),
   };
+});
+
+// Update Checker: Check for new app updates using public GitHub Releases API
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    const currentVersion = app.getVersion();
+    
+    return new Promise((resolve) => {
+      const options = {
+        hostname: 'api.github.com',
+        path: '/repos/SHAJON-404/iptv/releases/latest',
+        method: 'GET',
+        headers: {
+          'User-Agent': 'iptv-desktop-app'
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            if (res.statusCode !== 200) {
+              resolve({ 
+                success: false, 
+                error: `GitHub API returned HTTP status ${res.statusCode}` 
+              });
+              return;
+            }
+
+            const release = JSON.parse(data);
+            const latestVersionTag = release.tag_name || '';
+            const latestVersion = latestVersionTag.replace(/^v/, '');
+
+            // Basic semver compare logic
+            const parseVersion = (v) => {
+              const clean = v.replace(/^v/, '').split('-')[0];
+              return clean.split('.').map(Number);
+            };
+
+            const currParsed = parseVersion(currentVersion);
+            const lateParsed = parseVersion(latestVersion);
+            
+            let updateAvailable = false;
+            for (let i = 0; i < Math.max(currParsed.length, lateParsed.length); i++) {
+              const c = currParsed[i] || 0;
+              const l = lateParsed[i] || 0;
+              if (l > c) {
+                updateAvailable = true;
+                break;
+              } else if (c > l) {
+                break;
+              }
+            }
+
+            resolve({
+              success: true,
+              updateAvailable,
+              currentVersion,
+              latestVersion: latestVersionTag,
+              url: release.html_url,
+              notes: release.body || ''
+            });
+          } catch (err) {
+            resolve({ success: false, error: `Parse error: ${err.message}` });
+          }
+        });
+      });
+
+      req.on('error', (err) => {
+        resolve({ success: false, error: `Network error: ${err.message}` });
+      });
+
+      req.end();
+    });
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
 });
 
 app.on('window-all-closed', () => {

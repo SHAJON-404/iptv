@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { User, Heart, ArrowLeft, Coins, Copy, Check, Star } from "lucide-react";
+import { User, Heart, ArrowLeft, Coins, Copy, Check, Star, Zap, RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 import Link from "next/link";
 import BackgroundScene from "./BackgroundScene";
@@ -11,6 +11,118 @@ import Header from "./Header";
 
 export default function AboutView() {
   const [copiedText, setCopiedText] = React.useState<string | null>(null);
+  const [currentVer, setCurrentVer] = React.useState<string>("3.0.0");
+  const [updateStatus, setUpdateStatus] = React.useState<"idle" | "checking" | "up-to-date" | "update-available" | "error">("idle");
+  const [updateInfo, setUpdateInfo] = React.useState<{
+    currentVersion: string;
+    latestVersion: string;
+    url: string;
+    notes: string;
+    errorMsg?: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    const fetchCurrentVersion = async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const api = typeof window !== "undefined" ? (window as any).electronAPI : undefined;
+      if (api?.isDesktop && api?.checkForUpdates) {
+        try {
+          const res = await api.checkForUpdates();
+          if (res && res.success && res.currentVersion) {
+            setCurrentVer(res.currentVersion);
+          }
+        } catch { /* ignore */ }
+      }
+    };
+    fetchCurrentVersion();
+  }, []);
+
+  const handleCheckForUpdates = async () => {
+    setUpdateStatus("checking");
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const api = typeof window !== "undefined" ? (window as any).electronAPI : undefined;
+    
+    if (api?.isDesktop && api?.checkForUpdates) {
+      try {
+        const res = await api.checkForUpdates();
+        if (res.success) {
+          setUpdateInfo({
+            currentVersion: res.currentVersion,
+            latestVersion: res.latestVersion,
+            url: res.url,
+            notes: res.notes,
+          });
+          setUpdateStatus(res.updateAvailable ? "update-available" : "up-to-date");
+        } else {
+          setUpdateInfo({
+            currentVersion: res.currentVersion || currentVer,
+            latestVersion: "",
+            url: "",
+            notes: "",
+            errorMsg: res.error,
+          });
+          setUpdateStatus("error");
+        }
+      } catch (err: any) {
+        setUpdateStatus("error");
+        setUpdateInfo({
+          currentVersion: currentVer,
+          latestVersion: "",
+          url: "",
+          notes: "",
+          errorMsg: err?.message || "Failed to communicate with update service.",
+        });
+      }
+    } else {
+      // Fallback for Web/Browser mode using fetch to public GitHub API
+      try {
+        const res = await fetch("https://api.github.com/repos/SHAJON-404/iptv/releases/latest");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const release = await res.json();
+        const latestTag = release.tag_name || "";
+        const latestVerClean = latestTag.replace(/^v/, "");
+        const currentVerClean = currentVer.replace(/^v/, "");
+        
+        // Simple comparison
+        const parseVersion = (v: string) => {
+          const clean = v.split("-")[0];
+          return clean.split(".").map(Number);
+        };
+        const currParsed = parseVersion(currentVerClean);
+        const lateParsed = parseVersion(latestVerClean);
+        
+        let updateAvailable = false;
+        for (let i = 0; i < Math.max(currParsed.length, lateParsed.length); i++) {
+          const c = currParsed[i] || 0;
+          const l = lateParsed[i] || 0;
+          if (l > c) {
+            updateAvailable = true;
+            break;
+          } else if (c > l) {
+            break;
+          }
+        }
+        
+        setUpdateInfo({
+          currentVersion: currentVer,
+          latestVersion: latestTag,
+          url: release.html_url,
+          notes: release.body || "",
+        });
+        setUpdateStatus(updateAvailable ? "update-available" : "up-to-date");
+      } catch (err: any) {
+        setUpdateStatus("error");
+        setUpdateInfo({
+          currentVersion: currentVer,
+          latestVersion: "",
+          url: "",
+          notes: "",
+          errorMsg: err?.message || "Failed to check updates via public API.",
+        });
+      }
+    }
+  };
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -36,11 +148,136 @@ export default function AboutView() {
             </Link>
           </div>
 
+          {/* Project Details & Update Checker Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-full glass-card p-6 sm:p-10 border border-white/10 sm:border-white/5 rounded-3xl bg-white/[0.01] flex flex-col items-center gap-6 shadow-2xl relative overflow-hidden mb-6"
+          >
+            {/* Glows */}
+            <div className="absolute -left-20 -top-20 w-64 h-64 rounded-full bg-violet-500/10 blur-[60px] pointer-events-none" />
+            <div className="absolute -right-20 -bottom-20 w-64 h-64 rounded-full bg-primary/10 blur-[60px] pointer-events-none" />
+            
+            <div className="flex flex-col items-center text-center space-y-4 max-w-2xl">
+              {/* Animated App Icon Wrapper */}
+              <div className="relative group">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-primary to-violet-600 blur-md opacity-50 scale-105 group-hover:scale-110 transition-all duration-300" />
+                <div className="relative p-4 rounded-2xl bg-white/5 border border-white/15 text-primary shadow-xl">
+                  <Zap size={32} className="fill-primary/20 animate-pulse text-primary" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
+                  IPTV Player Desktop
+                </h2>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs font-bold text-zinc-400">Current Version:</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider bg-white/10 text-white border border-white/15">
+                    v{currentVer}
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-zinc-300 font-medium leading-relaxed">
+                A modern, high-performance open-source IPTV player focused on desktop reliability, hardware acceleration, and lag-free live streaming.
+              </p>
+
+              {/* Dynamic Update Status Panel */}
+              <div className="w-full pt-2">
+                {updateStatus === "idle" && (
+                  <button
+                    onClick={handleCheckForUpdates}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-violet-600 hover:opacity-95 text-white font-extrabold text-xs sm:text-sm transition-all duration-300 shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <RefreshCw size={14} />
+                    <span>Check for Updates</span>
+                  </button>
+                )}
+
+                {updateStatus === "checking" && (
+                  <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-zinc-300 font-bold text-xs sm:text-sm select-none">
+                    <RefreshCw size={14} className="animate-spin text-primary" />
+                    <span>Checking for new releases...</span>
+                  </div>
+                )}
+
+                {updateStatus === "up-to-date" && (
+                  <div className="flex flex-col items-center space-y-3">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold select-none">
+                      <Check size={14} className="stroke-[3]" />
+                      <span>You are on the latest version</span>
+                    </div>
+                    <button
+                      onClick={handleCheckForUpdates}
+                      className="text-[10px] font-bold text-zinc-400 hover:text-white uppercase tracking-widest transition-colors duration-200 cursor-pointer"
+                    >
+                      Check Again
+                    </button>
+                  </div>
+                )}
+
+                {updateStatus === "error" && (
+                  <div className="flex flex-col items-center space-y-3 w-full">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs font-bold max-w-md text-left">
+                      <AlertCircle size={16} className="flex-shrink-0" />
+                      <span className="break-all">{updateInfo?.errorMsg || "Failed to connect to update server"}</span>
+                    </div>
+                    <button
+                      onClick={handleCheckForUpdates}
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 text-zinc-300 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+                    >
+                      <RefreshCw size={12} />
+                      <span>Retry Check</span>
+                    </button>
+                  </div>
+                )}
+
+                {updateStatus === "update-available" && updateInfo && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full max-w-md p-5 rounded-2xl bg-violet-600/[0.03] border border-violet-500/30 text-left space-y-3 shadow-lg shadow-violet-500/5 mx-auto relative overflow-hidden"
+                  >
+                    {/* Subtle glow */}
+                    <div className="absolute right-0 top-0 w-24 h-24 rounded-full bg-primary/10 blur-xl pointer-events-none" />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-primary">New Update Available</span>
+                        <h4 className="text-sm font-bold text-white">Version {updateInfo.latestVersion}</h4>
+                      </div>
+                      <a
+                        href={updateInfo.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:opacity-95 text-white font-extrabold text-xs transition-all active:scale-95 cursor-pointer"
+                      >
+                        <span>Download</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+
+                    {updateInfo.notes && (
+                      <div className="pt-2 border-t border-white/10">
+                        <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block mb-1">Release Notes:</span>
+                        <div className="max-h-24 overflow-y-auto text-xs text-zinc-300 font-medium leading-relaxed pr-2 custom-scrollbar break-words whitespace-pre-line">
+                          {updateInfo.notes}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
           {/* Profile Card Wrapper */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
             className="w-full glass-card p-6 sm:p-10 border border-white/10 sm:border-white/5 rounded-3xl bg-white/[0.01] flex flex-col md:flex-row items-center md:items-start gap-8 sm:gap-10 shadow-2xl relative overflow-hidden"
           >
             {/* Ambient Background Glow inside card */}
