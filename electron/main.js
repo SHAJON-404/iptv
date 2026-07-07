@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { app, BrowserWindow, dialog, shell } = require('electron');
+const { app, BrowserWindow, dialog, shell, ipcMain, powerSaveBlocker } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const child_process = require('child_process');
@@ -10,6 +10,33 @@ const dotenv = require('dotenv');
 let serverProcess = null;
 let mainWindow = null;
 let serverUrl = 'http://127.0.0.1:3000';
+let sleepBlockerId = null;
+
+// ── Desktop Performance: GPU & Rendering Optimizations ──────────────────────
+// Enable hardware-accelerated video decoding and GPU compositing
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('enable-hardware-overlays', 'single-fullscreen,single-on-top,underlay');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+
+// Linux-specific: enable VA-API hardware video decoding
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecodeLinuxGL,VaapiVideoEncoder,VaapiVideoDecoder');
+}
+
+// ── Desktop Performance: Anti-Throttling for Background Playback ────────────
+// Prevent Chromium from throttling timers and rendering when the window is minimized or in background
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+
+// ── Desktop Performance: Memory Management ──────────────────────────────────
+// Increase V8 heap size limit to support larger buffers for 4K streams
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
+
+// ── Desktop Performance: Audio Optimization ─────────────────────────────────
+// Disable audio sandbox for lower-latency audio playback
+app.commandLine.appendSwitch('disable-features', 'AudioServiceSandbox');
 
 // Register custom protocol client
 if (process.defaultApp) {
@@ -317,6 +344,35 @@ async function initializeApp() {
 // Electron lifecycle events
 app.whenReady().then(initializeApp);
 
+// ── IPC Handlers: Desktop APIs for Renderer ─────────────────────────────────
+
+// Sleep Prevention: Toggle system sleep blocker during active playback
+ipcMain.handle('prevent-sleep', (_event, enable) => {
+  if (enable) {
+    if (sleepBlockerId === null || !powerSaveBlocker.isStarted(sleepBlockerId)) {
+      sleepBlockerId = powerSaveBlocker.start('prevent-display-sleep');
+      console.log(`[Desktop] Sleep prevention ENABLED (blocker id: ${sleepBlockerId})`);
+    }
+    return true;
+  } else {
+    if (sleepBlockerId !== null && powerSaveBlocker.isStarted(sleepBlockerId)) {
+      powerSaveBlocker.stop(sleepBlockerId);
+      console.log(`[Desktop] Sleep prevention DISABLED (blocker id: ${sleepBlockerId})`);
+      sleepBlockerId = null;
+    }
+    return false;
+  }
+});
+
+// System Memory: Expose total system memory for intelligent buffer sizing
+ipcMain.handle('get-system-memory', () => {
+  const os = require('os');
+  return {
+    totalMemoryMB: Math.round(os.totalmem() / (1024 * 1024)),
+    freeMemoryMB: Math.round(os.freemem() / (1024 * 1024)),
+  };
+});
+
 app.on('window-all-closed', () => {
   // Respect macOS conventions, but on Windows/Linux terminate
   if (process.platform !== 'darwin') {
@@ -330,8 +386,14 @@ app.on('activate', () => {
   }
 });
 
-// Terminate Next.js server process when quitting
+// Terminate Next.js server process and clean up when quitting
 app.on('will-quit', () => {
+  // Release sleep blocker
+  if (sleepBlockerId !== null && powerSaveBlocker.isStarted(sleepBlockerId)) {
+    powerSaveBlocker.stop(sleepBlockerId);
+    sleepBlockerId = null;
+  }
+
   if (serverProcess) {
     console.log('Shutting down background Next.js server...');
     serverProcess.kill('SIGTERM');

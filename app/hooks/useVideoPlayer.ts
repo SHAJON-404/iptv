@@ -1,12 +1,28 @@
 "use client";
 
+/* eslint-disable react-hooks/immutability */
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import type Hls from "hls.js";
 import { Channel, getIsIOS } from "./useIPTVPlaylists";
+import { useStreamGuardian } from "./useStreamGuardian";
 
 // shaka-player is loaded dynamically because it requires `window` (browser-only)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ShakaPlayer = any;
+
+// Electron Desktop API exposed via preload.js
+interface ElectronDesktopAPI {
+  platform: string;
+  isDesktop: boolean;
+  preventSleep: (enable: boolean) => Promise<boolean>;
+  getSystemMemory: () => Promise<{ totalMemoryMB: number; freeMemoryMB: number }>;
+}
+
+declare global {
+  interface Window {
+    electronAPI?: ElectronDesktopAPI;
+  }
+}
 
 export interface TrendingChannel {
   name: string;
@@ -118,12 +134,24 @@ export function useVideoPlayer(
 
   const errorRetryCountRef = useRef(0);
   const recoveryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Whether the user intentionally paused (for StreamGuardian auto-pause prevention) */
+  const userPausedRef = useRef(false);
+  /** Whether auto-recovery is currently in progress */
+  const [isAutoRecovering, setIsAutoRecovering] = useState(false);
+  const [recoveryAttempt, setRecoveryAttempt] = useState(0);
+
+  /** Calculate exponential backoff delay: 1s, 2s, 4s, 8s, 16s, 16s (capped) */
+  const getRecoveryDelay = (attempt: number): number => {
+    return Math.min(1000 * Math.pow(2, attempt), 16000);
+  };
 
   const setPlayerStatus = useCallback((status: "idle" | "loading" | "playing" | "error") => {
     setPlayerStatusState(status);
 
     if (status === "playing") {
       errorRetryCountRef.current = 0;
+      setIsAutoRecovering(false);
+      setRecoveryAttempt(0);
       if (recoveryTimeoutRef.current) {
         clearTimeout(recoveryTimeoutRef.current);
         recoveryTimeoutRef.current = null;
@@ -143,9 +171,14 @@ export function useVideoPlayer(
         clearTimeout(recoveryTimeoutRef.current);
       }
 
-      if (errorRetryCountRef.current >= 3) {
-        console.warn(`[Player Error] Max recovery attempts (3) reached. Switching channel...`);
+      // ── 6-Stage Tiered Recovery with Exponential Backoff ──────────────
+      const MAX_RECOVERY_ATTEMPTS = 6;
+
+      if (errorRetryCountRef.current >= MAX_RECOVERY_ATTEMPTS) {
+        console.warn(`[Player Error] Max recovery attempts (${MAX_RECOVERY_ATTEMPTS}) reached. Switching channel...`);
         errorRetryCountRef.current = 0;
+        setIsAutoRecovering(false);
+        setRecoveryAttempt(0);
         if (recoveryTimeoutRef.current) {
           clearTimeout(recoveryTimeoutRef.current);
           recoveryTimeoutRef.current = null;
@@ -154,18 +187,85 @@ export function useVideoPlayer(
           onChannelFailRef.current();
         }
       } else {
+        const attempt = errorRetryCountRef.current;
         errorRetryCountRef.current += 1;
-        console.log(`[Player Error] Attempting auto-recovery reload #${errorRetryCountRef.current} in 1.5s...`);
-        
+        const delay = getRecoveryDelay(attempt);
+        setIsAutoRecovering(true);
+        setRecoveryAttempt(attempt + 1);
+
+        console.log(
+          `[Player Recovery] Stage ${attempt + 1}/${MAX_RECOVERY_ATTEMPTS} ` +
+          `in ${delay / 1000}s (exponential backoff)...`
+        );
+
         recoveryTimeoutRef.current = setTimeout(() => {
-          if (loadedChannelRef.current) {
-            initializeStreamRef.current(
-              loadedChannelRef.current,
-              false,
-              loadedChannelRef.current.useProxy
-            );
+          const channel = loadedChannelRef.current;
+          if (!channel) return;
+
+          switch (attempt) {
+            case 0:
+              // Stage 1: Soft recovery — restart loading / retry streaming
+              console.log("[Player Recovery] Stage 1: Soft recovery (startLoad/retryStreaming)");
+              try {
+                if (hlsRef.current) {
+                  hlsRef.current.startLoad(-1);
+                  return;
+                }
+                if (shakaRef.current) {
+                  shakaRef.current.retryStreaming();
+                  return;
+                }
+              } catch { /* fall through to re-init */ }
+              initializeStreamRef.current(channel, false, channel.useProxy);
+              break;
+
+            case 1:
+              // Stage 2: Media error recovery
+              console.log("[Player Recovery] Stage 2: Media error recovery");
+              try {
+                if (hlsRef.current) {
+                  hlsRef.current.recoverMediaError();
+                  return;
+                }
+              } catch { /* fall through */ }
+              initializeStreamRef.current(channel, false, channel.useProxy);
+              break;
+
+            case 2:
+              // Stage 3: Full re-initialization (same proxy mode)
+              console.log("[Player Recovery] Stage 3: Full re-initialization (same proxy)");
+              initializeStreamRef.current(channel, false, channel.useProxy);
+              break;
+
+            case 3:
+              // Stage 4: Toggle proxy mode
+              console.log("[Player Recovery] Stage 4: Toggle proxy mode");
+              initializeStreamRef.current(channel, false, !channel.useProxy);
+              break;
+
+            case 4:
+              // Stage 5: Switch engine (try Shaka if on HLS, try HLS if on Shaka)
+              console.log("[Player Recovery] Stage 5: Switch player engine");
+              if (hlsRef.current) {
+                initializeStreamRef.current(channel, false, channel.useProxy, "shaka");
+              } else if (shakaRef.current) {
+                initializeStreamRef.current(channel, false, channel.useProxy, "hls.js");
+              } else {
+                initializeStreamRef.current(channel, false, channel.useProxy, "shaka");
+              }
+              break;
+
+            case 5:
+              // Stage 6: Final full reload attempt
+              console.log("[Player Recovery] Stage 6: Final reload attempt");
+              initializeStreamRef.current(channel, false, channel.useProxy);
+              break;
+
+            default:
+              initializeStreamRef.current(channel, false, channel.useProxy);
+              break;
           }
-        }, 1500);
+        }, delay);
       }
     }
   }, []);
@@ -205,7 +305,6 @@ export function useVideoPlayer(
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fallbackAttemptRef = useRef(0);
   const onChannelFailRef = useRef(onChannelFail);
-  // eslint-disable-next-line react-hooks/immutability
   useEffect(() => { onChannelFailRef.current = onChannelFail; }, [onChannelFail]);
 
   const playerStatusRef = useRef(playerStatus);
@@ -457,6 +556,7 @@ export function useVideoPlayer(
     const video = videoRef.current;
     if (!video) return;
     if (video.paused) {
+      userPausedRef.current = false; // User wants to play
       if (video.muted && !userMutedRef.current) {
         video.muted = false;
         setIsMuted(false);
@@ -471,6 +571,7 @@ export function useVideoPlayer(
         }
       });
     } else {
+      userPausedRef.current = true; // User intentionally paused
       video.pause();
     }
     resetControlsTimeout();
@@ -699,18 +800,18 @@ export function useVideoPlayer(
         player.configure({
           abr: { enabled: true },
           streaming: {
-            rebufferingGoal: isMaxQ ? 15 : 8,
-            bufferingGoal: isMaxQ ? 120 : 60,
-            bufferBehind: isMaxQ ? 60 : 30,
+            rebufferingGoal: isMaxQ ? 20 : 10,
+            bufferingGoal: isMaxQ ? 180 : 90,
+            bufferBehind: isMaxQ ? 120 : 60,
           },
         });
       } else {
         player.configure({
           abr: { enabled: false },
           streaming: {
-            rebufferingGoal: isMaxQ ? 15 : 8,
-            bufferingGoal: isMaxQ ? 120 : 60,
-            bufferBehind: isMaxQ ? 60 : 30,
+            rebufferingGoal: isMaxQ ? 20 : 10,
+            bufferingGoal: isMaxQ ? 180 : 90,
+            bufferBehind: isMaxQ ? 120 : 60,
           },
         });
         const tracks = player.getVariantTracks();
@@ -725,15 +826,15 @@ export function useVideoPlayer(
       if (qualityId === "auto") {
         hls.currentLevel = -1;
         if (isMaxQ) {
-          hls.config.maxBufferLength = 120;
-          hls.config.maxMaxBufferLength = 240;
+          hls.config.maxBufferLength = 180;
+          hls.config.maxMaxBufferLength = 600;
         }
       } else {
         hls.currentLevel = qualityId as number;
         hls.nextLevel = qualityId as number;
         if (isMaxQ) {
-          hls.config.maxBufferLength = 120;
-          hls.config.maxMaxBufferLength = 240;
+          hls.config.maxBufferLength = 180;
+          hls.config.maxMaxBufferLength = 600;
         }
       }
     }
@@ -749,7 +850,6 @@ export function useVideoPlayer(
   const initializeStreamRef = useRef<any>(null);
   const initializeStream = useCallback(
     (initialChan: Channel, isUserClick: boolean, overrideProxyMode?: boolean, overrideEngine?: PlayerEngine) => {
-      // eslint-disable-next-line react-hooks/immutability
       initializeStreamRef.current = initializeStream;
       const video = videoRef.current;
       if (!video) return;
@@ -772,7 +872,6 @@ export function useVideoPlayer(
       setActiveAutoQualityId(null);
       setDetectedResolution(null);
       loadedUrlRef.current = initialChan.url;
-      // eslint-disable-next-line react-hooks/immutability
       loadedChannelRef.current = initialChan;
 
       if (hlsRef.current) {
@@ -894,17 +993,28 @@ export function useVideoPlayer(
 
           if (loadedUrlRef.current !== chan.url) return;
 
-          // Start fallback timer
+          // Start fallback timer — 25s for desktop (streams may be slow to init)
           if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+
+          // Intermediate health check at 12s: if video has data but no playing event, force play
+          const intermediateCheckTimer = setTimeout(() => {
+            const v = videoRef.current;
+            if (v && !hasPlayedRef.current && v.readyState >= 3) {
+              console.log("[Fallback] 12s intermediate check: readyState>=3 but not playing. Forcing play...");
+              v.play().catch(() => { /* ignore */ });
+            }
+          }, 12000);
+
           fallbackTimerRef.current = setTimeout(() => {
+            clearTimeout(intermediateCheckTimer);
             if (!hasPlayedRef.current) {
               if (fallbackAttemptRef.current === 0) {
                 if (dynamicUseProxy && isHttpsPage && isHttpStream) {
                   // Cannot fallback to direct (useProxy = false) due to Mixed Content
-                  console.log(`Stream failed to play within 15s. Cannot fallback to direct HTTP under HTTPS, retrying proxy reload...`);
+                  console.log(`Stream failed to play within 25s. Cannot fallback to direct HTTP under HTTPS, retrying proxy reload...`);
                   initializeStream(initialChan, false, true);
                 } else {
-                  console.log(`Stream failed to play within 15s, trying fallback proxy mode (useProxy=${!dynamicUseProxy})...`);
+                  console.log(`Stream failed to play within 25s, trying fallback proxy mode (useProxy=${!dynamicUseProxy})...`);
                   initializeStream(initialChan, false, !dynamicUseProxy);
                 }
               } else {
@@ -912,7 +1022,7 @@ export function useVideoPlayer(
                 if (onChannelFailRef.current) onChannelFailRef.current();
               }
             }
-          }, 15000);
+          }, 25000);
 
           const isMaxQuality = maxQualityModeRef.current;
 
@@ -1111,36 +1221,37 @@ export function useVideoPlayer(
                         autoCorrectDrift: true,
                         ignoreEmptyAdaptationSet: true,
                         ignoreMaxSegmentDuration: true,
-                        initialSegmentLimit: 1000,
+                        initialSegmentLimit: 2000,
                       },
-                      retryParameters: { maxAttempts: 10, baseDelay: 450, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 12000 },
+                      retryParameters: { maxAttempts: 15, baseDelay: 400, backoffFactor: 1.7, fuzzFactor: 0.35, timeout: 20000 },
                     },
                     streaming: {
                       lowLatencyMode: false,
                       inaccurateManifestTolerance: 3,
-                      rebufferingGoal: isMaxQuality ? 15 : 8, // Safe minimum buffer before resuming standard playback
-                      bufferingGoal: isMaxQuality ? 120 : 60, // Larger prebuffer for stability
-                      bufferBehind: isMaxQuality ? 60 : 30,
-                      gapDetectionThreshold: 0.4,
+                      rebufferingGoal: isMaxQuality ? 20 : 10, // Deeper minimum buffer for desktop stability
+                      bufferingGoal: isMaxQuality ? 180 : 90, // Aggressive pre-buffering for desktop
+                      bufferBehind: isMaxQuality ? 120 : 60, // Generous rewind buffer
+                      gapDetectionThreshold: 0.3,
                       stallEnabled: true,
-                      stallThreshold: 1.2,
-                      stallSkip: 0.25,
+                      stallThreshold: 1.0,
+                      stallSkip: 0.2,
                       startAtSegmentBoundary: true,
+                      parsePrftBox: true, // Parse Producer Reference Time for lower latency
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
                       failureCallback: (_error: any) => {
                         try { player.retryStreaming(); } catch { /* ignore */ }
                       },
-                      retryParameters: { maxAttempts: 15, baseDelay: 450, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 15000 },
+                      retryParameters: { maxAttempts: 25, baseDelay: 400, backoffFactor: 1.65, fuzzFactor: 0.35, timeout: 30000 },
                     },
                     abr: {
                       enabled: true,
-                      defaultBandwidthEstimate: 5_000_000, // Start moderate for instant initial playback, then ramp up via ABR
-                      switchInterval: 2,
+                      defaultBandwidthEstimate: 10_000_000, // 10 Mbps — desktop likely has good bandwidth
+                      switchInterval: 1.5,
                       restrictToElementSize: false,
                       restrictToScreenSize: false,
                       clearBufferSwitch: false,
                       bandwidthDowngradeTarget: 0.85,
-                      bandwidthUpgradeTarget: 0.75, // Target to allow scaling to 4K easily
+                      bandwidthUpgradeTarget: 0.70, // More aggressive quality upgrade for desktop
                       useNetworkInformation: true,
                     },
                   });
@@ -1307,11 +1418,13 @@ export function useVideoPlayer(
                   url: absoluteUrl,
                 }, {
                   enableWorker: true,
-                  lazyLoadMaxDuration: isMaxQuality ? 5 * 60 : 3 * 60,
+                  lazyLoadMaxDuration: isMaxQuality ? 10 * 60 : 5 * 60,
                   seekType: 'range',
-                  stashInitialSize: isMaxQuality ? 1024 * 384 : undefined,
-                  autoCleanupMinBackwardDuration: isMaxQuality ? 30 : undefined,
-                  autoCleanupMaxBackwardDuration: isMaxQuality ? 60 : undefined,
+                  stashInitialSize: isMaxQuality ? 1024 * 1024 : 1024 * 384, // 1MB / 384KB stash
+                  autoCleanupMinBackwardDuration: isMaxQuality ? 60 : 30,
+                  autoCleanupMaxBackwardDuration: isMaxQuality ? 120 : 60,
+                  fixAudioTimestampGap: true, // Fix audio gaps automatically
+                  accurateSeek: true, // Better seek accuracy
                 });
 
                 mpegtsRef.current = player;
@@ -1364,31 +1477,37 @@ export function useVideoPlayer(
                       enableWorker: true,
                       lowLatencyMode: !isMaxQuality,
                       startLevel: -1,
-                      // Buffer Optimization — pre-buffering
-                      maxBufferLength: isMaxQuality ? 120 : 60,
-                      maxMaxBufferLength: isMaxQuality ? 240 : 120,
-                      maxBufferSize: isMaxQuality ? 180 * 1000 * 1000 : 80 * 1000 * 1000,
-                      maxBufferHole: 0.5,
-                      backBufferLength: isMaxQuality ? 30 : 0,
-                      // Live Stream Latency — play behind live edge to prevent buffering
-                      liveSyncDuration: isMaxQuality ? 25 : 15,
-                      liveMaxLatencyDuration: isMaxQuality ? 60 : 35,
+                      // Desktop Buffer Optimization — deep pre-buffering
+                      maxBufferLength: isMaxQuality ? 180 : 90,
+                      maxMaxBufferLength: isMaxQuality ? 600 : 300,
+                      maxBufferSize: isMaxQuality ? 400 * 1000 * 1000 : 150 * 1000 * 1000,
+                      maxBufferHole: 0.3,
+                      backBufferLength: isMaxQuality ? 90 : 30,
+                      // Live Stream Latency — stay close to live edge
+                      liveSyncDuration: isMaxQuality ? 20 : 12,
+                      liveMaxLatencyDuration: isMaxQuality ? 45 : 30,
                       liveDurationInfinity: true,
-                      // ABR Tuning
-                      abrEwmaDefaultEstimate: 2_000_000, // Moderate initial default
-                      abrEwmaDefaultEstimateMax: isMaxQuality ? 50_000_000 : 10_000_000,
-                      abrBandWidthFactor: isMaxQuality ? 0.80 : 0.75,
-                      abrBandWidthUpFactor: 0.65,
+                      liveSyncOnStallIncrease: 2, // Auto-advance sync point on stalls
+                      // Desktop ABR Tuning — aggressive quality upgrades
+                      abrEwmaDefaultEstimate: 5_000_000, // 5 Mbps — desktop likely has good bandwidth
+                      abrEwmaDefaultEstimateMax: isMaxQuality ? 100_000_000 : 50_000_000,
+                      abrBandWidthFactor: isMaxQuality ? 0.90 : 0.85,
+                      abrBandWidthUpFactor: 0.80,
                       abrMaxWithRealBitrate: true,
-                      // Network Retry
-                      fragLoadingMaxRetry: 8,
-                      manifestLoadingMaxRetry: 4,
-                      levelLoadingMaxRetry: 4,
-                      // Reasonable timeouts for slow connections and proxy paths
-                      fragLoadingTimeOut: 20000,
-                      manifestLoadingTimeOut: 20000,
-                      levelLoadingTimeOut: 20000,
-                      fragLoadingMaxRetryTimeout: 35000,
+                      // Desktop Network Retry — more resilient
+                      fragLoadingMaxRetry: 15,
+                      manifestLoadingMaxRetry: 8,
+                      levelLoadingMaxRetry: 8,
+                      // Extended timeouts for desktop reliability
+                      fragLoadingTimeOut: 30000,
+                      manifestLoadingTimeOut: 25000,
+                      levelLoadingTimeOut: 25000,
+                      fragLoadingMaxRetryTimeout: 64000,
+                      // Desktop Prefetching — maximize throughput
+                      startFragPrefetch: true,
+                      progressive: true,
+                      testBandwidth: true,
+                      highBufferWatchdogPeriod: 3,
                     });
                     hlsRef.current = hls;
 
@@ -1432,7 +1551,23 @@ export function useVideoPlayer(
                       setActiveAutoQualityId(data.level);
                     });
 
-                    hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
+                    hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string; details?: string }) => {
+                      // Handle non-fatal errors proactively
+                      if (!data.fatal) {
+                        const details = (data as { details?: string }).details || "";
+                        if (details.includes("fragLoad") || details.includes("fragParsing")) {
+                          console.warn(`[HLS] Non-fatal fragment error: ${details}. Auto-recovering...`);
+                          hls.startLoad(-1);
+                        } else if (details.includes("bufferStalled")) {
+                          console.warn("[HLS] Buffer stalled (non-fatal). Nudging playback...");
+                          const v = videoRef.current;
+                          if (v && v.currentTime > 0) {
+                            try { v.currentTime += 0.1; } catch { /* ignore */ }
+                          }
+                        }
+                        return;
+                      }
+
                       if (data.fatal) {
                         if (overrideEngine === "hls.js") {
                           console.warn("HLS.js fallback failed, attempting fallback to shaka...");
@@ -1443,11 +1578,19 @@ export function useVideoPlayer(
                         switch (data.type) {
                           case Hls.ErrorTypes.NETWORK_ERROR:
                             if (fallbackAttemptRef.current === 0) {
-                              console.warn("Fatal HLS network error, retrying via fallback proxy mode...");
-                              hls.destroy();
-                              hlsRef.current = null;
-                              if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-                              initializeStreamRef.current(initialChan, false, !chan.useProxy);
+                              // First try startLoad recovery before switching proxy
+                              console.warn("Fatal HLS network error, attempting startLoad recovery...");
+                              hls.startLoad(-1);
+                              // If still failing after 5s, switch proxy mode
+                              setTimeout(() => {
+                                if (!hasPlayedRef.current && hlsRef.current === hls) {
+                                  console.warn("startLoad recovery failed, retrying via fallback proxy mode...");
+                                  hls.destroy();
+                                  hlsRef.current = null;
+                                  if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+                                  initializeStreamRef.current(initialChan, false, !chan.useProxy);
+                                }
+                              }, 5000);
                             } else {
                               console.error("Fatal HLS network error (direct and proxy fallback failed).");
                               setPlayerError("Stream blocked by CORS or network failure.");
@@ -1531,32 +1674,38 @@ export function useVideoPlayer(
                     enableWorker: true,
                     lowLatencyMode: !isMaxQuality,
                     startLevel: isMaxQuality ? -1 : 0, // Start at lowest quality (0) for instant playback
-                    // Buffer Optimization — pre-buffering
-                    maxBufferLength: isMaxQuality ? 120 : 60,
-                    maxMaxBufferLength: isMaxQuality ? 240 : 120,
-                    maxBufferSize: isMaxQuality ? 180 * 1000 * 1000 : 80 * 1000 * 1000,
-                    maxBufferHole: 0.5,
-                    backBufferLength: isMaxQuality ? 30 : 0,
-                    // Live Stream Latency — play behind live edge to prevent buffering
-                    liveSyncDuration: isMaxQuality ? 25 : 15,
-                    liveMaxLatencyDuration: isMaxQuality ? 60 : 35,
+                    // Desktop Buffer Optimization — deep pre-buffering
+                    maxBufferLength: isMaxQuality ? 180 : 90,
+                    maxMaxBufferLength: isMaxQuality ? 600 : 300,
+                    maxBufferSize: isMaxQuality ? 400 * 1000 * 1000 : 150 * 1000 * 1000,
+                    maxBufferHole: 0.3,
+                    backBufferLength: isMaxQuality ? 90 : 30,
+                    // Live Stream Latency — stay close to live edge
+                    liveSyncDuration: isMaxQuality ? 20 : 12,
+                    liveMaxLatencyDuration: isMaxQuality ? 45 : 30,
                     liveDurationInfinity: true,
-                    // ABR Tuning
-                    abrEwmaDefaultEstimate: 500_000, // 500kbps initial estimate to force lightweight first fragment
-                    abrEwmaDefaultEstimateMax: 50_000_000, // 50 Mbps max estimate to allow 4K scaling
-                    abrBandWidthFactor: isMaxQuality ? 0.85 : 0.80,
-                    abrBandWidthUpFactor: 0.70,
+                    liveSyncOnStallIncrease: 2, // Auto-advance sync point on stalls
+                    // Desktop ABR Tuning — aggressive quality upgrades
+                    abrEwmaDefaultEstimate: 5_000_000, // 5 Mbps — desktop likely has good bandwidth
+                    abrEwmaDefaultEstimateMax: isMaxQuality ? 100_000_000 : 50_000_000,
+                    abrBandWidthFactor: isMaxQuality ? 0.90 : 0.85,
+                    abrBandWidthUpFactor: 0.80,
                     abrMaxWithRealBitrate: true,
                     capLevelToPlayerSize: false, // Ensure we don't cap resolution to the CSS player size
-                    // Network Retry
-                    fragLoadingMaxRetry: 8,
-                    manifestLoadingMaxRetry: 4,
-                    levelLoadingMaxRetry: 4,
-                    // Reasonable timeouts for slow connections and proxy paths
-                    fragLoadingTimeOut: 20000,
-                    manifestLoadingTimeOut: 20000,
-                    levelLoadingTimeOut: 20000,
-                    fragLoadingMaxRetryTimeout: 35000,
+                    // Desktop Network Retry — more resilient
+                    fragLoadingMaxRetry: 15,
+                    manifestLoadingMaxRetry: 8,
+                    levelLoadingMaxRetry: 8,
+                    // Extended timeouts for desktop reliability
+                    fragLoadingTimeOut: 30000,
+                    manifestLoadingTimeOut: 25000,
+                    levelLoadingTimeOut: 25000,
+                    fragLoadingMaxRetryTimeout: 64000,
+                    // Desktop Prefetching — maximize throughput
+                    startFragPrefetch: true,
+                    progressive: true,
+                    testBandwidth: true,
+                    highBufferWatchdogPeriod: 3,
                   });
                   hlsRef.current = hls;
 
@@ -1604,7 +1753,23 @@ export function useVideoPlayer(
                   let recoverDecodingErrorDate = 0;
                   let recoverSwapAudioCodecDate = 0;
 
-                  hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string }) => {
+                  hls.on(Hls.Events.ERROR, (_event: string, data: { fatal: boolean; type: string; details?: string }) => {
+                    // Handle non-fatal errors proactively
+                    if (!data.fatal) {
+                      const details = (data as { details?: string }).details || "";
+                      if (details.includes("fragLoad") || details.includes("fragParsing")) {
+                        console.warn(`[HLS] Non-fatal fragment error: ${details}. Auto-recovering...`);
+                        hls.startLoad(-1);
+                      } else if (details.includes("bufferStalled")) {
+                        console.warn("[HLS] Buffer stalled (non-fatal). Nudging playback...");
+                        const v = videoRef.current;
+                        if (v && v.currentTime > 0) {
+                          try { v.currentTime += 0.1; } catch { /* ignore */ }
+                        }
+                      }
+                      return;
+                    }
+
                     if (data.fatal) {
                       if (overrideEngine === "hls.js") {
                         console.warn("HLS.js fallback failed, attempting fallback to shaka...");
@@ -1614,10 +1779,10 @@ export function useVideoPlayer(
                       }
                       switch (data.type) {
                         case Hls.ErrorTypes.NETWORK_ERROR:
-                          console.warn("Fatal HLS network error, attempting to recover...");
-                          hls.startLoad();
+                          console.warn("Fatal HLS network error, attempting startLoad recovery...");
+                          hls.startLoad(-1);
                           break;
-                        case Hls.ErrorTypes.MEDIA_ERROR:
+                        case Hls.ErrorTypes.MEDIA_ERROR: {
                           const now = performance.now();
                           if (!recoverDecodingErrorDate || now - recoverDecodingErrorDate > 3000) {
                             recoverDecodingErrorDate = now;
@@ -1635,6 +1800,7 @@ export function useVideoPlayer(
                             hls.destroy();
                           }
                           break;
+                        }
                         default:
                           console.error("Fatal unrecoverable HLS error:", data);
                           setPlayerError(`Fatal HLS stream error (${data.type})`);
@@ -1851,6 +2017,45 @@ export function useVideoPlayer(
     setRetryKey((prev) => prev + 1);
   };
 
+  // ── Stream Guardian Integration ─────────────────────────────────────────
+  const guardianForceRecovery = useCallback(() => {
+    if (loadedChannelRef.current) {
+      initializeStreamRef.current(
+        loadedChannelRef.current,
+        false,
+        loadedChannelRef.current.useProxy
+      );
+    }
+  }, []);
+
+  const { streamHealth, guardianActions } = useStreamGuardian({
+    videoRef,
+    hlsRef,
+    shakaRef,
+    mpegtsRef,
+    isActive: playerStatus === "playing" || playerStatus === "loading",
+    isMaxQuality: maxQualityMode,
+    onForceRecovery: guardianForceRecovery,
+    isUserPaused: isPaused,
+  });
+
+  // ── Desktop: Electron Sleep Prevention ──────────────────────────────────
+  // Prevent system sleep during active playback, re-enable sleep when idle
+  useEffect(() => {
+    const api = typeof window !== "undefined" ? window.electronAPI : undefined;
+    if (!api?.preventSleep) return;
+
+    if (playerStatus === "playing" && !isPaused) {
+      api.preventSleep(true).catch(() => { /* ignore */ });
+    } else {
+      api.preventSleep(false).catch(() => { /* ignore */ });
+    }
+
+    return () => {
+      api.preventSleep(false).catch(() => { /* ignore */ });
+    };
+  }, [playerStatus, isPaused]);
+
   return {
     videoRef,
     playerWrapperRef,
@@ -1888,5 +2093,10 @@ export function useVideoPlayer(
     initializeStream,
     playerEngine,
     setPlayerEngine,
+    // Desktop Streaming Health & Recovery
+    streamHealth,
+    guardianActions,
+    isAutoRecovering,
+    recoveryAttempt,
   };
 }
