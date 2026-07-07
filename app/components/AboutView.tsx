@@ -9,9 +9,11 @@ import Link from "next/link";
 import BackgroundScene from "./BackgroundScene";
 import Header from "./Header";
 
+import pkg from "../../package.json";
+
 export default function AboutView() {
   const [copiedText, setCopiedText] = React.useState<string | null>(null);
-  const [currentVer, setCurrentVer] = React.useState<string>("3.0.0");
+  const [currentVer, setCurrentVer] = React.useState<string>(pkg.version);
   const [updateStatus, setUpdateStatus] = React.useState<"idle" | "checking" | "up-to-date" | "update-available" | "error">("idle");
   const [updateInfo, setUpdateInfo] = React.useState<{
     currentVersion: string;
