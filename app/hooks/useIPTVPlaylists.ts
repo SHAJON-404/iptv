@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { parseM3U, parseJSON } from "@/app/lib/playlistParser";
 
 const initDB = (): Promise<IDBDatabase> => {
@@ -160,6 +160,23 @@ const getPlaylistId = (name: string, url: string): string => {
   return name.toLowerCase().replace(/[^a-z0-9]/g, "-");
 };
 
+const sortPlaylists = (list: Playlist[]): Playlist[] => {
+  const order: Record<string, number> = {
+    "fifa": 1,
+    "bangla": 2,
+    "sports": 3,
+    "universal": 4,
+  };
+  return [...list].sort((a, b) => {
+    const orderA = order[a.id.toLowerCase()] ?? 999;
+    const orderB = order[b.id.toLowerCase()] ?? 999;
+    if (orderA !== orderB) return orderA - orderB;
+    if (a.type === "default" && b.type !== "default") return -1;
+    if (a.type !== "default" && b.type === "default") return 1;
+    return a.name.localeCompare(b.name);
+  });
+};
+
 export function useIPTVPlaylists() {
   // No auth status required
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -278,10 +295,11 @@ export function useIPTVPlaylists() {
         const initialCombined = [...initialDefaultPlaylists, ...customPlaylists];
         setPlaylists(initialCombined);
 
+        const sortedInit = sortPlaylists(initialCombined);
         if (savedActiveId && initialCombined.find(p => p.id === savedActiveId)) {
           setActivePlaylistId(savedActiveId);
-        } else if (initialCombined.length > 0) {
-          setActivePlaylistId(initialCombined[0].id);
+        } else if (sortedInit.length > 0) {
+          setActivePlaylistId(sortedInit[0].id);
         } else {
           setPlaylistTab("manage");
         }
@@ -840,6 +858,10 @@ export function useIPTVPlaylists() {
     });
   };
 
+  const sortedPlaylists = useMemo(() => {
+    return sortPlaylists(playlists);
+  }, [playlists]);
+
   return {
     channels,
     setChannels,
@@ -853,7 +875,7 @@ export function useIPTVPlaylists() {
     setSelectedCategory,
     displayCount,
     setDisplayCount,
-    playlists,
+    playlists: sortedPlaylists,
     setPlaylists,
     activePlaylistId,
     setActivePlaylistId,

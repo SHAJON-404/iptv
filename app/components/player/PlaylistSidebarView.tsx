@@ -26,7 +26,7 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
   onUpdatePlaylists,
 }: PlaylistSidebarViewProps) {
   return (
-    <div className="w-full lg:w-1/3 xl:w-1/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col max-h-[280px] lg:max-h-none lg:h-[600px] xl:h-[700px]">
+    <div className="w-full lg:w-1/3 xl:w-1/4 glass-card p-4 sm:p-6 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col max-h-[280px] lg:max-h-none lg:h-[700px]">
       {/* 1. Update Playlist Button */}
       {playlists.length > 0 && (
         <div className="pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-shrink-0">
