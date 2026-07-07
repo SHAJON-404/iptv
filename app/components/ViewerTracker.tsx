@@ -1,45 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Playlist } from "../hooks/useIPTVPlaylists";
-
-// IndexedDB Helper Functions
-const initDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    if (typeof window === "undefined") {
-      reject(new Error("IndexedDB is only available in the browser"));
-      return;
-    }
-    const request = indexedDB.open("IPTVAppDB", 1);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains("store")) {
-        db.createObjectStore("store");
-      }
-    };
-  });
-};
-
-async function getFromDB<T>(key: string): Promise<T | null> {
-  try {
-    const db = await initDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction("store", "readonly");
-      const store = transaction.objectStore("store");
-      const request = store.get(key);
-      request.onsuccess = () => resolve(request.result ? (request.result as T) : null);
-      request.onerror = () => reject(request.error);
-    });
-  } catch (e) {
-    console.error("IndexedDB get error:", e);
-    return null;
-  }
-}
+import { Channel } from "../hooks/useIPTVPlaylists";
 
 export default function ViewerTracker() {
-  const currentChannelRef = useRef<string>("");
+  const currentChannelRef = useRef<Channel | null>(null);
 
   useEffect(() => {
     // Generate or retrieve a persistent UUID for this browser
@@ -60,54 +25,20 @@ export default function ViewerTracker() {
 
     const sessionId = getOrCreateSessionId();
 
-    const getPlaylistUrls = async (): Promise<string[]> => {
-      const domain = "iamshajon.com";
-      const urls: string[] = [];
-
-      const matchesDomain = (u?: string) => {
-        if (!u) return false;
-        try {
-          const parsed = new URL(u);
-          return parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`);
-        } catch {
-          return false;
-        }
-      };
-
-      try {
-        const localSaved = await getFromDB<Playlist[]>("iptv_saved_playlists");
-        if (localSaved && Array.isArray(localSaved)) {
-          localSaved.forEach((p) => {
-            if (p.type === "url" && p.url && matchesDomain(p.url)) {
-              urls.push(p.url.trim());
-            }
-          });
-        }
-      } catch (e) {
-        console.warn("Failed to read local saved playlists:", e);
-      }
-
-      try {
-        const dbCached = await getFromDB<Playlist[]>("iptv_db_playlists_cache");
-        if (dbCached && Array.isArray(dbCached)) {
-          dbCached.forEach((p) => {
-            if (p.url && matchesDomain(p.url)) {
-              urls.push(p.url.trim());
-            }
-          });
-        }
-      } catch (e) {
-        console.warn("Failed to read cached DB playlists:", e);
-      }
-
-      return Array.from(new Set(urls));
-    };
-
     const sendHeartbeat = async () => {
       try {
-        const localUrls = await getPlaylistUrls();
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
         const statsUrl = siteUrl ? `${siteUrl.replace(/\/$/, "")}/api/iptv/stats` : "/api/iptv/stats";
+
+        const playingNow = currentChannelRef.current ? {
+          ...currentChannelRef.current,
+          logo: currentChannelRef.current.logo || "",
+          group: currentChannelRef.current.group || "",
+          useProxy: !!currentChannelRef.current.useProxy,
+          referer: currentChannelRef.current.referer || currentChannelRef.current.customHeaders?.Referer || currentChannelRef.current.customHeaders?.referer || "",
+          origin: currentChannelRef.current.customHeaders?.Origin || currentChannelRef.current.customHeaders?.origin || "",
+          "user-agent": currentChannelRef.current.customHeaders?.["user-agent"] || currentChannelRef.current.customHeaders?.["User-Agent"] || "",
+        } : undefined;
 
         const response = await fetch(statsUrl, {
           method: "POST",
@@ -116,8 +47,7 @@ export default function ViewerTracker() {
           },
           body: JSON.stringify({ 
             sessionId,
-            channelName: currentChannelRef.current || undefined,
-            playlistUrls: localUrls
+            playingNow
           }),
         });
         
@@ -154,7 +84,7 @@ export default function ViewerTracker() {
     // Handle channel changes
     const handleChannelChanged = (e: Event) => {
       const customEvent = e as CustomEvent;
-      currentChannelRef.current = customEvent.detail?.name || "";
+      currentChannelRef.current = customEvent.detail?.channel || null;
       sendHeartbeat();
     };
     

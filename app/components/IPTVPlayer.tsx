@@ -130,7 +130,7 @@ export default function IPTVPlayer() {
   useEffect(() => {
     window.dispatchEvent(
       new CustomEvent("iptv-channel-changed", {
-        detail: { name: selectedChannel?.name || "" }
+        detail: { channel: selectedChannel || null }
       })
     );
   }, [selectedChannel]);
