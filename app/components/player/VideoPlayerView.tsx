@@ -539,7 +539,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                           <div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
                           <div className="flex items-center gap-1.5">
                             <Sparkles size={10} className="text-primary/70" />
-                            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Active Stream</span>
+                            <span className="text-[10px] font-black text-zinc-400 tracking-widest">Active Stream</span>
                           </div>
                           <div className="flex items-end justify-between mt-1 z-10 relative">
                             <span className="text-base font-black text-white tracking-tighter drop-shadow-sm">
@@ -657,7 +657,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
 
                       {/* Player Engine Selector */}
                       <div className="mt-1 pt-1.5 border-t border-white/10 px-3 py-2 flex flex-col gap-1.5">
-                        <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Engine</span>
+                        <span className="text-[11px] font-bold text-zinc-400 tracking-wider">Engine</span>
                         <div className="grid grid-cols-2 gap-1.5">
                           {(['auto', 'hls.js', 'shaka', 'video.js'] as const).map(engine => (
                             <button
@@ -745,7 +745,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
                           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                           <div className="flex items-center gap-1.5 mb-0.5 relative z-10">
                             <Sparkles size={12} className="text-primary/70" />
-                            <span className="text-[11px] font-black text-zinc-400 uppercase tracking-widest">Active Stream</span>
+                            <span className="text-[11px] font-black text-zinc-400 tracking-widest">Active Stream</span>
                           </div>
                           <div className="flex items-end justify-between relative z-10">
                             <span className="text-xl font-black text-white tracking-tighter drop-shadow-sm">
@@ -861,7 +861,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
 
                     {/* Player Engine Selector (Mobile) */}
                     <div className="mt-1.5 pt-3 border-t border-white/10 px-3">
-                      <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Engine</span>
+                      <span className="text-[11px] font-bold text-zinc-400 tracking-wider mb-2 block">Engine</span>
                       <div className="grid grid-cols-2 gap-2">
                         {(['auto', 'hls.js', 'shaka', 'video.js'] as const).map(engine => (
                           <button

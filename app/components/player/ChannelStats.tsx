@@ -61,7 +61,7 @@ export const ChannelStats = React.memo(function ChannelStats({
               <h2 className="text-base sm:text-lg md:text-xl font-bold truncate">
                 {selectedChannel.name}
               </h2>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-primary bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded border border-primary/20 block w-fit">
+              <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-primary bg-primary/10 px-1.5 sm:px-2 py-0.5 rounded border border-primary/20 block w-fit">
                 {selectedChannel.group}
               </span>
             </div>
@@ -73,7 +73,7 @@ export const ChannelStats = React.memo(function ChannelStats({
             </div>
             <div className="space-y-1 min-w-0">
               <h2 className="text-base sm:text-lg font-bold text-gray-300">Select a Channel</h2>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+              <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-zinc-400">
                 Choose from the list below
               </span>
             </div>
@@ -162,7 +162,7 @@ export const ChannelStats = React.memo(function ChannelStats({
             <Tv size={20} className="animate-pulse" />
           </div>
           <div className="space-y-0.5 min-w-0">
-            <p className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-zinc-400 truncate">
+            <p className="text-[9px] sm:text-[10px] font-bold tracking-widest text-zinc-400 truncate">
               Total Channels
             </p>
             <h3 className="text-base sm:text-lg font-bold text-emerald-400 truncate">
@@ -206,7 +206,7 @@ export const ChannelStats = React.memo(function ChannelStats({
                   <h2 className="text-sm font-black truncate leading-tight">
                     {selectedChannel.name}
                   </h2>
-                  <span className="text-[8px] uppercase font-bold tracking-wider text-primary bg-primary/10 px-1 py-0.5 rounded border border-primary/20 block w-fit">
+                  <span className="text-[8px] font-bold tracking-wider text-primary bg-primary/10 px-1 py-0.5 rounded border border-primary/20 block w-fit">
                     {selectedChannel.group}
                   </span>
                 </div>
@@ -232,7 +232,7 @@ export const ChannelStats = React.memo(function ChannelStats({
               <Tv size={15} />
             </div>
             <div className="space-y-0.5 min-w-0">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 truncate">
+              <p className="text-[9px] font-bold tracking-wider text-zinc-400 truncate">
                 Channels
               </p>
               <h3 className="text-sm font-black text-emerald-400 truncate">

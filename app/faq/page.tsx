@@ -101,7 +101,7 @@ export default function FAQPage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/10 sm:border-white/5 backdrop-blur-sm"
             >
               <HelpCircle size={14} className="text-primary animate-pulse" />
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-primary">
+              <span className="text-[10px] sm:text-xs font-bold tracking-widest text-primary">
                 Help & Knowledgebase
               </span>
             </motion.div>

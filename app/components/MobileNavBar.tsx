@@ -44,14 +44,13 @@ export default function MobileNavBar() {
             {idx > 0 && <div className="h-8 w-[1px] bg-white/10" />}
             <Link
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl transition-all duration-300 ${
-                item.isActive
+              className={`flex-1 flex flex-col items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl transition-all duration-300 ${item.isActive
                   ? "bg-primary/10 text-primary border border-primary/20"
                   : "text-zinc-400 hover:text-white border border-transparent"
-              }`}
+                }`}
             >
               <Icon size={20} className={item.isActive ? "animate-pulse" : ""} />
-              <span className="text-[10px] font-bold tracking-wide uppercase whitespace-nowrap">
+              <span className="text-[10px] font-bold tracking-wide whitespace-nowrap">
                 {item.label}
               </span>
             </Link>

@@ -67,7 +67,7 @@ export const TrendingChannels = React.memo(function TrendingChannels({
           <Flame className="w-5 h-5 text-rose-500 animate-pulse" />
           <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500 animate-ping" />
         </div>
-        <h3 className="text-sm sm:text-base font-black tracking-wider uppercase text-white flex-1">
+        <h3 className="text-sm sm:text-base font-black tracking-wider text-white flex-1">
           Trending Now
         </h3>
         <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/25 text-rose-400">
@@ -83,11 +83,10 @@ export const TrendingChannels = React.memo(function TrendingChannels({
             <button
               key={`${ch.name}-${idx}`}
               onClick={() => handlePlayTrending(ch)}
-              className={`group relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 text-left border cursor-pointer w-full select-none ${
-                isCurrent
+              className={`group relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 text-left border cursor-pointer w-full select-none ${isCurrent
                   ? "bg-primary/10 border-primary text-white"
                   : "bg-white/[0.02] hover:bg-white/[0.06] border-white/[0.05] hover:border-white/15 text-zinc-300 hover:text-white"
-              }`}
+                }`}
             >
               {/* Index number badge */}
               <div className="text-xs font-black text-zinc-500 w-4 text-center">
@@ -131,11 +130,10 @@ export const TrendingChannels = React.memo(function TrendingChannels({
                 <div className="w-4 h-4 flex items-center justify-center">
                   <Play
                     size={12}
-                    className={`transition-all duration-300 ${
-                      isCurrent 
-                        ? "fill-primary text-primary animate-pulse opacity-100" 
+                    className={`transition-all duration-300 ${isCurrent
+                        ? "fill-primary text-primary animate-pulse opacity-100"
                         : "text-zinc-400 opacity-0 group-hover:opacity-100 group-hover:scale-110"
-                    }`}
+                      }`}
                   />
                 </div>
               </div>
@@ -152,15 +150,13 @@ export const TrendingChannels = React.memo(function TrendingChannels({
             <button
               key={`${ch.name}-mobile-${idx}`}
               onClick={() => handlePlayTrending(ch)}
-              className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 text-left border cursor-pointer select-none ${
-                topChannels.length === 1 
-                  ? "w-full flex-1" 
+              className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 text-left border cursor-pointer select-none ${topChannels.length === 1
+                  ? "w-full flex-1"
                   : "flex-shrink-0 flex-1 min-w-[210px] max-w-[250px]"
-              } ${
-                isCurrent
+                } ${isCurrent
                   ? "bg-primary/10 border-primary text-white"
                   : "bg-white/[0.02] hover:bg-white/[0.06] border-white/[0.05] hover:border-white/15 text-zinc-300 hover:text-white"
-              }`}
+                }`}
             >
               {/* Index number badge */}
               <div className="text-xs font-black text-zinc-500 w-4 text-center mr-0.5">
@@ -200,9 +196,8 @@ export const TrendingChannels = React.memo(function TrendingChannels({
                 </span>
                 <Play
                   size={12}
-                  className={`text-primary flex-shrink-0 ${
-                    isCurrent ? "opacity-100" : "opacity-40"
-                  }`}
+                  className={`text-primary flex-shrink-0 ${isCurrent ? "opacity-100" : "opacity-40"
+                    }`}
                 />
               </div>
             </button>

@@ -31,7 +31,7 @@ export default function Footer() {
 
           {/* Quick Links (Takes up 3 cols) */}
           <div className="md:col-span-3 flex flex-col gap-4">
-            <h4 className="text-white font-bold tracking-wider uppercase text-xs">Quick Links</h4>
+            <h4 className="text-white font-bold tracking-wider text-xs">Quick Links</h4>
             <nav className="flex flex-col gap-2.5">
               <Link href="/" className="text-sm text-zinc-400 hover:text-primary transition-colors w-fit">
                 Home
@@ -50,7 +50,7 @@ export default function Footer() {
 
           {/* Community & Social (Takes up 4 cols) */}
           <div className="md:col-span-4 flex flex-col gap-4">
-            <h4 className="text-white font-bold tracking-wider uppercase text-xs">Join the Community</h4>
+            <h4 className="text-white font-bold tracking-wider text-xs">Join the Community</h4>
             <p className="text-zinc-400 text-sm mb-1">
               Connect with us for updates, custom playlists, and support.
             </p>
@@ -91,7 +91,7 @@ export default function Footer() {
           <p className="text-xs text-zinc-500 font-medium">
             &copy; {new Date().getFullYear()} IPTV Player by <a href="https://github.com/SHAJON-404" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors font-bold">S. SHAJON</a>. All rights reserved.
           </p>
-          <div className="text-[10px] text-zinc-600 font-medium uppercase tracking-widest bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
+          <div className="text-[10px] text-zinc-600 font-medium tracking-widest bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
             Not affiliated with any broadcasters
           </div>
         </div>

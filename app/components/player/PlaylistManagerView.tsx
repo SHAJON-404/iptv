@@ -106,8 +106,8 @@ export const PlaylistManagerView = React.memo(function PlaylistManagerView({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`w-full shrink-0 glass-card p-3.5 sm:p-5 border rounded-3xl flex flex-col justify-start transition-all relative overflow-hidden ${isDragging
-            ? "border-dashed border-primary bg-primary/5 shadow-[0_0_30px_rgba(139,92,246,0.15)] scale-[1.01]"
-            : "border-white/10 sm:border-white/5 bg-white/[0.01] hover:border-primary/20"
+          ? "border-dashed border-primary bg-primary/5 shadow-[0_0_30px_rgba(139,92,246,0.15)] scale-[1.01]"
+          : "border-white/10 sm:border-white/5 bg-white/[0.01] hover:border-primary/20"
           }`}
       >
         <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/40 to-primary/0 opacity-0 hover:opacity-100 transition-opacity" />
@@ -158,7 +158,7 @@ export const PlaylistManagerView = React.memo(function PlaylistManagerView({
               <Upload size={32} className="text-primary" />
             </div>
             <p className="text-sm font-black text-white tracking-wide">Drop your file here</p>
-            <p className="text-xs text-primary/70 mt-1 font-medium uppercase tracking-widest">Supports .m3u, .m3u8, .json</p>
+            <p className="text-xs text-primary/70 mt-1 font-medium tracking-widest">Supports .m3u, .m3u8, .json</p>
           </div>
         )}
       </div>

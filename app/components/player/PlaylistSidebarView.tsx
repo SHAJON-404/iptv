@@ -33,23 +33,21 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
           <button
             onClick={onUpdatePlaylists}
             disabled={isUpdating}
-            className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all group/btn ${
-              isUpdating
+            className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all group/btn ${isUpdating
                 ? "bg-primary/5 border-primary/20 text-primary/50 cursor-not-allowed"
                 : updateSuccess
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                : "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5 hover:bg-primary/20 hover:border-primary/80 cursor-pointer"
-            }`}
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                  : "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5 hover:bg-primary/20 hover:border-primary/80 cursor-pointer"
+              }`}
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <div
-                className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border flex-shrink-0 transition-all ${
-                  isUpdating
+                className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border flex-shrink-0 transition-all ${isUpdating
                     ? "bg-primary/10 border-primary/20"
                     : updateSuccess
-                    ? "bg-emerald-500/20 border-emerald-500/20"
-                    : "bg-primary/20 border-primary/20 group-hover/btn:bg-primary/30"
-                }`}
+                      ? "bg-emerald-500/20 border-emerald-500/20"
+                      : "bg-primary/20 border-primary/20 group-hover/btn:bg-primary/30"
+                  }`}
               >
                 {isUpdating ? (
                   <RefreshCw size={14} className="sm:w-4 sm:h-4 animate-spin text-primary" />
@@ -61,9 +59,8 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
               </div>
 
               <div className="min-w-0">
-                <h5 className={`font-bold text-xs sm:text-sm truncate pr-2 ${
-                  isUpdating ? "text-primary/50" : updateSuccess ? "text-emerald-400" : "text-primary group-hover/btn:text-white transition-colors"
-                }`}>
+                <h5 className={`font-bold text-xs sm:text-sm truncate pr-2 ${isUpdating ? "text-primary/50" : updateSuccess ? "text-emerald-400" : "text-primary group-hover/btn:text-white transition-colors"
+                  }`}>
                   {isUpdating ? "Updating Playlists..." : updateSuccess ? "Updated Successfully" : "Update Playlist"}
                 </h5>
               </div>
@@ -108,17 +105,15 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
                   setActivePlaylistId(pl.id);
                   setPlaylistTab("browse");
                 }}
-                className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item h-[62px] sm:h-[72px] ${
-                  isActive
+                className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer group/item h-[62px] sm:h-[72px] ${isActive
                     ? "bg-primary/10 border-primary text-primary shadow-lg shadow-primary/5"
                     : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border flex-shrink-0 ${
-                      isActive ? "bg-primary/20 border-primary/20" : "bg-white/5 border-white/10"
-                    }`}
+                    className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border flex-shrink-0 ${isActive ? "bg-primary/20 border-primary/20" : "bg-white/5 border-white/10"
+                      }`}
                   >
                     {pl.type === "default" ? (
                       <Tv size={14} className="sm:w-4 sm:h-4" />
@@ -131,7 +126,7 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
 
                   <div className="min-w-0">
                     <h5 className="font-bold text-xs sm:text-sm truncate pr-2">{pl.name}</h5>
-                    <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">
+                    <p className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold tracking-wider">
                       {filteredCount} Channels
                     </p>
                   </div>

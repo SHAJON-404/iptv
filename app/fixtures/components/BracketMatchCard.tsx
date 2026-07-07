@@ -30,7 +30,7 @@ export const BracketMatchCard = ({
     <div className="w-[210px] rounded-xl border transition-all duration-300 shadow-lg bg-[#0c0824]/90 backdrop-blur-md border-white/20 hover:border-primary/40 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)] hover:-translate-y-0.5">
       {/* Match Header */}
       <div className="flex items-center justify-between border-b border-white/10 px-3 py-1.5 bg-white/[0.04] text-[9px] font-bold text-zinc-300">
-        <span className="uppercase text-primary">Match {match.num}</span>
+        <span className="text-primary">Match {match.num}</span>
         <span className="truncate max-w-[100px] text-zinc-400">{match.ground.split(" (")[0]}</span>
       </div>
 

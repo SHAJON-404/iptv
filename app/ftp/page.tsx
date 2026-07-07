@@ -74,12 +74,12 @@ export default function FtpPage() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm"
             >
-              <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-emerald-400">
+              <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold tracking-widest text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 All Systems Online
               </span>
               <span className="h-3 w-px bg-white/10" />
-              <span className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-xs font-semibold text-gray-500 tracking-wider">
                 BDIX Network
               </span>
             </motion.div>
@@ -173,7 +173,7 @@ export default function FtpPage() {
 
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] uppercase font-bold tracking-[0.15em] text-primary/80 bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
+                          <span className="text-[10px] font-bold tracking-[0.15em] text-primary/80 bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
                             {server.badge}
                           </span>
                         </div>

@@ -60,7 +60,7 @@ export default function Header() {
                 <div className="hidden sm:flex items-center gap-2 mt-1.5">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-emerald-400">
+                    <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-emerald-400">
                       LIVE BROADCAST
                     </span>
                   </div>
@@ -80,11 +80,10 @@ export default function Header() {
             >
               <Link
                 href="/fixtures"
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
-                  pathname === "/fixtures"
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${pathname === "/fixtures"
                     ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
                     : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
-                } font-bold text-xs sm:text-sm`}
+                  } font-bold text-xs sm:text-sm`}
               >
                 <Trophy size={15} className="text-yellow-500 animate-pulse" />
                 <span>World Cup</span>
@@ -92,11 +91,10 @@ export default function Header() {
 
               <Link
                 href="/faq"
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
-                  isFaqPage
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${isFaqPage
                     ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
                     : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
-                } font-bold text-xs sm:text-sm`}
+                  } font-bold text-xs sm:text-sm`}
               >
                 <HelpCircle size={15} className="text-primary" />
                 <span>FAQ</span>
@@ -104,11 +102,10 @@ export default function Header() {
 
               <Link
                 href="/about"
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
-                  isAboutPage
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${isAboutPage
                     ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
                     : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
-                } font-bold text-xs sm:text-sm`}
+                  } font-bold text-xs sm:text-sm`}
               >
                 <Info size={15} className="text-primary" />
                 <span>About</span>
@@ -116,11 +113,10 @@ export default function Header() {
 
               <Link
                 href="/ftp"
-                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${
-                  isFtpPage
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${isFtpPage
                     ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
                     : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
-                } font-bold text-xs sm:text-sm`}
+                  } font-bold text-xs sm:text-sm`}
               >
                 <Server size={15} className="text-primary" />
                 <span>FTP</span>
@@ -214,11 +210,10 @@ export default function Header() {
                 <Link
                   href="/fixtures"
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-bold transition-all ${
-                    pathname === "/fixtures"
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-bold transition-all ${pathname === "/fixtures"
                       ? "border-primary/50 bg-primary/10 text-primary"
                       : "border-white/5 bg-white/[0.02] text-white"
-                  }`}
+                    }`}
                 >
                   <span className="flex items-center gap-2">
                     <Trophy size={16} className="text-yellow-500" />
@@ -230,11 +225,10 @@ export default function Header() {
                 <Link
                   href="/faq"
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${
-                    isFaqPage
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${isFaqPage
                       ? "border-primary/50 bg-primary/10 text-primary"
                       : "border-white/5 bg-white/[0.02] text-white"
-                  }`}
+                    }`}
                 >
                   <HelpCircle size={16} className="text-primary" />
                   FAQ
@@ -243,11 +237,10 @@ export default function Header() {
                 <Link
                   href="/about"
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${
-                    isAboutPage
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${isAboutPage
                       ? "border-primary/50 bg-primary/10 text-primary"
                       : "border-white/5 bg-white/[0.02] text-white"
-                  }`}
+                    }`}
                 >
                   <Info size={16} className="text-primary" />
                   About
@@ -256,11 +249,10 @@ export default function Header() {
                 <Link
                   href="/ftp"
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${
-                    isFtpPage
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${isFtpPage
                       ? "border-primary/50 bg-primary/10 text-primary"
                       : "border-white/5 bg-white/[0.02] text-white"
-                  }`}
+                    }`}
                 >
                   <Server size={16} className="text-primary" />
                   FTP

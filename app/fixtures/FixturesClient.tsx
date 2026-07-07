@@ -75,7 +75,7 @@ export default function FixturesClient() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-sm"
             >
               <Trophy size={14} className="text-yellow-500 animate-pulse" />
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-yellow-500">
+              <span className="text-[10px] sm:text-xs font-bold tracking-widest text-yellow-500">
                 FIFA World Cup 2026
               </span>
             </motion.div>
@@ -148,21 +148,19 @@ export default function FixturesClient() {
               <div className="hidden md:flex items-center justify-center p-1 rounded-2xl border border-white/10 bg-white/[0.02] max-w-sm mx-auto backdrop-blur-md">
                 <button
                   onClick={() => setActiveTab("fixtures")}
-                  className={`flex-1 py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-300 cursor-pointer ${
-                    activeTab === "fixtures"
+                  className={`flex-1 py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-300 cursor-pointer ${activeTab === "fixtures"
                       ? "bg-primary text-white shadow-md shadow-primary/20"
                       : "text-zinc-400 hover:text-white"
-                  }`}
+                    }`}
                 >
                   Fixtures & Results
                 </button>
                 <button
                   onClick={() => setActiveTab("bracket")}
-                  className={`flex-1 py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-300 cursor-pointer ${
-                    activeTab === "bracket"
+                  className={`flex-1 py-2.5 text-xs sm:text-sm font-black rounded-xl transition-all duration-300 cursor-pointer ${activeTab === "bracket"
                       ? "bg-primary text-white shadow-md shadow-primary/20"
                       : "text-zinc-400 hover:text-white"
-                  }`}
+                    }`}
                 >
                   Knockout Bracket
                 </button>
@@ -347,7 +345,7 @@ export default function FixturesClient() {
                       <div className="hidden md:flex relative overflow-x-auto py-6 custom-scrollbar no-scrollbar items-start select-none max-w-full gap-2">
                         {/* Round of 32 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 32 (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -370,7 +368,7 @@ export default function FixturesClient() {
 
                         {/* Round of 16 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 16 (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -391,7 +389,7 @@ export default function FixturesClient() {
 
                         {/* Quarter-finals */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Quarter-finals (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -411,7 +409,7 @@ export default function FixturesClient() {
 
                         {/* Semi-finals */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Semi-finals (L)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -421,7 +419,7 @@ export default function FixturesClient() {
 
                         {/* Finals / Winner Area */}
                         <div className="flex flex-col min-w-[240px] px-2">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-yellow-500 uppercase border border-yellow-500/30 rounded-xl bg-yellow-500/10 backdrop-blur-md shadow-lg shadow-yellow-500/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-yellow-500 border border-yellow-500/30 rounded-xl bg-yellow-500/10 backdrop-blur-md shadow-lg shadow-yellow-500/10">
                             Finals
                           </div>
                           <div className="flex flex-col justify-center items-center h-[1200px] space-y-12">
@@ -431,20 +429,20 @@ export default function FixturesClient() {
                                 <Trophy size={22} className="animate-bounce" />
                               </div>
                               <div>
-                                <h4 className="text-[10px] font-black uppercase text-yellow-400 tracking-wider">FIFA Champions</h4>
+                                <h4 className="text-[10px] font-black text-yellow-400 tracking-wider">FIFA Champions</h4>
                                 <p className="text-[9px] text-zinc-400 font-semibold">Who will raise the Cup?</p>
                               </div>
                             </div>
 
                             {/* Final Match */}
                             <div className="w-full">
-                              <div className="text-[8px] font-bold text-yellow-500 uppercase tracking-widest text-center mb-1.5">Grand Final</div>
+                              <div className="text-[8px] font-bold text-yellow-500 tracking-widest text-center mb-1.5">Grand Final</div>
                               <BracketMatchCard matchNum={104} match={getKnockoutMatch(104)} allMatches={processedMatches} standings={groupStandings} />
                             </div>
 
                             {/* Third Place Match */}
                             <div className="w-full">
-                              <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest text-center mb-1.5">Third Place Playoff</div>
+                              <div className="text-[8px] font-bold text-zinc-400 tracking-widest text-center mb-1.5">Third Place Playoff</div>
                               <BracketMatchCard matchNum={103} match={getKnockoutMatch(103)} allMatches={processedMatches} standings={groupStandings} />
                             </div>
                           </div>
@@ -452,7 +450,7 @@ export default function FixturesClient() {
 
                         {/* Right Semi-finals */}
                         <div className="flex flex-col min-w-[210px] hidden lg:flex">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Semi-finals (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -470,7 +468,7 @@ export default function FixturesClient() {
 
                         {/* Right Quarter-finals */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Quarter-finals (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -491,7 +489,7 @@ export default function FixturesClient() {
 
                         {/* Right Round of 16 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 16 (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">
@@ -514,7 +512,7 @@ export default function FixturesClient() {
 
                         {/* Right Round of 32 */}
                         <div className="flex flex-col min-w-[210px]">
-                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary uppercase border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
+                          <div className="h-8 mb-4 flex items-center justify-center text-center font-black tracking-widest text-[10px] sm:text-xs text-primary border border-primary/30 rounded-xl bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10">
                             Round of 32 (R)
                           </div>
                           <div className="flex flex-col justify-around h-[1200px]">

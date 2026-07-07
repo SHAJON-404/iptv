@@ -39,10 +39,10 @@ export default function AboutView() {
 
   const handleCheckForUpdates = async () => {
     setUpdateStatus("checking");
-    
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api = typeof window !== "undefined" ? (window as any).electronAPI : undefined;
-    
+
     if (api?.isDesktop && api?.checkForUpdates) {
       try {
         const res = await api.checkForUpdates();
@@ -84,7 +84,7 @@ export default function AboutView() {
         const latestTag = release.tag_name || "";
         const latestVerClean = latestTag.replace(/^v/, "");
         const currentVerClean = currentVer.replace(/^v/, "");
-        
+
         // Simple comparison
         const parseVersion = (v: string) => {
           const clean = v.split("-")[0];
@@ -92,7 +92,7 @@ export default function AboutView() {
         };
         const currParsed = parseVersion(currentVerClean);
         const lateParsed = parseVersion(latestVerClean);
-        
+
         let updateAvailable = false;
         for (let i = 0; i < Math.max(currParsed.length, lateParsed.length); i++) {
           const c = currParsed[i] || 0;
@@ -104,7 +104,7 @@ export default function AboutView() {
             break;
           }
         }
-        
+
         setUpdateInfo({
           currentVersion: currentVer,
           latestVersion: latestTag,
@@ -160,7 +160,7 @@ export default function AboutView() {
             {/* Glows */}
             <div className="absolute -left-20 -top-20 w-64 h-64 rounded-full bg-violet-500/10 blur-[60px] pointer-events-none" />
             <div className="absolute -right-20 -bottom-20 w-64 h-64 rounded-full bg-primary/10 blur-[60px] pointer-events-none" />
-            
+
             <div className="flex flex-col items-center text-center space-y-4 max-w-2xl">
               {/* Animated App Icon Wrapper */}
               <div className="relative group">
@@ -182,7 +182,7 @@ export default function AboutView() {
                 </h2>
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-xs font-bold text-zinc-400">Current Version:</span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider bg-white/10 text-white border border-white/15">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black tracking-wider bg-white/10 text-white border border-white/15">
                     v{currentVer}
                   </span>
                 </div>
@@ -212,18 +212,38 @@ export default function AboutView() {
                 )}
 
                 {updateStatus === "up-to-date" && (
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold select-none">
-                      <Check size={14} className="stroke-[3]" />
-                      <span>You are on the latest version</span>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full max-w-md p-5 rounded-2xl bg-emerald-500/[0.02] border border-emerald-500/20 text-left space-y-4 shadow-lg shadow-emerald-500/5 mx-auto relative overflow-hidden"
+                  >
+                    {/* Subtle green glow */}
+                    <div className="absolute right-0 top-0 w-24 h-24 rounded-full bg-emerald-500/5 blur-xl pointer-events-none" />
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                          <Check size={16} className="stroke-[3]" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="text-[9px] font-black tracking-wider text-emerald-400">System Status</span>
+                          <h4 className="text-sm font-bold text-white">Up to Date</h4>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleCheckForUpdates}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 font-bold text-xs transition-all active:scale-95 cursor-pointer"
+                      >
+                        <RefreshCw size={12} />
+                        <span>Check Again</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={handleCheckForUpdates}
-                      className="text-[10px] font-bold text-zinc-400 hover:text-white uppercase tracking-widest transition-colors duration-200 cursor-pointer"
-                    >
-                      Check Again
-                    </button>
-                  </div>
+
+                    <p className="text-xs text-zinc-400 leading-normal pl-1">
+                      You are currently running the latest version of IPTV Player. No updates are required.
+                    </p>
+                  </motion.div>
                 )}
 
                 {updateStatus === "error" && (
@@ -250,10 +270,10 @@ export default function AboutView() {
                   >
                     {/* Subtle glow */}
                     <div className="absolute right-0 top-0 w-24 h-24 rounded-full bg-primary/10 blur-xl pointer-events-none" />
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-primary">New Update Available</span>
+                        <span className="text-[9px] font-black tracking-wider text-primary">New Update Available</span>
                         <h4 className="text-sm font-bold text-white">Version {updateInfo.latestVersion}</h4>
                       </div>
                       <a
@@ -269,7 +289,7 @@ export default function AboutView() {
 
                     {updateInfo.notes && (
                       <div className="pt-2 border-t border-white/10">
-                        <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block mb-1">Release Notes:</span>
+                        <span className="text-[10px] font-extrabold text-zinc-400 tracking-widest block mb-1">Release Notes:</span>
                         <div className="max-h-24 overflow-y-auto text-xs text-zinc-300 font-medium leading-relaxed pr-2 custom-scrollbar break-words whitespace-pre-line">
                           {updateInfo.notes}
                         </div>
@@ -312,14 +332,14 @@ export default function AboutView() {
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary">
                   <User size={12} className="animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-wider">
+                  <span className="text-[10px] font-black tracking-wider">
                     Core Developer
                   </span>
                 </div>
                 <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
                   S. SHAJON
                 </h1>
-                <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-primary/80">
+                <p className="text-xs sm:text-sm font-bold tracking-widest text-primary/80">
                   Self-Learned Developer & Reverse Engineer
                 </p>
               </div>
@@ -330,7 +350,7 @@ export default function AboutView() {
 
               {/* Social Channels Panel */}
               <div className="pt-2 w-full">
-                <p className="text-[10px] sm:text-xs font-bold text-zinc-400 uppercase tracking-widest mb-3 text-center md:text-left">
+                <p className="text-[10px] sm:text-xs font-bold text-zinc-400 tracking-widest mb-3 text-center md:text-left">
                   Connect & Support
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-xl mx-auto md:mx-0">
@@ -463,12 +483,12 @@ export default function AboutView() {
                     <div className="flex flex-col min-w-0 pr-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest">Binance UID</span>
+                        <span className="text-[10px] font-extrabold text-amber-400 tracking-widest">Binance UID</span>
                       </div>
                       <span className="text-white font-mono text-sm sm:text-base font-bold tracking-wide break-all">839622149</span>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-2">
-                      <span className={`text-[10px] font-bold tracking-wider uppercase transition-opacity duration-300 ${copiedText === "binance-uid" ? "text-emerald-400 opacity-100" : "text-amber-400/60 opacity-0 group-hover:opacity-100"}`}>
+                      <span className={`text-[10px] font-bold tracking-wider transition-opacity duration-300 ${copiedText === "binance-uid" ? "text-emerald-400 opacity-100" : "text-amber-400/60 opacity-0 group-hover:opacity-100"}`}>
                         {copiedText === "binance-uid" ? "Copied!" : "Copy"}
                       </span>
                       <div className={`p-2 rounded-lg transition-all duration-300 ${copiedText === "binance-uid" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 group-hover:scale-105"}`}>
@@ -485,12 +505,12 @@ export default function AboutView() {
                     <div className="flex flex-col min-w-0 pr-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest">BEP20 (BNB/USDT)</span>
+                        <span className="text-[10px] font-extrabold text-amber-400 tracking-widest">BEP20 (BNB/USDT)</span>
                       </div>
                       <span className="text-white font-mono text-xs sm:text-sm font-bold tracking-wide break-all">0x22d4f314acbf6055b0a37df8df68f9cd40ba889a</span>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-2">
-                      <span className={`text-[10px] font-bold tracking-wider uppercase transition-opacity duration-300 ${copiedText === "bep20" ? "text-emerald-400 opacity-100" : "text-amber-400/60 opacity-0 group-hover:opacity-100"}`}>
+                      <span className={`text-[10px] font-bold tracking-wider transition-opacity duration-300 ${copiedText === "bep20" ? "text-emerald-400 opacity-100" : "text-amber-400/60 opacity-0 group-hover:opacity-100"}`}>
                         {copiedText === "bep20" ? "Copied!" : "Copy"}
                       </span>
                       <div className={`p-2 rounded-lg transition-all duration-300 ${copiedText === "bep20" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 group-hover:scale-105"}`}>
@@ -507,12 +527,12 @@ export default function AboutView() {
                     <div className="flex flex-col min-w-0 pr-3">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest">TRC20 (TRX/USDT)</span>
+                        <span className="text-[10px] font-extrabold text-amber-400 tracking-widest">TRC20 (TRX/USDT)</span>
                       </div>
                       <span className="text-white font-mono text-xs sm:text-sm font-bold tracking-wide break-all">TAsPdCxkX9CeErJ4vw7xBHfZDT6vpdfmwH</span>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-2">
-                      <span className={`text-[10px] font-bold tracking-wider uppercase transition-opacity duration-300 ${copiedText === "trc20" ? "text-emerald-400 opacity-100" : "text-amber-400/60 opacity-0 group-hover:opacity-100"}`}>
+                      <span className={`text-[10px] font-bold tracking-wider transition-opacity duration-300 ${copiedText === "trc20" ? "text-emerald-400 opacity-100" : "text-amber-400/60 opacity-0 group-hover:opacity-100"}`}>
                         {copiedText === "trc20" ? "Copied!" : "Copy"}
                       </span>
                       <div className={`p-2 rounded-lg transition-all duration-300 ${copiedText === "trc20" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 group-hover:scale-105"}`}>

@@ -43,11 +43,10 @@ const ChannelCard = React.memo(function ChannelCard({
   return (
     <button
       onClick={() => onSelect(chan)}
-      className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group h-[60px] sm:h-[68px] ${
-        isSelected
+      className={`w-full flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border text-left transition-all group h-[60px] sm:h-[68px] ${isSelected
           ? "bg-primary/10 border-primary text-primary"
           : "bg-white/[0.02] border-white/10 sm:border-white/5 text-white hover:bg-white/[0.05] hover:border-white/10"
-      }`}
+        }`}
     >
       {chan.logo && !imageError ? (
         <div className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 relative">
@@ -68,9 +67,8 @@ const ChannelCard = React.memo(function ChannelCard({
 
       <div className="flex-1 min-w-0">
         <p
-          className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate ${
-            isSelected ? "text-primary/75" : "text-zinc-400"
-          }`}
+          className={`text-[10px] sm:text-xs font-bold tracking-wider truncate ${isSelected ? "text-primary/75" : "text-zinc-400"
+            }`}
         >
           {chan.group}
         </p>
@@ -166,11 +164,10 @@ export const ChannelListView = React.memo(function ChannelListView({
                 setSelectedCategory(cat);
                 setDisplayCount(80);
               }}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${
-                selectedCategory === cat
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap border transition-all ${selectedCategory === cat
                   ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                   : "bg-white/5 border-white/10 sm:border-white/5 text-zinc-300 hover:text-white hover:bg-white/10"
-              }`}
+                }`}
             >
               {cat}
             </button>
