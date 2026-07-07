@@ -132,6 +132,23 @@ docker build -t iptv-player .
 docker run -p 3000:3000 iptv-player
 ```
 
+### 🔄 Upgrading Dependencies
+
+To check for and upgrade all project dependencies to their latest versions:
+
+1. **Check and upgrade package specifications**:
+   ```bash
+   npx npm-check-updates -u
+   ```
+2. **Install the upgraded versions**:
+   ```bash
+   npm install
+   ```
+3. **Verify the build output**:
+   ```bash
+   npm run build
+   ```
+
 ---
 
 ## ⚠️ Disclaimer
