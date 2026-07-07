@@ -12,12 +12,10 @@ let mainWindow = null;
 let serverUrl = 'http://127.0.0.1:3000';
 let sleepBlockerId = null;
 
-// ── Desktop Performance: GPU & Rendering Optimizations ──────────────────────
 // Enable hardware-accelerated video decoding and GPU compositing
-app.commandLine.appendSwitch('enable-gpu-rasterization');
-app.commandLine.appendSwitch('enable-zero-copy');
-app.commandLine.appendSwitch('enable-hardware-overlays', 'single-fullscreen,single-on-top,underlay');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-accelerated-video-decode');
 
 // Linux-specific: enable VA-API hardware video decoding
 if (process.platform === 'linux') {

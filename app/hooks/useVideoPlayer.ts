@@ -1236,7 +1236,6 @@ export function useVideoPlayer(
                       stallThreshold: 1.0,
                       stallSkip: 0.2,
                       startAtSegmentBoundary: true,
-                      parsePrftBox: true, // Parse Producer Reference Time for lower latency
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
                       failureCallback: (_error: any) => {
                         try { player.retryStreaming(); } catch { /* ignore */ }
