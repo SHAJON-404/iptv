@@ -80,7 +80,6 @@
     "win": {
       "target": [
         "nsis",
-        "portable",
         "zip"
       ],
       "icon": "public/logo.png"
@@ -97,8 +96,7 @@
       "target": [
         "AppImage",
         "deb",
-        "rpm",
-        "zip"
+        "rpm"
       ],
       "category": "Video",
       "icon": "public/logo.png"
