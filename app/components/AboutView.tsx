@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { User, Heart, ArrowLeft, Coins, Copy, Check, Star, RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
+import { User, Heart, ArrowLeft, Coins, Copy, Check, Star, Zap, RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 import Link from "next/link";
 import BackgroundScene from "./BackgroundScene";
@@ -161,7 +161,7 @@ export default function AboutView() {
             <div className="absolute -left-20 -top-20 w-64 h-64 rounded-full bg-violet-500/10 blur-[60px] pointer-events-none" />
             <div className="absolute -right-20 -bottom-20 w-64 h-64 rounded-full bg-primary/10 blur-[60px] pointer-events-none" />
 
-            <div className="flex flex-col items-center text-center space-y-4 max-w-2xl">
+            <div className="flex flex-col items-center text-center space-y-3 max-w-2xl">
               {/* Animated App Icon Wrapper */}
               <div className="relative group">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-primary to-violet-600 blur-md opacity-50 scale-105 group-hover:scale-110 transition-all duration-300" />
@@ -193,7 +193,7 @@ export default function AboutView() {
               </p>
 
               {/* Dynamic Update Status Panel */}
-              <div className="w-full pt-2">
+              <div className="w-full pt-1.5">
                 {updateStatus === "idle" && (
                   <button
                     onClick={handleCheckForUpdates}
@@ -215,72 +215,96 @@ export default function AboutView() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-md p-5 rounded-2xl bg-emerald-500/[0.02] border border-emerald-500/20 text-left space-y-4 shadow-lg shadow-emerald-500/5 mx-auto relative overflow-hidden"
+                    className="w-full max-w-md p-4 sm:p-5 rounded-2xl bg-white/[0.01] hover:bg-white/[0.02] border border-white/10 hover:border-emerald-500/25 text-left space-y-3 shadow-lg shadow-emerald-500/[0.02] mx-auto relative overflow-hidden transition-all duration-300"
                   >
                     {/* Subtle green glow */}
-                    <div className="absolute right-0 top-0 w-24 h-24 rounded-full bg-emerald-500/5 blur-xl pointer-events-none" />
+                    <div className="absolute right-0 top-0 w-20 h-20 rounded-full bg-emerald-500/5 blur-xl pointer-events-none" />
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="p-2 rounded-xl bg-emerald-500/[0.03] border border-emerald-500/20 text-emerald-400 flex-shrink-0">
                           <Check size={16} className="stroke-[3]" />
                         </div>
-                        <div className="space-y-0.5">
-                          <span className="text-[9px] font-black tracking-wider text-emerald-400">System Status</span>
-                          <h4 className="text-sm font-bold text-white">Up to Date</h4>
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 block">System Status</span>
+                          <h4 className="text-sm font-bold text-white truncate">Up to Date</h4>
                         </div>
                       </div>
-
+                      
                       <button
                         onClick={handleCheckForUpdates}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 font-bold text-xs transition-all active:scale-95 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-bold text-xs transition-all active:scale-95 cursor-pointer flex-shrink-0"
                       >
                         <RefreshCw size={12} />
                         <span>Check Again</span>
                       </button>
                     </div>
 
-                    <p className="text-xs text-zinc-400 leading-normal pl-1">
-                      You are currently running the latest version of IPTV Player. No updates are required.
+                    <p className="text-[11px] sm:text-xs text-zinc-400 leading-normal pl-1">
+                      You are running the latest version of IPTV Player. No updates are required.
                     </p>
                   </motion.div>
                 )}
 
                 {updateStatus === "error" && (
-                  <div className="flex flex-col items-center space-y-3 w-full">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs font-bold max-w-md text-left">
-                      <AlertCircle size={16} className="flex-shrink-0" />
-                      <span className="break-all">{updateInfo?.errorMsg || "Failed to connect to update server"}</span>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full max-w-md p-4 sm:p-5 rounded-2xl bg-white/[0.01] hover:bg-white/[0.02] border border-white/10 hover:border-rose-500/25 text-left space-y-3 shadow-lg shadow-rose-500/[0.02] mx-auto relative overflow-hidden transition-all duration-300"
+                  >
+                    {/* Subtle red glow */}
+                    <div className="absolute right-0 top-0 w-20 h-20 rounded-full bg-rose-500/5 blur-xl pointer-events-none" />
+
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-450 flex-shrink-0">
+                          <AlertCircle size={16} className="text-rose-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-rose-400 block">System Status</span>
+                          <h4 className="text-sm font-bold text-white truncate">Update Error</h4>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleCheckForUpdates}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/30 text-rose-400 hover:text-rose-300 font-bold text-xs transition-all active:scale-95 cursor-pointer flex-shrink-0"
+                      >
+                        <RefreshCw size={12} />
+                        <span>Retry Check</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={handleCheckForUpdates}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 text-zinc-300 text-xs font-bold transition-all active:scale-95 cursor-pointer"
-                    >
-                      <RefreshCw size={12} />
-                      <span>Retry Check</span>
-                    </button>
-                  </div>
+
+                    <p className="text-[11px] sm:text-xs text-zinc-400 leading-normal pl-1 break-words">
+                      {updateInfo?.errorMsg || "Failed to connect to the update server."}
+                    </p>
+                  </motion.div>
                 )}
 
                 {updateStatus === "update-available" && updateInfo && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-md p-5 rounded-2xl bg-violet-600/[0.03] border border-violet-500/30 text-left space-y-3 shadow-lg shadow-violet-500/5 mx-auto relative overflow-hidden"
+                    className="w-full max-w-md p-4 sm:p-5 rounded-2xl bg-white/[0.01] hover:bg-white/[0.02] border border-white/10 hover:border-primary/30 text-left space-y-3 shadow-lg shadow-primary/[0.02] mx-auto relative overflow-hidden transition-all duration-300"
                   >
                     {/* Subtle glow */}
-                    <div className="absolute right-0 top-0 w-24 h-24 rounded-full bg-primary/10 blur-xl pointer-events-none" />
+                    <div className="absolute right-0 top-0 w-20 h-20 rounded-full bg-primary/5 blur-xl pointer-events-none" />
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <span className="text-[9px] font-black tracking-wider text-primary">New Update Available</span>
-                        <h4 className="text-sm font-bold text-white">Version {updateInfo.latestVersion}</h4>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary flex-shrink-0">
+                          <Zap size={16} className="fill-primary/25 animate-pulse" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-primary block">Update Available</span>
+                          <h4 className="text-sm font-bold text-white truncate">Version {updateInfo.latestVersion}</h4>
+                        </div>
                       </div>
                       <a
                         href={updateInfo.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:opacity-95 text-white font-extrabold text-xs transition-all active:scale-95 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:opacity-95 text-white font-extrabold text-xs transition-all active:scale-95 cursor-pointer flex-shrink-0"
                       >
                         <span>Download</span>
                         <ExternalLink size={12} />
@@ -289,7 +313,7 @@ export default function AboutView() {
 
                     {updateInfo.notes && (
                       <div className="pt-2 border-t border-white/10">
-                        <span className="text-[10px] font-extrabold text-zinc-400 tracking-widest block mb-1">Release Notes:</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Release Notes:</span>
                         <div className="max-h-24 overflow-y-auto text-xs text-zinc-300 font-medium leading-relaxed pr-2 custom-scrollbar break-words whitespace-pre-line">
                           {updateInfo.notes}
                         </div>

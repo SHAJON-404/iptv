@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "IPTV Player — Watch 6500+ Live TV Channels Free",
+  title: "IPTV Player — By S. SHAJON",
   description:
     "Stream 6500+ live TV channels from Bangladesh, India, and worldwide. Premium IPTV web player with HLS streaming, custom playlist support, and a modern UI. No app install needed.",
   keywords: [
