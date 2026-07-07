@@ -64,14 +64,15 @@ export default function AboutView() {
           });
           setUpdateStatus("error");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setUpdateStatus("error");
+        const errMsg = err instanceof Error ? err.message : "Failed to communicate with update service.";
         setUpdateInfo({
           currentVersion: currentVer,
           latestVersion: "",
           url: "",
           notes: "",
-          errorMsg: err?.message || "Failed to communicate with update service.",
+          errorMsg: errMsg,
         });
       }
     } else {
@@ -111,14 +112,15 @@ export default function AboutView() {
           notes: release.body || "",
         });
         setUpdateStatus(updateAvailable ? "update-available" : "up-to-date");
-      } catch (err: any) {
+      } catch (err: unknown) {
         setUpdateStatus("error");
+        const errMsg = err instanceof Error ? err.message : "Failed to check updates via public API.";
         setUpdateInfo({
           currentVersion: currentVer,
           latestVersion: "",
           url: "",
           notes: "",
-          errorMsg: err?.message || "Failed to check updates via public API.",
+          errorMsg: errMsg,
         });
       }
     }
