@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
-import { User, Heart, ArrowLeft, Coins, Copy, Check, Star, Zap, RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
+import { User, Heart, ArrowLeft, Coins, Copy, Check, Star, RefreshCw, AlertCircle, ExternalLink } from "lucide-react";
 import { FaGithub, FaTelegram, FaFacebook, FaYoutube } from "react-icons/fa6";
 import Link from "next/link";
 import BackgroundScene from "./BackgroundScene";
@@ -165,8 +165,14 @@ export default function AboutView() {
               {/* Animated App Icon Wrapper */}
               <div className="relative group">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-primary to-violet-600 blur-md opacity-50 scale-105 group-hover:scale-110 transition-all duration-300" />
-                <div className="relative p-4 rounded-2xl bg-white/5 border border-white/15 text-primary shadow-xl">
-                  <Zap size={32} className="fill-primary/20 animate-pulse text-primary" />
+                <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-white/15 shadow-xl bg-[#0e0c1b]">
+                  <Image
+                    src="/logo.png"
+                    alt="IPTV Player Logo"
+                    fill
+                    className="object-contain p-2"
+                    priority
+                  />
                 </div>
               </div>
 
