@@ -228,11 +228,11 @@ export default function AboutView() {
                           <Check size={16} className="stroke-[3]" />
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 block">System Status</span>
+                          <span className="text-[9px] font-black tracking-widest text-emerald-400 block">System Status</span>
                           <h4 className="text-sm font-bold text-white truncate">Up to Date</h4>
                         </div>
                       </div>
-                      
+
                       <button
                         onClick={handleCheckForUpdates}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-bold text-xs transition-all active:scale-95 cursor-pointer flex-shrink-0"
@@ -263,7 +263,7 @@ export default function AboutView() {
                           <AlertCircle size={16} className="text-rose-400" />
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-rose-400 block">System Status</span>
+                          <span className="text-[9px] font-black tracking-widest text-rose-400 block">System Status</span>
                           <h4 className="text-sm font-bold text-white truncate">Update Error</h4>
                         </div>
                       </div>
@@ -298,7 +298,7 @@ export default function AboutView() {
                           <Zap size={16} className="fill-primary/25 animate-pulse" />
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-primary block">Update Available</span>
+                          <span className="text-[9px] font-black tracking-widest text-primary block">Update Available</span>
                           <h4 className="text-sm font-bold text-white truncate">Version {updateInfo.latestVersion}</h4>
                         </div>
                       </div>
@@ -315,7 +315,7 @@ export default function AboutView() {
 
                     {updateInfo.notes && (
                       <div className="pt-2 border-t border-white/10">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Release Notes:</span>
+                        <span className="text-[9px] font-black tracking-widest text-zinc-400 block mb-1">Release Notes:</span>
                         <div className="max-h-24 overflow-y-auto text-xs text-zinc-300 font-medium leading-relaxed pr-2 custom-scrollbar break-words whitespace-pre-line">
                           {updateInfo.notes}
                         </div>
