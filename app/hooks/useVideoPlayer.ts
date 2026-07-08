@@ -492,6 +492,10 @@ export function useVideoPlayer(
     const handlePlay = () => {
       setIsPaused(false);
       setHasPlayed(true);
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
+      }
     };
     const handlePause = () => setIsPaused(true);
     const handleVolumeChange = () => {
@@ -993,17 +997,19 @@ export function useVideoPlayer(
 
           if (loadedUrlRef.current !== chan.url) return;
 
-          // Start fallback timer — 25s for desktop (streams may be slow to init)
+          // Start fallback timer — 15s total (8s first attempt, 7s fallback)
           if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
 
-          // Intermediate health check at 12s: if video has data but no playing event, force play
+          // Intermediate health check at 5s: if video has data but no playing event, force play
           const intermediateCheckTimer = setTimeout(() => {
             const v = videoRef.current;
             if (v && !hasPlayedRef.current && v.readyState >= 3) {
-              console.log("[Fallback] 12s intermediate check: readyState>=3 but not playing. Forcing play...");
+              console.log("[Fallback] 5s intermediate check: readyState>=3 but not playing. Forcing play...");
               v.play().catch(() => { /* ignore */ });
             }
-          }, 12000);
+          }, 5000);
+
+          const currentAttemptTimeout = fallbackAttemptRef.current === 0 ? 8000 : 7000;
 
           fallbackTimerRef.current = setTimeout(() => {
             clearTimeout(intermediateCheckTimer);
@@ -1011,10 +1017,10 @@ export function useVideoPlayer(
               if (fallbackAttemptRef.current === 0) {
                 if (dynamicUseProxy && isHttpsPage && isHttpStream) {
                   // Cannot fallback to direct (useProxy = false) due to Mixed Content
-                  console.log(`Stream failed to play within 25s. Cannot fallback to direct HTTP under HTTPS, retrying proxy reload...`);
+                  console.log(`Stream failed to play within 8s. Cannot fallback to direct HTTP under HTTPS, retrying proxy reload...`);
                   initializeStream(initialChan, false, true);
                 } else {
-                  console.log(`Stream failed to play within 25s, trying fallback proxy mode (useProxy=${!dynamicUseProxy})...`);
+                  console.log(`Stream failed to play within 8s, trying fallback proxy mode (useProxy=${!dynamicUseProxy})...`);
                   initializeStream(initialChan, false, !dynamicUseProxy);
                 }
               } else {
@@ -1022,7 +1028,7 @@ export function useVideoPlayer(
                 if (onChannelFailRef.current) onChannelFailRef.current();
               }
             }
-          }, 25000);
+          }, currentAttemptTimeout);
 
           const isMaxQuality = maxQualityModeRef.current;
 
