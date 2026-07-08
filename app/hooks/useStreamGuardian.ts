@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, type RefObject } from "react";
 import type Hls from "hls.js";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ const MEMORY_TRIM_INTERVAL_TICKS = 15; // every 30s
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useStreamGuardian(options: UseStreamGuardianOptions): {
-  streamHealth: StreamHealthData;
+  streamHealth: RefObject<StreamHealthData>;
   guardianActions: GuardianActions;
 } {
   const {
@@ -522,7 +522,7 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
   }, [isActive, videoRef, hlsRef, shakaRef, mpegtsRef, seekToLiveEdge, forceRecovery, trimBuffers]);
 
   return {
-    streamHealth: streamHealthRef.current,
+    streamHealth: streamHealthRef,
     guardianActions: {
       seekToLiveEdge,
       forceRecovery,
