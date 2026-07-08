@@ -463,8 +463,8 @@ app.on('activate', () => {
   }
 });
 
-// Terminate Next.js server process and clean up when quitting
-app.on('will-quit', () => {
+// Helper to safely terminate Next.js background server process
+function killServer() {
   // Release sleep blocker
   if (sleepBlockerId !== null && powerSaveBlocker.isStarted(sleepBlockerId)) {
     powerSaveBlocker.stop(sleepBlockerId);
@@ -472,7 +472,19 @@ app.on('will-quit', () => {
   }
 
   if (serverProcess) {
-    console.log('Shutting down background Next.js server...');
-    serverProcess.kill('SIGTERM');
+    console.log('Shutting down background Next.js server (sending SIGKILL)...');
+    try {
+      // Use SIGKILL to guarantee immediate process teardown on Windows/Linux
+      serverProcess.kill('SIGKILL');
+      console.log('Successfully requested termination of Next.js server.');
+    } catch (err) {
+      console.error('Error terminating Next.js server:', err);
+    }
+    serverProcess = null;
   }
-});
+}
+
+// Register exit handlers to prevent zombie background processes
+app.on('will-quit', killServer);
+app.on('quit', killServer);
+process.on('exit', killServer);
