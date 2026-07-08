@@ -303,6 +303,7 @@ export function useVideoPlayer(
   const [topChannels, setTopChannels] = useState<TrendingChannel[]>([]);
 
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intermediateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fallbackAttemptRef = useRef(0);
   const onChannelFailRef = useRef(onChannelFail);
   useEffect(() => { onChannelFailRef.current = onChannelFail; }, [onChannelFail]);
@@ -495,6 +496,10 @@ export function useVideoPlayer(
       if (fallbackTimerRef.current) {
         clearTimeout(fallbackTimerRef.current);
         fallbackTimerRef.current = null;
+      }
+      if (intermediateTimerRef.current) {
+        clearTimeout(intermediateTimerRef.current);
+        intermediateTimerRef.current = null;
       }
     };
     const handlePause = () => setIsPaused(true);
@@ -890,10 +895,9 @@ export function useVideoPlayer(
 
       if (videojsRef.current) {
         try {
-          // Do not call dispose() because it destroys the video element
+          // Properly reset video.js player to release all background network streams/decoders
           videojsRef.current.pause();
-          videojsRef.current.removeAttribute('src');
-          videojsRef.current.load();
+          videojsRef.current.reset();
         } catch { /* ignore */ }
       }
 
@@ -999,20 +1003,25 @@ export function useVideoPlayer(
 
           // Start fallback timer — 15s total (8s first attempt, 7s fallback)
           if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+          if (intermediateTimerRef.current) clearTimeout(intermediateTimerRef.current);
 
           // Intermediate health check at 5s: if video has data but no playing event, force play
-          const intermediateCheckTimer = setTimeout(() => {
+          intermediateTimerRef.current = setTimeout(() => {
             const v = videoRef.current;
             if (v && !hasPlayedRef.current && v.readyState >= 3) {
               console.log("[Fallback] 5s intermediate check: readyState>=3 but not playing. Forcing play...");
               v.play().catch(() => { /* ignore */ });
             }
+            intermediateTimerRef.current = null;
           }, 5000);
 
           const currentAttemptTimeout = fallbackAttemptRef.current === 0 ? 8000 : 7000;
 
           fallbackTimerRef.current = setTimeout(() => {
-            clearTimeout(intermediateCheckTimer);
+            if (intermediateTimerRef.current) {
+              clearTimeout(intermediateTimerRef.current);
+              intermediateTimerRef.current = null;
+            }
             if (!hasPlayedRef.current) {
               if (fallbackAttemptRef.current === 0) {
                 if (dynamicUseProxy && isHttpsPage && isHttpStream) {
@@ -1979,6 +1988,14 @@ export function useVideoPlayer(
   useEffect(() => {
     const video = videoRef.current;
     return () => {
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
+      }
+      if (intermediateTimerRef.current) {
+        clearTimeout(intermediateTimerRef.current);
+        intermediateTimerRef.current = null;
+      }
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
