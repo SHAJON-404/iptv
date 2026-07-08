@@ -42,6 +42,27 @@ export const parseM3U = (text: string): Channel[] => {
       if (commaIndex !== -1) {
         currentChannel.name = line.substring(commaIndex + 1).trim();
       }
+    } else if (line.startsWith("#EXTVLCOPT:")) {
+      const opt = line.substring("#EXTVLCOPT:".length).trim();
+      const eqIndex = opt.indexOf("=");
+      if (eqIndex !== -1) {
+        const key = opt.substring(0, eqIndex).trim().toLowerCase();
+        const val = opt.substring(eqIndex + 1).trim();
+        if (key === "http-referrer") {
+          currentChannel.referer = val;
+        } else {
+          if (!currentChannel.customHeaders) {
+            currentChannel.customHeaders = {};
+          }
+          if (key === "http-user-agent") {
+            currentChannel.customHeaders["user-agent"] = val;
+          } else if (key === "http-origin") {
+            currentChannel.customHeaders["origin"] = val;
+          } else {
+            currentChannel.customHeaders[key] = val;
+          }
+        }
+      }
     } else if (
       line.startsWith("http://") ||
       line.startsWith("https://") ||
@@ -87,6 +108,7 @@ interface RawChannelInput {
   key?: string;
   useProxy?: boolean;
   referer?: string;
+  customHeaders?: Record<string, unknown>;
   // Custom header fields
   "user-agent"?: string;
   "origin"?: string;
@@ -106,6 +128,14 @@ export const parseJSON = (text: string): Channel[] => {
 
     // Extract known custom headers from the raw JSON
     const customHeaders: Record<string, string> = {};
+    if (ch.customHeaders && typeof ch.customHeaders === "object") {
+      for (const [key, value] of Object.entries(ch.customHeaders)) {
+        if (typeof value === "string" && value.trim()) {
+          customHeaders[key.toLowerCase()] = value.trim();
+        }
+      }
+    }
+
     for (const key of CUSTOM_HEADER_KEYS) {
       const value = ch[key];
       if (typeof value === "string" && value.trim()) {
