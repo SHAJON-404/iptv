@@ -1497,9 +1497,9 @@ export function useVideoPlayer(
                       maxBufferSize: isMaxQuality ? 400 * 1000 * 1000 : 150 * 1000 * 1000,
                       maxBufferHole: 0.3,
                       backBufferLength: isMaxQuality ? 90 : 30,
-                      // Live Stream Latency — stay close to live edge
+                      // Live Stream Latency
                       liveSyncDuration: isMaxQuality ? 20 : 12,
-                      liveMaxLatencyDuration: isMaxQuality ? 45 : 30,
+                      liveMaxLatencyDuration: isMaxQuality ? 600 : 300, // Large latency tolerance to allow playing from cached/buffered position
                       liveDurationInfinity: true,
                       liveSyncOnStallIncrease: 2, // Auto-advance sync point on stalls
                       // Desktop ABR Tuning — aggressive quality upgrades
