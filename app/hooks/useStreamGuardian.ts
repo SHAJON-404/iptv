@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import type Hls from "hls.js";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -106,8 +106,8 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
     isUserPaused,
   } = options;
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  const [streamHealth, setStreamHealth] = useState<StreamHealthData>({
+  // ── Stream Health Ref (avoiding state triggers/re-renders) ──────────────────
+  const streamHealthRef = useRef<StreamHealthData>({
     bufferDepth: 0,
     latencyGap: 0,
     droppedFrameRate: 0,
@@ -499,8 +499,8 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
         } catch { /* ignore */ }
       }
 
-      // ── Update state ──────────────────────────────────────────────────
-      setStreamHealth({
+      // ── Update Ref values (does not trigger re-renders) ────────────────
+      streamHealthRef.current = {
         bufferDepth,
         latencyGap,
         droppedFrameRate,
@@ -511,7 +511,7 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
         recoveryCount: recoveryCountRef.current,
         autoPausePreventionCount: autoPauseCountRef.current,
         liveEdgeSeekCount: liveEdgeSeekCountRef.current,
-      });
+      };
     }, GUARDIAN_INTERVAL_MS);
 
     return () => {
@@ -520,7 +520,7 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
   }, [isActive, videoRef, hlsRef, shakaRef, mpegtsRef, seekToLiveEdge, forceRecovery, trimBuffers]);
 
   return {
-    streamHealth,
+    streamHealth: streamHealthRef.current,
     guardianActions: {
       seekToLiveEdge,
       forceRecovery,
