@@ -59,6 +59,8 @@ export const TrendingChannels = React.memo(function TrendingChannels({
     );
   }
 
+  const displayedChannels = topChannels.slice(0, 5);
+
   return (
     <div className="glass-card p-4 sm:p-5 border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] flex flex-col h-full">
       {/* Header */}
@@ -77,7 +79,7 @@ export const TrendingChannels = React.memo(function TrendingChannels({
 
       {/* Desktop List Layout (shows as scrollable list) */}
       <div className="hidden lg:flex flex-col gap-2.5 flex-1 overflow-y-auto no-scrollbar">
-        {topChannels.map((ch, idx) => {
+        {displayedChannels.map((ch, idx) => {
           const isCurrent = selectedChannel?.name === ch.name;
           return (
             <button
@@ -144,13 +146,13 @@ export const TrendingChannels = React.memo(function TrendingChannels({
 
       {/* Mobile/Tablet Horizontal Scroll Layout */}
       <div className="flex lg:hidden overflow-x-auto pb-1 gap-3 no-scrollbar scroll-smooth">
-        {topChannels.map((ch, idx) => {
+        {displayedChannels.map((ch, idx) => {
           const isCurrent = selectedChannel?.name === ch.name;
           return (
             <button
               key={`${ch.name}-mobile-${idx}`}
               onClick={() => handlePlayTrending(ch)}
-              className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 text-left border cursor-pointer select-none ${topChannels.length === 1
+              className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-300 text-left border cursor-pointer select-none ${displayedChannels.length === 1
                   ? "w-full flex-1"
                   : "flex-shrink-0 flex-1 min-w-[210px] max-w-[250px]"
                 } ${isCurrent
