@@ -374,9 +374,9 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
             if (latencyGap > maxLatency && !video.paused && !isStalled) {
               console.log(
                 `[StreamGuardian] Live edge drift detected: ${latencyGap.toFixed(1)}s behind ` +
-                `(max: ${maxLatency}s). Auto-seeking to live edge.`
+                `(max: ${maxLatency}s). Auto-seeking disabled to preserve playback position.`
               );
-              seekToLiveEdge();
+              // seekToLiveEdge(); // Disabled to allow resume from exact stalled/buffered point
             }
           }
         }
@@ -389,9 +389,10 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
               latencyGap = seekRange.end - currentTime;
               if (latencyGap > maxLatency && !video.paused && !isStalled) {
                 console.log(
-                  `[StreamGuardian] Shaka live edge drift: ${latencyGap.toFixed(1)}s behind. Auto-seeking.`
+                  `[StreamGuardian] Shaka live edge drift: ${latencyGap.toFixed(1)}s behind. ` +
+                  `Auto-seeking disabled to preserve playback position.`
                 );
-                seekToLiveEdge();
+                // seekToLiveEdge(); // Disabled to allow resume from exact stalled/buffered point
               }
             }
           } catch { /* ignore */ }
@@ -404,9 +405,10 @@ export function useStreamGuardian(options: UseStreamGuardianOptions): {
             latencyGap = end - currentTime;
             if (latencyGap > maxLatency && !video.paused) {
               console.log(
-                `[StreamGuardian] Native live edge drift: ${latencyGap.toFixed(1)}s. Auto-seeking.`
+                `[StreamGuardian] Native live edge drift: ${latencyGap.toFixed(1)}s behind. ` +
+                `Auto-seeking disabled to preserve playback position.`
               );
-              seekToLiveEdge();
+              // seekToLiveEdge(); // Disabled to allow resume from exact stalled/buffered point
             }
           }
         }
