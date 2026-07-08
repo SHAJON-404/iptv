@@ -553,6 +553,19 @@ export function useIPTVPlaylists() {
       setIsUpdating(true);
       setUpdateSuccess(false);
 
+      // Clear IndexedDB cached channels for default playlists config
+      try {
+        const cachedConfig = await getFromDB<{ name: string; url: string }[]>("iptv_default_playlists_config");
+        if (cachedConfig && Array.isArray(cachedConfig)) {
+          for (const item of cachedConfig) {
+            const playlistId = getPlaylistId(item.name, item.url);
+            await clearCachedChannels(playlistId);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to clear IndexedDB cached channels:", e);
+      }
+
       // Immediately delete old cache for all playlists upon manual update
       await saveToDB("iptv_db_playlists_cache", []);
       localStorage.removeItem("iptv_db_playlists_cache");
@@ -574,7 +587,7 @@ export function useIPTVPlaylists() {
 
       // Update UI state immediately to show cache is deleted
       setPlaylists(prev => prev.map(p => 
-        (p.type === "url" || p.id.startsWith("db-playlist-")) ? { ...p, channels: [] } : p
+        (p.type === "url" || p.type === "default" || p.id.startsWith("db-playlist-")) ? { ...p, channels: [] } : p
       ));
     }
     console.log("[useIPTVPlaylists] refreshAllPlaylists triggered. isManual:", isManual);
@@ -667,7 +680,11 @@ export function useIPTVPlaylists() {
       const currentCustoms = merged.filter(p => p.type !== "default");
 
       // Merge defaults: if we already have channels for a default playlist in state, preserve them!
+      // However, if it's a manual update, we force-clear them to trigger reload.
       const mergedDefaults = defaultPlaylists.map(def => {
+        if (isManual) {
+          return { ...def, channels: [] };
+        }
         const existing = prev.find(p => p.id === def.id);
         return existing ? { ...def, channels: existing.channels } : def;
       });
