@@ -2,8 +2,8 @@
 
 <div align="center">
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.2.7-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.10-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.7-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0.0-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D_22.19.0-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
@@ -33,7 +33,7 @@ A modern, high-performance, and premium web-based IPTV player built with **Next.
 - **Library**: [React 19](https://react.dev/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Animations**: [Motion](https://motion.dev/)
-- **Stream Engines**: [HLS.js](https://github.com/video-dev/hls.js/), [Shaka Player](https://github.com/shaka-project/shaka-player) (for DASH & ClearKey DRM), & [mpegts.js](https://github.com/xqq/mpegts.js) (for legacy MPEG-TS)
+- **Stream Engines**: [HLS.js](https://github.com/video-dev/hls.js/), [Shaka Player](https://github.com/shaka-project/shaka-player) (for DASH & ClearKey DRM), [mpegts.js](https://github.com/xqq/mpegts.js) (for legacy MPEG-TS), & [Video.js](https://github.com/videojs/video.js) (for standard video playback wrappers)
 - **HTTP Client**: [Undici](https://github.com/nodejs/undici) (for secure proxy streaming)
 
 ---
@@ -111,7 +111,7 @@ The desktop application runs the Next.js production server locally in a backgrou
    ```bash
    npm run electron:pack
    ```
-- **Compile Windows installer (`dist/IPTV Player Setup 3.0.0.exe`):**
+- **Compile Windows installer (`dist/IPTV Player Setup 3.3.0.exe`):**
    ```bash
    npm run electron:dist-win
    ```
