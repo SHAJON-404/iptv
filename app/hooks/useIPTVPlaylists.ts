@@ -352,7 +352,7 @@ export function useIPTVPlaylists() {
 
         setPlaylists(prev => {
           const currentCustoms = prev.filter(p => p.type !== "default");
-          return [...defaultPlaylists, ...currentCustoms];
+          return sortPlaylists([...defaultPlaylists, ...currentCustoms]);
         });
       } catch (e) {
         console.error("Failed to load playlists during hydration:", e);
@@ -685,15 +685,15 @@ export function useIPTVPlaylists() {
         return existing ? { ...def, channels: existing.channels } : def;
       });
 
-      const combined = [...mergedDefaults, ...currentCustoms];
+      const sortedCombined = sortPlaylists([...mergedDefaults, ...currentCustoms]);
 
       setActivePlaylistId(currentId => {
-        if (currentId && combined.find(p => p.id === currentId)) {
+        if (currentId && sortedCombined.find(p => p.id === currentId)) {
           return currentId;
         }
-        return combined.length > 0 ? combined[0].id : "";
+        return sortedCombined.length > 0 ? sortedCombined[0].id : "";
       });
-      return combined;
+      return sortedCombined;
     });
 
     if (isManual) {
