@@ -304,9 +304,7 @@ export function useIPTVPlaylists() {
           setPlaylistTab("manage");
         }
 
-        // Step 2: Fetch default playlists config dynamically using PLAYLIST_DOMAIN from env in the background with retries
-        const domain = process.env.PLAYLIST_DOMAIN || "iamshajon.com";
-        const availablePlaylistUrl = `https://${domain}/available_playlist.json`;
+        // Step 2: Fetch default playlists config dynamically from the new API route
         
         let fetchedDefaultsConfig = [];
         let success = false;
@@ -315,8 +313,7 @@ export function useIPTVPlaylists() {
 
         while (!success && retries > 0) {
           try {
-            const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(availablePlaylistUrl)}`;
-            const response = await fetch(proxiedUrl);
+            const response = await fetch('/api/iptv/playlists/available', { cache: 'no-store' });
             if (response.ok) {
               const data = await response.json();
               if (data && Array.isArray(data) && data.length > 0) {
@@ -492,7 +489,7 @@ export function useIPTVPlaylists() {
       for (const pl of defaultPlaylists) {
         try {
           await clearCachedChannels(pl.id);
-          const hashResponse = await fetch(`/api/iptv/channels/hash?type=${pl.id}`, {
+          const hashResponse = await fetch(`/api/iptv/channels/hash?type=${pl.id}&forceRefresh=true`, {
             cache: "no-store",
           });
           if (!hashResponse.ok) continue;
@@ -560,6 +557,8 @@ export function useIPTVPlaylists() {
           for (const item of cachedConfig) {
             const playlistId = getPlaylistId(item.name, item.url);
             await clearCachedChannels(playlistId);
+            // Bust server cache
+            fetch(`/api/iptv/channels/hash?type=${playlistId}&forceRefresh=true`, { cache: "no-store" }).catch(console.warn);
           }
         }
       } catch (e) {
@@ -593,12 +592,9 @@ export function useIPTVPlaylists() {
     console.log("[useIPTVPlaylists] refreshAllPlaylists triggered. isManual:", isManual);
 
     // 1. Refresh available default playlists config
-    const domain = process.env.PLAYLIST_DOMAIN || "iamshajon.com";
-    const availablePlaylistUrl = `https://${domain}/available_playlist.json`;
     let fetchedDefaultsConfig: { name: string; url: string }[] = [];
     try {
-      const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(availablePlaylistUrl)}`;
-      const response = await fetch(proxiedUrl);
+      const response = await fetch('/api/iptv/playlists/available', { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         if (data && Array.isArray(data) && data.length > 0) {

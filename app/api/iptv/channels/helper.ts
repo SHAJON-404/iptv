@@ -18,12 +18,12 @@ const getPlaylistId = (name: string, url: string): string => {
   return name.toLowerCase().replace(/[^a-z0-9]/g, "-");
 };
 
-export async function getChannelsWithHash(playlistId: string): Promise<PlaylistCache> {
+export async function getChannelsWithHash(playlistId: string, forceRefresh: boolean = false): Promise<PlaylistCache> {
   const now = Date.now();
   const cached = serverCache[playlistId];
 
   // Return cached version if fresh
-  if (cached && now - cached.lastLoadedTime < CACHE_EXPIRY_MS && cached.channels.length > 0) {
+  if (!forceRefresh && cached && now - cached.lastLoadedTime < CACHE_EXPIRY_MS && cached.channels.length > 0) {
     return cached;
   }
 
@@ -39,7 +39,7 @@ export async function getChannelsWithHash(playlistId: string): Promise<PlaylistC
 
     // 2. Find matching playlist by generated ID
     const matchedConfig = (playlistsConfig as { name: string; url: string }[]).find(
-      item => getPlaylistId(item.name, item.url) === playlistId
+      item => item.url && item.url.endsWith(".json") && getPlaylistId(item.name, item.url) === playlistId
     );
 
     if (!matchedConfig) {
@@ -83,7 +83,7 @@ export async function getChannelsWithHash(playlistId: string): Promise<PlaylistC
 
     return serverCache[playlistId];
   } catch (error) {
-    console.error(`Error loading channels for playlist ${playlistId}:`, error);
+    console.error(`API Error: Loading channels for playlist ${playlistId} failed:`, error);
     // If dynamic load fails, fall back to cached version if we have one
     if (cached) {
       return cached;
