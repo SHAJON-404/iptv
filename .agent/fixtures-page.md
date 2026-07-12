@@ -3,9 +3,9 @@
 This document explains the interactive tournament brackets, scheduling updates, and BST timezone helper integrations.
 
 ## 📂 File Map
-* **Page Route**: [app/fixtures/page.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/fixtures/page.tsx)
-* **Client Root**: [app/fixtures/FixturesClient.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/fixtures/FixturesClient.tsx)
-* **Custom hook**: [app/fixtures/hooks/useFixtures.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/fixtures/hooks/useFixtures.ts)
+* **Page Route**: [app/fixtures/page.tsx](../app/fixtures/page.tsx)
+* **Client Root**: [app/fixtures/FixturesClient.tsx](../app/fixtures/FixturesClient.tsx)
+* **Custom hook**: [app/fixtures/hooks/useFixtures.ts](../app/fixtures/hooks/useFixtures.ts)
 * **UI Components**:
   - `MatchCard`: Displays single match stats, teams, scores, flag icons, and dates.
   - `BracketMatchCard`: Displays matches formatted inside the grid tree branches.

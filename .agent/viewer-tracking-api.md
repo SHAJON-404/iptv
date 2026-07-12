@@ -3,7 +3,7 @@
 This guide documents the viewer tracking flow, heartbeat triggers, and the session aggregation API.
 
 ## 📂 File Map
-* **Client tracker**: [app/components/ViewerTracker.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/ViewerTracker.tsx)
+* **Client tracker**: [app/components/ViewerTracker.tsx](../app/components/ViewerTracker.tsx)
 * **Backend target**: `/api/iptv/stats` (hosted on the web hub `iptv-web` workspace)
 
 ---

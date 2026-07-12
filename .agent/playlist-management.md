@@ -3,13 +3,13 @@
 This document explains the custom parsing rules for M3U and JSON playlists, IndexedDB cache managers, and API routes.
 
 ## 📂 File Map
-* **Playlist State Hook**: [app/hooks/useIPTVPlaylists.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/hooks/useIPTVPlaylists.ts)
-* **Playlist Parsers**: [app/lib/playlistParser.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/lib/playlistParser.ts)
+* **Playlist State Hook**: [app/hooks/useIPTVPlaylists.ts](../app/hooks/useIPTVPlaylists.ts)
+* **Playlist Parsers**: [app/lib/playlistParser.ts](../app/lib/playlistParser.ts)
 * **API Endpoints**:
-  - [app/api/iptv/playlists/available/route.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/api/iptv/playlists/available/route.ts)
-  - [app/api/iptv/channels/route.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/api/iptv/channels/route.ts)
-  - [app/api/iptv/channels/hash/route.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/api/iptv/channels/hash/route.ts)
-  - [app/api/iptv/channels/helper.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/api/iptv/channels/helper.ts)
+  - [app/api/iptv/playlists/available/route.ts](../app/api/iptv/playlists/available/route.ts)
+  - [app/api/iptv/channels/route.ts](../app/api/iptv/channels/route.ts)
+  - [app/api/iptv/channels/hash/route.ts](../app/api/iptv/channels/hash/route.ts)
+  - [app/api/iptv/channels/helper.ts](../app/api/iptv/channels/helper.ts)
 
 ---
 

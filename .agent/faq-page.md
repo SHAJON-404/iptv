@@ -3,7 +3,7 @@
 This document explains the structural layout and content categories of the Frequently Asked Questions (FAQ) page.
 
 ## 📂 File Map
-* **FAQ Page Component**: [app/faq/page.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/faq/page.tsx)
+* **FAQ Page Component**: [app/faq/page.tsx](../app/faq/page.tsx)
 
 ---
 

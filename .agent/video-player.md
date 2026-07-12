@@ -3,14 +3,14 @@
 This document explains the entry page (`/`), the main `IPTVPlayer` container, and the modular video playback UI controls.
 
 ## 📂 File Map
-* **Page Entry**: [app/page.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/page.tsx)
-* **Main Container**: [app/components/IPTVPlayer.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/IPTVPlayer.tsx)
-* **Custom Video View**: [app/components/player/VideoPlayerView.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/player/VideoPlayerView.tsx)
+* **Page Entry**: [app/page.tsx](../app/page.tsx)
+* **Main Container**: [app/components/IPTVPlayer.tsx](../app/components/IPTVPlayer.tsx)
+* **Custom Video View**: [app/components/player/VideoPlayerView.tsx](../app/components/player/VideoPlayerView.tsx)
 * **Sub-components**: 
-  - [app/components/player/ChannelListView.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/player/ChannelListView.tsx)
-  - [app/components/player/ChannelStats.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/player/ChannelStats.tsx)
-  - [app/components/player/TrendingChannels.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/player/TrendingChannels.tsx)
-  - [app/components/player/PlaylistSidebarView.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/player/PlaylistSidebarView.tsx)
+  - [app/components/player/ChannelListView.tsx](../app/components/player/ChannelListView.tsx)
+  - [app/components/player/ChannelStats.tsx](../app/components/player/ChannelStats.tsx)
+  - [app/components/player/TrendingChannels.tsx](../app/components/player/TrendingChannels.tsx)
+  - [app/components/player/PlaylistSidebarView.tsx](../app/components/player/PlaylistSidebarView.tsx)
 
 ---
 

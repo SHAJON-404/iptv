@@ -7,18 +7,18 @@ Welcome to the **IPTV** project workspace. This document serves as the central d
 ## 🗺️ Documentation Directory Hub
 
 ### Page Implementation Manuals
-* 📺 **[Video Player (Home Route)](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/video-player.md)**: Main player page layout, component structure, custom overlay controls, and settings menus.
-* ℹ️ **[About Route Guide](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/about-page.md)**: Contact channels, profile pages, and hybrid update checking logic (Electron API vs public GitHub fetch).
-* 🏆 **[Fixtures & Bracket](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/fixtures-page.md)**: FIFA World Cup 2026 scheduling, tournament grids, connect paths, and BST timezone conversion calculations.
-* 💬 **[FAQ Accordions](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/faq-page.md)**: Interactive accordion animation behaviors, user guides, and copyright/DMCA disclaimers.
-* 📁 **[FTP Portals Mapping](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/ftp-page.md)**: High-speed BDIX local FTP servers mapping, link metadata, and badge stylings.
+* 📺 **[Video Player (Home Route)](video-player.md)**: Main player page layout, component structure, custom overlay controls, and settings menus.
+* ℹ️ **[About Route Guide](about-page.md)**: Contact channels, profile pages, and hybrid update checking logic (Electron API vs public GitHub fetch).
+* 🏆 **[Fixtures & Bracket](fixtures-page.md)**: FIFA World Cup 2026 scheduling, tournament grids, connect paths, and BST timezone conversion calculations.
+* 💬 **[FAQ Accordions](faq-page.md)**: Interactive accordion animation behaviors, user guides, and copyright/DMCA disclaimers.
+* 📁 **[FTP Portals Mapping](ftp-page.md)**: High-speed BDIX local FTP servers mapping, link metadata, and badge stylings.
 
 ### Core Architectural Subsystems
-* 💻 **[Electron Integration](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/electron-app.md)**: Main/preload scripts, socket-based dynamic port bindings, writable mirrored paths for AppImage, and sleep blocker handlers.
-* ⚙️ **[Streaming Engines](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/video-engines.md)**: Integrations for HLS.js, Shaka Player, and mpegts.js, dynamic quality level scanning, and the core hook state.
-* 🗄️ **[Playlist Parsing & Caching](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/playlist-management.md)**: Custom M3U options parser, client IndexedDB cache validation, and server-side cache hashing rules.
-* 🛡️ **[Proxy Routing & Stream Guardian](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/stream-guardian-and-proxy.md)**: Anti-SSRF domain validation, legacy TLS fallback configuration, manifest manipulation, and stream health diagnostics.
-* 📈 **[Viewer Session Heartbeats](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/viewer-tracking-api.md)**: Client UUID generation, visibility states tracking, and active session counters integration.
+* 💻 **[Electron Integration](electron-app.md)**: Main/preload scripts, socket-based dynamic port bindings, writable mirrored paths for AppImage, and sleep blocker handlers.
+* ⚙️ **[Streaming Engines](video-engines.md)**: Integrations for HLS.js, Shaka Player, and mpegts.js, dynamic quality level scanning, and the core hook state.
+* 🗄️ **[Playlist Parsing & Caching](playlist-management.md)**: Custom M3U options parser, client IndexedDB cache validation, and server-side cache hashing rules.
+* 🛡️ **[Proxy Routing & Stream Guardian](stream-guardian-and-proxy.md)**: Anti-SSRF domain validation, legacy TLS fallback configuration, manifest manipulation, and stream health diagnostics.
+* 📈 **[Viewer Session Heartbeats](viewer-tracking-api.md)**: Client UUID generation, visibility states tracking, and active session counters integration.
 
 ---
 

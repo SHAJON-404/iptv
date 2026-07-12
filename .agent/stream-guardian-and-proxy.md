@@ -3,8 +3,8 @@
 This document explains the security, connection pooling, manifest rewriting rules, and client-side stream guardian logic.
 
 ## 📂 File Map
-* **Client Hook**: [app/hooks/useStreamGuardian.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/hooks/useStreamGuardian.ts)
-* **Proxy Router**: [app/api/iptv/proxy/route.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/api/iptv/proxy/route.ts)
+* **Client Hook**: [app/hooks/useStreamGuardian.ts](../app/hooks/useStreamGuardian.ts)
+* **Proxy Router**: [app/api/iptv/proxy/route.ts](../app/api/iptv/proxy/route.ts)
 
 ---
 

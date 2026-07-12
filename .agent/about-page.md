@@ -3,8 +3,8 @@
 This document explains the structural details of the `/about` route and the interactive updates checker.
 
 ## 📂 File Map
-* **Page Route**: [app/about/page.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/about/page.tsx)
-* **Main View**: [app/components/AboutView.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/components/AboutView.tsx)
+* **Page Route**: [app/about/page.tsx](../app/about/page.tsx)
+* **Main View**: [app/components/AboutView.tsx](../app/components/AboutView.tsx)
 
 ---
 

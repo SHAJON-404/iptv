@@ -3,9 +3,9 @@
 This document outlines the Electron main process lifecycle, preload context bridge, and specific optimizations for desktop packaging.
 
 ## 📂 File Map
-* **Main Process**: [electron/main.js](file:///d:/GitHub-Projects/project-iptv/iptv/electron/main.js)
-* **Preload Script**: [electron/preload.js](file:///d:/GitHub-Projects/project-iptv/iptv/electron/preload.js)
-* **Linux Postinstall**: [scripts/linux-postinstall.sh](file:///d:/GitHub-Projects/project-iptv/iptv/scripts/linux-postinstall.sh)
+* **Main Process**: [electron/main.js](../electron/main.js)
+* **Preload Script**: [electron/preload.js](../electron/preload.js)
+* **Linux Postinstall**: [scripts/linux-postinstall.sh](../scripts/linux-postinstall.sh)
 
 ---
 

@@ -3,7 +3,7 @@
 This guide details the integration of the HLS.js, Shaka Player, and video.js/MPEG-TS engines within the custom `useVideoPlayer.ts` hook.
 
 ## 📂 File Map
-* **Main Hook**: [app/hooks/useVideoPlayer.ts](file:///d:/GitHub-Projects/project-iptv/iptv/app/hooks/useVideoPlayer.ts)
+* **Main Hook**: [app/hooks/useVideoPlayer.ts](../app/hooks/useVideoPlayer.ts)
 
 ---
 

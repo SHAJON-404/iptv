@@ -3,7 +3,7 @@
 This document explains the BDIX FTP Servers list layout and statistics panel configuration.
 
 ## 📂 File Map
-* **FTP Page Component**: [app/ftp/page.tsx](file:///d:/GitHub-Projects/project-iptv/iptv/app/ftp/page.tsx)
+* **FTP Page Component**: [app/ftp/page.tsx](../app/ftp/page.tsx)
 
 ---
 
