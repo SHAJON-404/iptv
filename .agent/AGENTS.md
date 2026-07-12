@@ -1,6 +1,26 @@
-# AI Agent Instructions for IPTV Project
+# AI Agent & Developer Hub for IPTV Project
 
-Welcome to the **IPTV** project. This document provides essential context, architectural guidelines, and coding standards for AI agents (like GitHub Copilot, Cursor, Windsurf, or Gemini) operating within this repository.
+Welcome to the **IPTV** project workspace. This document serves as the central directory mapping to topic-specific manuals, followed by key development rules and workflow standards.
+
+---
+
+## 🗺️ Documentation Directory Hub
+
+### Page Implementation Manuals
+* 📺 **[Video Player (Home Route)](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/video-player.md)**: Main player page layout, component structure, custom overlay controls, and settings menus.
+* ℹ️ **[About Route Guide](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/about-page.md)**: Contact channels, profile pages, and hybrid update checking logic (Electron API vs public GitHub fetch).
+* 🏆 **[Fixtures & Bracket](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/fixtures-page.md)**: FIFA World Cup 2026 scheduling, tournament grids, connect paths, and BST timezone conversion calculations.
+* 💬 **[FAQ Accordions](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/faq-page.md)**: Interactive accordion animation behaviors, user guides, and copyright/DMCA disclaimers.
+* 📁 **[FTP Portals Mapping](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/ftp-page.md)**: High-speed BDIX local FTP servers mapping, link metadata, and badge stylings.
+
+### Core Architectural Subsystems
+* 💻 **[Electron Integration](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/electron-app.md)**: Main/preload scripts, socket-based dynamic port bindings, writable mirrored paths for AppImage, and sleep blocker handlers.
+* ⚙️ **[Streaming Engines](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/video-engines.md)**: Integrations for HLS.js, Shaka Player, and mpegts.js, dynamic quality level scanning, and the core hook state.
+* 🗄️ **[Playlist Parsing & Caching](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/playlist-management.md)**: Custom M3U options parser, client IndexedDB cache validation, and server-side cache hashing rules.
+* 🛡️ **[Proxy Routing & Stream Guardian](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/stream-guardian-and-proxy.md)**: Anti-SSRF domain validation, legacy TLS fallback configuration, manifest manipulation, and stream health diagnostics.
+* 📈 **[Viewer Session Heartbeats](file:///d:/GitHub-Projects/project-iptv/iptv/.agent/viewer-tracking-api.md)**: Client UUID generation, visibility states tracking, and active session counters integration.
+
+---
 
 ## 📌 Project Overview
 This project is a modern, responsive, and high-performance IPTV web player built with Next.js. It supports **HLS (.m3u8)**, **DASH (.mpd)**, and legacy **MPEG-TS (.ts)** live streams. It parses custom `.m3u` and `.json` playlists locally, and features a sleek, premium, glassmorphism-inspired UI with YouTube-like video controls and quality selection.
@@ -17,19 +37,6 @@ This project is a modern, responsive, and high-performance IPTV web player built
 - **HTTP Client:** Undici (for secure proxy streaming)
 - **Animations:** `motion` (Framer Motion)
 - **Icons:** `lucide-react`, `react-icons`
-
-## 📂 Project Structure
-- `app/` - Next.js App Router root.
-  - `api/` - Backend API routes (e.g., proxying requests, viewers tracking, setting custom configuration).
-  - `components/` - Reusable UI components.
-    - `player/` - Video player sub-components (`VideoPlayerView`, `ChannelListView`, etc.).
-  - `hooks/` - Custom React hooks (`useVideoPlayer`, `useIPTVPlaylists`).
-  - `data/` - Static JSON files (e.g., `fifa.json`).
-- `electron/` - Electron desktop app wrappers.
-  - `main.js` - Main process launcher (manages Next.js server process and windows).
-  - `preload.js` - Context bridge preload script.
-- `public/` - Static assets.
-- `scripts/` - Custom build scripts (e.g., `copy-next-assets.js` for copying Next.js static files).
 
 ## 📜 Coding Standards & Rules
 
@@ -61,6 +68,7 @@ This project is a modern, responsive, and high-performance IPTV web player built
 - **Dynamic Default Playlists & Hashing**: The playlist cards and channels lists are dynamic. The server retrieves playlist indexes from `PLAYLIST_DOMAIN` (from environment variables) at `/api/iptv/channels` and `/api/iptv/channels/hash`. The server checks, computes SHA-256 hashes of channel JSONs, and caches them in memory.
 - **Client-Side Hashing & Caching**: The client uses IndexedDB cache (`iptv-cache` database) to load playlist structures and channels instantly. It checks server hashes (`/api/iptv/channels/hash`) in the background on mount and periodically (every 15 minutes), only updating cache and state if a change is detected.
 - Ensure proxy routes (`Undici`) maintain anti-SSRF protections and handle URL/query parameter propagation correctly.
+
 ### 6. Electron & Desktop Application Context
 - **Standalone server**: In production, Electron spawns the built Next.js server locally (`.next/standalone/server.js`) on a dynamic free port.
 - **Environment variables**: Config settings are read from a `.env` file located in the user's AppData directory or next to the executable.
