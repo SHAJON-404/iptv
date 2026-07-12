@@ -13,6 +13,11 @@ let mainWindow = null;
 let serverUrl = 'http://127.0.0.1:3000';
 let sleepBlockerId = null;
 
+// Fix Linux specific connection issues and root password prompts
+app.commandLine.appendSwitch('no-sandbox');
+app.commandLine.appendSwitch('proxy-bypass-list', '127.0.0.1,localhost,::1');
+app.commandLine.appendSwitch('disable-dev-shm-usage');
+
 // Enable hardware-accelerated video decoding and GPU compositing
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('enable-gpu-rasterization');
@@ -37,38 +42,6 @@ app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
 // Disable audio sandbox for lower-latency audio playback
 app.commandLine.appendSwitch('disable-features', 'AudioServiceSandbox');
 
-// Register custom protocol client
-if (process.defaultApp) {
-  if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient('iptv-app', process.execPath, [path.resolve(process.argv[1])]);
-  }
-} else {
-  app.setAsDefaultProtocolClient('iptv-app');
-}
-
-// Handle protocol URL to set cookies in Electron session
-async function handleAuthProtocol(urlStr) {
-  try {
-    const parsedUrl = new URL(urlStr);
-    const token = parsedUrl.searchParams.get('token');
-    if (token && mainWindow) {
-      const cookie = {
-        url: serverUrl,
-        name: 'iptv_session',
-        value: token,
-        expirationDate: Math.floor(Date.now() / 1000) + 10 * 24 * 60 * 60, // 10 days
-        sameSite: 'no_restriction',
-        httpOnly: true
-      };
-      await mainWindow.webContents.session.cookies.set(cookie);
-      mainWindow.loadURL(serverUrl);
-      console.log('Successfully handled auth protocol and set session cookie.');
-    }
-  } catch (err) {
-    console.error('Failed to handle auth protocol:', err);
-  }
-}
-
 // Request single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -79,11 +52,6 @@ if (!gotTheLock) {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
-    }
-    // Protocol handler for Windows/Linux
-    const url = commandLine.find(arg => arg.startsWith('iptv-app://'));
-    if (url) {
-      handleAuthProtocol(url);
     }
   });
 }
@@ -142,7 +110,7 @@ function loadEnvironment() {
     const result = dotenv.config();
     logMain(`Fallback dotenv.config result: ${result.error ? `Error: ${result.error.message}` : 'Success'}`);
   }
-  
+
   return activeEnvPath;
 }
 
@@ -152,7 +120,7 @@ function getFreePort() {
     const server = net.createServer();
     server.unref();
     server.on('error', reject);
-    server.listen(0, () => {
+    server.listen(0, '127.0.0.1', () => {
       const { port } = server.address();
       server.close(() => {
         resolve(port);
@@ -201,9 +169,10 @@ function createMainWindow(url) {
     },
   });
 
-  // Remove default menu bar in production
-  if (!isDev) {
-    mainWindow.removeMenu();
+  // Open DevTools if we are in development mode AND ENABLE_DEVTOOLS is set to true/True
+  const enableDevTools = process.env.ENABLE_DEVTOOLS && process.env.ENABLE_DEVTOOLS.toLowerCase() === 'true';
+  if (isDev && enableDevTools) {
+    mainWindow.webContents.openDevTools();
   }
 
   mainWindow.loadURL(url);
@@ -214,31 +183,76 @@ function createMainWindow(url) {
 
   // Handle external link clicks (open in default browser)
   mainWindow.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
-    // If it's the OAuth flow callback, Google login page, or local URL, allow opening inside the app
-    if (
-      targetUrl.startsWith('http://localhost') || 
-      targetUrl.startsWith('http://127.0.0.1') || 
-      targetUrl.startsWith('https://accounts.google.com') ||
-      targetUrl.includes('shajon.dev') ||
-      targetUrl.includes('/__/oauth/')
-    ) {
-      return { action: 'allow' };
-    }
-    // Otherwise open in native default browser
+    // Open all new windows/external links in the default OS browser
     shell.openExternal(targetUrl);
     return { action: 'deny' };
   });
-
-  // Intercept Google OAuth initialization and open in default browser
-  mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
-    if (navigationUrl.includes('/api/auth/google')) {
-      event.preventDefault();
-      shell.openExternal(navigationUrl);
-    }
-  });
 }
 
-// 5. Start the Next.js server and initialize the app
+// 5. Prepare a writable server directory for read-only environments (AppImage, snap, etc.)
+// Next.js standalone server needs a writable .next/cache directory, but AppImage
+// mounts as a read-only squashfs filesystem. This function creates a writable mirror
+// in userData with symlinks to the original assets.
+function prepareWritableServer(originalServerScript) {
+  const serverDir = path.dirname(originalServerScript);
+  const writableDir = path.join(app.getPath('userData'), 'next-server');
+
+  // Check if the source directory is writable
+  try {
+    const testFile = path.join(serverDir, '.write-test');
+    fs.writeFileSync(testFile, '');
+    fs.unlinkSync(testFile);
+    // Writable — no mirror needed (installed via .deb/.rpm or local dev)
+    return originalServerScript;
+  } catch {
+    // Read-only filesystem — need writable mirror
+    logMain('Detected read-only filesystem, setting up writable server mirror...');
+  }
+
+  // Clean and recreate writable directory each launch for freshness
+  try { fs.rmSync(writableDir, { recursive: true, force: true }); } catch { /* ignore */ }
+  fs.mkdirSync(writableDir, { recursive: true });
+
+  // Copy server.js so that __dirname resolves to the writable directory
+  fs.copyFileSync(originalServerScript, path.join(writableDir, 'server.js'));
+
+  // Symlink all other top-level items from the read-only standalone directory
+  const items = fs.readdirSync(serverDir);
+  for (const item of items) {
+    if (item === 'server.js' || item === '.write-test') continue;
+    const srcPath = path.join(serverDir, item);
+    const dstPath = path.join(writableDir, item);
+
+    if (item === '.next') {
+      // Special handling: symlink everything inside .next EXCEPT 'cache'
+      fs.mkdirSync(dstPath, { recursive: true });
+      const nextItems = fs.readdirSync(srcPath);
+      for (const nextItem of nextItems) {
+        if (nextItem === 'cache') continue;
+        try {
+          fs.symlinkSync(path.join(srcPath, nextItem), path.join(dstPath, nextItem));
+        } catch (e) {
+          logMain(`Warning: Could not symlink .next/${nextItem}: ${e.message}`);
+        }
+      }
+      // Create writable cache directories
+      fs.mkdirSync(path.join(dstPath, 'cache', 'images'), { recursive: true });
+      fs.mkdirSync(path.join(dstPath, 'cache', 'fetch-cache'), { recursive: true });
+    } else {
+      // Symlink everything else (node_modules, package.json, public, etc.)
+      try {
+        fs.symlinkSync(srcPath, dstPath);
+      } catch (e) {
+        logMain(`Warning: Could not symlink ${item}: ${e.message}`);
+      }
+    }
+  }
+
+  logMain(`Writable server mirror ready at: ${writableDir}`);
+  return path.join(writableDir, 'server.js');
+}
+
+// 6. Start the Next.js server and initialize the app
 async function initializeApp() {
   loadEnvironment();
 
@@ -266,10 +280,13 @@ async function initializeApp() {
         throw new Error(`Standalone server.js not found at: ${serverScript}`);
       }
 
+      // Prepare writable server directory (handles AppImage read-only fs)
+      serverScript = prepareWritableServer(serverScript);
+
       // Setup logging to a file in userData
       const logDir = app.getPath('userData');
       const logFile = path.join(logDir, 'server.log');
-      
+
       try {
         if (!fs.existsSync(logDir)) {
           fs.mkdirSync(logDir, { recursive: true });
@@ -277,15 +294,17 @@ async function initializeApp() {
       } catch (e) {
         console.error('Failed to create log directory:', e);
       }
-      
+
       const logStream = fs.createWriteStream(logFile, { flags: 'a' });
       const timestamp = new Date().toISOString();
       logStream.write(`\n--- Server starting at ${timestamp} on port ${serverPort} ---\n`);
 
       // Start the server process
       serverProcess = child_process.fork(serverScript, [], {
+        cwd: path.dirname(serverScript),
         env: {
           ...process.env,
+          ELECTRON_RUN_AS_NODE: '1',
           PORT: serverPort.toString(),
           HOSTNAME: '127.0.0.1',
           NODE_ENV: 'production',
@@ -303,7 +322,22 @@ async function initializeApp() {
         logStream.write(data);
         console.error(`[NextServer Error]: ${data.toString().trim()}`);
       });
-      
+
+      // Track server process crashes
+      serverProcess.on('exit', (code, signal) => {
+        const msg = `[NextServer EXITED] code=${code} signal=${signal}`;
+        console.error(msg);
+        logStream.write(msg + '\n');
+        logMain(msg);
+      });
+
+      serverProcess.on('error', (err) => {
+        const msg = `[NextServer ERROR] ${err.message}`;
+        console.error(msg);
+        logStream.write(msg + '\n');
+        logMain(msg);
+      });
+
       console.log('Waiting for Next.js server to start...');
       await pollServer(serverUrl);
       console.log('Next.js server is ready.');
@@ -332,12 +366,6 @@ async function initializeApp() {
   }
 
   createMainWindow(serverUrl);
-
-  // Check if launched via deep link
-  const url = process.argv.find(arg => arg.startsWith('iptv-app://'));
-  if (url) {
-    handleAuthProtocol(url);
-  }
 }
 
 // Electron lifecycle events
@@ -376,7 +404,7 @@ ipcMain.handle('get-system-memory', () => {
 ipcMain.handle('check-for-updates', async () => {
   try {
     const currentVersion = app.getVersion();
-    
+
     return new Promise((resolve) => {
       const options = {
         hostname: 'api.github.com',
@@ -393,9 +421,9 @@ ipcMain.handle('check-for-updates', async () => {
         res.on('end', () => {
           try {
             if (res.statusCode !== 200) {
-              resolve({ 
-                success: false, 
-                error: `GitHub API returned HTTP status ${res.statusCode}` 
+              resolve({
+                success: false,
+                error: `GitHub API returned HTTP status ${res.statusCode}`
               });
               return;
             }
@@ -412,7 +440,7 @@ ipcMain.handle('check-for-updates', async () => {
 
             const currParsed = parseVersion(currentVersion);
             const lateParsed = parseVersion(latestVersion);
-            
+
             let updateAvailable = false;
             for (let i = 0; i < Math.max(currParsed.length, lateParsed.length); i++) {
               const c = currParsed[i] || 0;

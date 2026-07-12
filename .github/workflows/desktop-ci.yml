@@ -37,6 +37,9 @@ jobs:
           ALLOWED_DEV_ORIGINS: "live.shajon.dev,192.168.0.57,192.168.0.179,127.0.0.1"
           NEXT_PUBLIC_SITE_URL: "https://tv.shajon.dev"
           PLAYLIST_DOMAIN: "iamshajon.com"
+          ENABLE_DEVTOOLS: "false"
+          GENERATE_SOURCEMAP: "false"
+          NODE_ENV: "production"
 
       - name: Upload Windows Artifacts
         if: matrix.platform == 'windows'

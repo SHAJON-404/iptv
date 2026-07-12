@@ -38,6 +38,27 @@ try {
     fs.unlinkSync(standaloneEnv);
   }
 
+  // Recursively remove all .map files to keep the production bundle lightweight
+  console.log('Cleaning up unwanted source maps (.map files) from standalone...');
+  function removeSourceMaps(dir) {
+    if (!fs.existsSync(dir)) return;
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        removeSourceMaps(fullPath);
+      } else if (item.endsWith('.map')) {
+        try {
+          fs.unlinkSync(fullPath);
+        } catch (err) {
+          console.error(`Failed to delete source map ${fullPath}: ${err.message}`);
+        }
+      }
+    }
+  }
+  removeSourceMaps(standaloneDir);
+
   console.log('Next.js standalone assets copied successfully!');
 } catch (err) {
   console.error('Error copying Next.js standalone assets:', err);
