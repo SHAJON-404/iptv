@@ -1,7 +1,7 @@
 {
   "name": "iptv",
   "desktopName": "iptv.desktop",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "A modern, high-performance, and premium web-based IPTV player built with Next.js 16, React 19, and Tailwind CSS v4.",
   "author": "S. SHAJON <shahmakhdumshajon@gmail.com>",
   "private": true,
@@ -22,16 +22,16 @@
     "@types/video.js": "^7.3.58",
     "dotenv": "^17.4.2",
     "hls.js": "^1.6.16",
-    "lucide-react": "^1.23.0",
+    "lucide-react": "^1.24.0",
     "motion": "^12.42.2",
     "mpegts.js": "^1.8.0",
     "next": "^16.2.10",
-    "postcss": "^8.5.16",
+    "postcss": "^8.5.17",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-icons": "^5.7.0",
     "react-world-flags": "^1.6.0",
-    "shaka-player": "^5.1.13",
+    "shaka-player": "^5.2.0",
     "undici": "^8.7.0",
     "video.js": "^8.23.9"
   },
@@ -41,13 +41,13 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-world-flags": "^1.6.0",
-    "electron": "^43.0.0",
+    "electron": "^43.1.0",
     "electron-builder": "^26.15.3",
-    "eslint": "^10",
+    "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "postcss-preset-env": "^11.3.2",
     "tailwindcss": "^4",
-    "typescript": "^6"
+    "typescript": "^5"
   },
   "browserslist": [
     "Chrome >= 80",
@@ -56,22 +56,33 @@
     "Edge >= 80"
   ],
   "overrides": {
-    "postcss": "^8.5.16"
+    "postcss": "^8.5.17"
   },
   "allowScripts": {
     "sharp@0.34.5": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "electron-winstaller@5.4.0": true
   },
   "build": {
     "appId": "com.shajon.iptv",
+    "toolsets": {
+      "appimage": "1.0.3"
+    },
     "productName": "IPTV Player",
-    "copyright": "Copyright © 2026 Shajon",
+    "copyright": "Copyright © 2026 S. SHAJON",
     "directories": {
       "output": "dist"
     },
     "files": [
       "electron/**/*",
-      ".next/standalone/**/*"
+      ".next/standalone/**/*",
+      "!**/*.map",
+      "!**/*.md",
+      "!**/*.ts",
+      "!**/*.tsx",
+      "!**/tsconfig.json",
+      "!**/.git*",
+      "!**/.env*"
     ],
     "asar": true,
     "asarUnpack": [
@@ -99,7 +110,43 @@
         "rpm"
       ],
       "category": "Video",
-      "icon": "public/logo.png"
+      "icon": "public/logo.png",
+      "executableArgs": [
+        "--no-sandbox"
+      ]
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}.${ext}"
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0 | libgtk-3-0t64",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0t64 | libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
+        "libgbm1"
+      ],
+      "afterInstall": "scripts/linux-postinstall.sh"
+    },
+    "rpm": {
+      "depends": [
+        "gtk3",
+        "libnotify",
+        "nss",
+        "libXScrnSaver",
+        "libXtst",
+        "xdg-utils",
+        "at-spi2-core",
+        "libuuid",
+        "libsecret",
+        "mesa-libgbm"
+      ],
+      "afterInstall": "scripts/linux-postinstall.sh"
     }
   }
 }
