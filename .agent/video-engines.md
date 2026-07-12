@@ -25,9 +25,12 @@ The player selects the appropriate engine based on the channel URL extension and
 * Primarily handles **DASH (.mpd)** streams and streams requiring DRM key decryption configurations.
 * Extracts variant tracks (`shakaPlayer.getVariantTracks()`) for quality control.
 
-### C. video.js & MPEG-TS (`mpegts.js`)
+### C. mpegts.js (`mpegts.js`)
 * Handles legacy **MPEG-TS (.ts)** live channels.
 * Provides quality and buffer setup on top of basic native video nodes.
+
+### D. Video.js (`video.js`)
+* Serves as an alternate HTML5 playback engine wrapper and provides additional interface plugins or fallbacks.
 
 ---
 

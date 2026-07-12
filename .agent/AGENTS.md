@@ -34,6 +34,7 @@ This project is a modern, responsive, and high-performance IPTV web player built
   - `hls.js` (for HTTP Live Streaming)
   - `shaka-player` (for DASH and DRM-encrypted streams)
   - `mpegts.js` (for legacy MPEG-TS streams)
+  - `video.js` (for standard video playback wrappers and fallback streams)
 - **HTTP Client:** Undici (for secure proxy streaming)
 - **Animations:** `motion` (Framer Motion)
 - **Icons:** `lucide-react`, `react-icons`
