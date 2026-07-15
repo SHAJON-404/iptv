@@ -81,8 +81,8 @@ export default function Header() {
               <Link
                 href="/fixtures"
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${pathname === "/fixtures"
-                    ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
-                    : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+                  ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                  : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
                   } font-bold text-xs sm:text-sm`}
               >
                 <Trophy size={15} className="text-yellow-500 animate-pulse" />
@@ -92,8 +92,8 @@ export default function Header() {
               <Link
                 href="/faq"
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${isFaqPage
-                    ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
-                    : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+                  ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                  : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
                   } font-bold text-xs sm:text-sm`}
               >
                 <HelpCircle size={15} className="text-primary" />
@@ -103,8 +103,8 @@ export default function Header() {
               <Link
                 href="/about"
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${isAboutPage
-                    ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
-                    : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+                  ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                  : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
                   } font-bold text-xs sm:text-sm`}
               >
                 <Info size={15} className="text-primary" />
@@ -114,8 +114,8 @@ export default function Header() {
               <Link
                 href="/ftp"
                 className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 active:scale-95 cursor-pointer ${isFtpPage
-                    ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
-                    : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
+                  ? "border-primary/50 bg-primary/10 text-primary animate-pulse"
+                  : "border-white/10 hover:border-primary/50 bg-white/5 hover:bg-primary/10 text-white"
                   } font-bold text-xs sm:text-sm`}
               >
                 <Server size={15} className="text-primary" />
@@ -191,7 +191,7 @@ export default function Header() {
                           Telegram
                         </a>
                         <a
-                          href="https://discord.gg/TtWrw8W9B"
+                          href="https://discord.gg/NQjksbt3NN"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/20 text-[#5865F2] text-[10px] font-bold"
@@ -211,8 +211,8 @@ export default function Header() {
                   href="/fixtures"
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-bold transition-all ${pathname === "/fixtures"
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-white/5 bg-white/[0.02] text-white"
+                    ? "border-primary/50 bg-primary/10 text-primary"
+                    : "border-white/5 bg-white/[0.02] text-white"
                     }`}
                 >
                   <span className="flex items-center gap-2">
@@ -226,8 +226,8 @@ export default function Header() {
                   href="/faq"
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${isFaqPage
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-white/5 bg-white/[0.02] text-white"
+                    ? "border-primary/50 bg-primary/10 text-primary"
+                    : "border-white/5 bg-white/[0.02] text-white"
                     }`}
                 >
                   <HelpCircle size={16} className="text-primary" />
@@ -238,8 +238,8 @@ export default function Header() {
                   href="/about"
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${isAboutPage
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-white/5 bg-white/[0.02] text-white"
+                    ? "border-primary/50 bg-primary/10 text-primary"
+                    : "border-white/5 bg-white/[0.02] text-white"
                     }`}
                 >
                   <Info size={16} className="text-primary" />
@@ -250,8 +250,8 @@ export default function Header() {
                   href="/ftp"
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-bold transition-all ${isFtpPage
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-white/5 bg-white/[0.02] text-white"
+                    ? "border-primary/50 bg-primary/10 text-primary"
+                    : "border-white/5 bg-white/[0.02] text-white"
                     }`}
                 >
                   <Server size={16} className="text-primary" />

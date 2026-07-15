@@ -433,7 +433,7 @@ export default function IPTVPlayer() {
                     <span className="truncate">Telegram</span>
                   </a>
                   <a
-                    href="https://discord.gg/TtWrw8W9B"
+                    href="https://discord.gg/NQjksbt3NN"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex justify-center items-center gap-1.5 py-2 rounded-xl bg-[#5865F2]/10 hover:bg-[#5865F2]/20 border border-[#5865F2]/20 hover:border-[#5865F2]/40 text-[#5865F2] text-xs font-bold transition-all duration-200"
