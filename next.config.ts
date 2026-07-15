@@ -4,14 +4,18 @@ const customOrigins = process.env.ALLOWED_DEV_ORIGINS
   ? process.env.ALLOWED_DEV_ORIGINS.split(",").map((item) => item.trim())
   : [];
 
+const isExport = process.env.NEXT_STANDALONE_EXPORT === "true";
+
 const nextConfig: NextConfig = {
   env: {
     PLAYLIST_DOMAIN: process.env.PLAYLIST_DOMAIN || "",
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "",
   },
-  output: "standalone",
+  output: isExport ? "export" : "standalone",
+  trailingSlash: isExport ? true : undefined,
   allowedDevOrigins: customOrigins,
   images: {
+    unoptimized: isExport ? true : undefined,
     remotePatterns: [
       {
         protocol: "https",
@@ -63,43 +67,45 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/__/oauth/google/callback',
-        destination: '/api/auth/callback/google',
-      },
-      {
-        source: '/__/oauth/google/callback/',
-        destination: '/api/auth/callback/google',
-      },
-    ];
-  },
-  async headers() {
-    return [
-      {
-        source: "/:path*",
-        headers: [
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-        ],
-      },
-    ];
-  },
+  ...(isExport ? {} : {
+    async rewrites() {
+      return [
+        {
+          source: '/__/oauth/google/callback',
+          destination: '/api/auth/callback/google',
+        },
+        {
+          source: '/__/oauth/google/callback/',
+          destination: '/api/auth/callback/google',
+        },
+      ];
+    },
+    async headers() {
+      return [
+        {
+          source: "/:path*",
+          headers: [
+            {
+              key: "X-Frame-Options",
+              value: "SAMEORIGIN",
+            },
+            {
+              key: "X-Content-Type-Options",
+              value: "nosniff",
+            },
+            {
+              key: "Referrer-Policy",
+              value: "strict-origin-when-cross-origin",
+            },
+            {
+              key: "X-XSS-Protection",
+              value: "1; mode=block",
+            },
+          ],
+        },
+      ];
+    },
+  })
 };
 
 export default nextConfig;
