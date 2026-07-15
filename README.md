@@ -123,6 +123,36 @@ The desktop application runs the Next.js production server locally in a backgrou
 #### Configuration Setup
 When launched, the desktop app searches for a configuration `.env` file in the user's home folder config path (`%APPDATA%/iptv` on Windows or `~/.config/iptv` on Linux). If it doesn't exist, a default template is generated.
 
+### 📱 Mobile Application (Android)
+
+This repository includes first-class support for compiling the player into a high-performance native Android application using Capacitor. 
+
+To support advanced proxy-routing, CORS-bypassing, and dynamic playlist handling directly on-device without needing a companion PC or ADB loopback tunnels:
+- The Android app starts a native background Java HTTP daemon on loopback `127.0.0.1:3000`.
+- The Web View automatically resolves API and proxy calls dynamically to the device's native local daemon.
+
+#### Local Development & Build Commands
+- **Prepare and Sync static Next.js assets to Capacitor:**
+  ```bash
+  npm run cap:sync
+  ```
+- **Compile Android debug APK (`android/app/build/outputs/apk/debug/app-debug.apk`):**
+  ```bash
+  npm run android:build-debug
+  ```
+- **Compile Android production release APK:**
+  ```bash
+  npm run android:build-release
+  ```
+- **Open Android Studio to manage native build configurations:**
+  ```bash
+  npm run cap:open-android
+  ```
+- **Auto-Generate Android Launcher Icons & Adaptive Brand Assets (from `public/logo.png`):**
+  ```bash
+  npx -y @capacitor/assets generate --android
+  ```
+
 
 ### Docker Deployment
 

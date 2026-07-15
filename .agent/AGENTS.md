@@ -15,6 +15,7 @@ Welcome to the **IPTV** project workspace. This document serves as the central d
 
 ### Core Architectural Subsystems
 * 💻 **[Electron Integration](electron-app.md)**: Main/preload scripts, socket-based dynamic port bindings, writable mirrored paths for AppImage, and sleep blocker handlers.
+* 📱 **[Capacitor Native Integration](capacitor-native.md)**: Native Android app lifecycle, local Java HTTP daemon server on loopback port 3000, brand asset generator, and Next.js static build workflow.
 * ⚙️ **[Streaming Engines](video-engines.md)**: Integrations for HLS.js, Shaka Player, and mpegts.js, dynamic quality level scanning, and the core hook state.
 * 🗄️ **[Playlist Parsing & Caching](playlist-management.md)**: Custom M3U options parser, client IndexedDB cache validation, and server-side cache hashing rules.
 * 🛡️ **[Proxy Routing & Stream Guardian](stream-guardian-and-proxy.md)**: Anti-SSRF domain validation, legacy TLS fallback configuration, manifest manipulation, and stream health diagnostics.
