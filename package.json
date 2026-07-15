@@ -16,9 +16,17 @@
     "electron:pack": "npm run electron:build-next && electron-builder --dir",
     "electron:dist": "npm run electron:build-next && electron-builder",
     "electron:dist-win": "npm run electron:build-next && electron-builder --win",
-    "electron:dist-linux": "npm run electron:build-next && electron-builder --linux"
+    "electron:dist-linux": "npm run electron:build-next && electron-builder --linux",
+    "build:static": "node scripts/build-static.js",
+    "cap:sync": "npm run build:static && npx cap sync",
+    "cap:open-android": "npx cap open android",
+    "android:build-debug": "npm run cap:sync && cd android && gradlew assembleDebug",
+    "android:build-release": "npm run cap:sync && cd android && gradlew assembleRelease"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
+    "@capacitor/ios": "^8.4.2",
     "@types/video.js": "^7.3.58",
     "dotenv": "^17.4.2",
     "hls.js": "^1.6.16",
@@ -36,11 +44,13 @@
     "video.js": "^8.23.9"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-world-flags": "^1.6.0",
+    "cross-env": "^10.1.0",
     "electron": "^43.1.0",
     "electron-builder": "^26.15.3",
     "eslint": "^9",
