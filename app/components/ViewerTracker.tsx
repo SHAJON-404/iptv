@@ -27,8 +27,8 @@ export default function ViewerTracker() {
 
     const sendHeartbeat = async () => {
       try {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
-        const statsUrl = siteUrl ? `${siteUrl.replace(/\/$/, "")}/api/iptv/stats` : "/api/iptv/stats";
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://tv.shajon.dev";
+        const statsUrl = `${siteUrl.replace(/\/$/, "")}/api/iptv/stats`;
 
         const playingNow = currentChannelRef.current ? {
           ...currentChannelRef.current,

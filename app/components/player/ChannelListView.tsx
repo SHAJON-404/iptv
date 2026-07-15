@@ -201,9 +201,9 @@ export const ChannelListView = React.memo(function ChannelListView({
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {visibleChannels.map((chan) => (
                 <ChannelCard
-                  key={chan.id}
+                  key={chan.id || chan.url}
                   chan={chan}
-                  isSelected={selectedChannel?.id === chan.id}
+                  isSelected={!!selectedChannel && (selectedChannel.id && chan.id ? selectedChannel.id === chan.id : selectedChannel.url === chan.url)}
                   onSelect={handleChannelSelect}
                   getInitials={getInitials}
                 />

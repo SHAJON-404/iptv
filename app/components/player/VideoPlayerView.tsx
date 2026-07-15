@@ -261,6 +261,7 @@ export const VideoPlayerView = React.memo(function VideoPlayerView({
         muted
         playsInline
         preload="auto"
+        poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         className="w-full h-full object-contain bg-black cursor-pointer"
       />
 

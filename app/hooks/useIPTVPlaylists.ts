@@ -177,7 +177,24 @@ const sortPlaylists = (list: Playlist[]): Playlist[] => {
   });
 };
 
-const getApiUrl = (path: string): string => {
+export const getApiUrl = (path: string): string => {
+  if (typeof window !== "undefined") {
+    const { hostname, port } = window.location;
+
+    // 1. If running inside Capacitor (where hostname is localhost but port is NOT 3000)
+    // We automatically connect to http://127.0.0.1:3000 on the device loopback interface
+    if (hostname === "localhost" && port !== "3000") {
+      return `http://127.0.0.1:3000${path}`;
+    }
+
+    // 2. If running on a local web browser dev server or inside the Electron app (127.0.0.1)
+    // We use relative paths so it resolves to the local running server
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return path;
+    }
+  }
+
+  // 3. Fallback for production hosting environments
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
   if (!baseUrl) return path;
   return `${baseUrl.replace(/\/$/, "")}${path}`;

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Tv, Radio, Upload, ShieldAlert, Copy, Check, Link as LinkIcon } from "lucide-react";
-import { FaGithub, FaTelegram, FaDiscord } from "react-icons/fa6";
+import { Tv, Radio, Upload, ShieldAlert } from "lucide-react";
+import { FaGithub } from "react-icons/fa6";
 
 // Hooks & Types
 import { useIPTVPlaylists, Channel } from "../hooks/useIPTVPlaylists";
@@ -18,19 +18,6 @@ import { TrendingChannels } from "./player/TrendingChannels";
 
 export default function IPTVPlayer() {
   const [retryKey, setRetryKey] = useState(0);
-  const [vlcUrl, setVlcUrl] = useState("");
-  const [copiedVlcUrl, setCopiedVlcUrl] = useState(false);
-
-  useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
-    const cleanBaseUrl = baseUrl.replace(/\/$/, "");
-    fetch(`${cleanBaseUrl}/api/settings?key=vlcLiveUrl`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.value) setVlcUrl(data.value);
-      })
-      .catch(console.error);
-  }, []);
 
   // 1. Playlists and active channels state management via hook
   const {
@@ -377,76 +364,7 @@ export default function IPTVPlayer() {
             </div>
           </div>
 
-          {/* VLC Live URL & Community Banner */}
-          {vlcUrl && (
-            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-              {/* VLC & PotPlayer URL Box */}
-              <div className="md:col-span-2 group relative glass-card border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] p-5 flex flex-row items-center gap-4 transition-all duration-300 hover:border-primary/30">
-                {/* Left Side: Icon */}
-                <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
-                  <LinkIcon className="w-5.5 h-5.5" />
-                </div>
-                {/* Right Side: Content */}
-                <div className="flex-1 flex flex-col gap-2 min-w-0">
-                  <h3 className="text-sm font-black tracking-widest text-primary text-left">Link for VLC or PotPlayer</h3>
-                  {/* URL Sub Box */}
-                  <div className="flex items-center justify-between gap-3 bg-black/40 border border-white/5 rounded-xl pl-4 pr-1 py-1 w-full shadow-inner group-hover:border-primary/20 transition-all duration-300">
-                    <span className="text-xs sm:text-sm text-zinc-300 font-mono truncate select-all flex-1 pr-2 text-left">
-                      {vlcUrl}
-                    </span>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(vlcUrl);
-                        setCopiedVlcUrl(true);
-                        setTimeout(() => setCopiedVlcUrl(false), 2000);
-                      }}
-                      className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg font-bold text-xs transition-all duration-300 active:scale-95 ${copiedVlcUrl
-                        ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/25"
-                        : "bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25"
-                        }`}
-                    >
-                      {copiedVlcUrl ? <Check size={13} className="scale-110 transition-transform" /> : <Copy size={13} className="scale-100 hover:scale-110 transition-transform" />}
-                      <span>{copiedVlcUrl ? "Copied!" : "Copy"}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Community Box */}
-              <div className="md:col-span-1 group relative glass-card border border-white/10 sm:border-white/5 rounded-2xl md:rounded-3xl bg-white/[0.01] p-5 flex flex-col justify-between gap-4 transition-all duration-300 hover:border-white/20">
-                {/* Header (Icon on left of centered text) */}
-                <div className="flex items-center justify-center gap-3.5 w-full">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white/80 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                    <Radio className="w-5 h-5 text-white/70" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-sm font-black tracking-widest text-white/90 uppercase">Join Community</h3>
-                  </div>
-                </div>
-                {/* Buttons (Side-by-side) */}
-                <div className="grid grid-cols-2 gap-2 w-full">
-                  <a
-                    href="https://t.me/shajonOTT"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex justify-center items-center gap-1.5 py-2 rounded-xl bg-[#2AABEE]/10 hover:bg-[#2AABEE]/20 border border-[#2AABEE]/20 hover:border-[#2AABEE]/40 text-[#2AABEE] text-xs font-bold transition-all duration-200"
-                  >
-                    <FaTelegram size={14} className="flex-shrink-0" />
-                    <span className="truncate">Telegram</span>
-                  </a>
-                  <a
-                    href="https://discord.gg/NQjksbt3NN"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex justify-center items-center gap-1.5 py-2 rounded-xl bg-[#5865F2]/10 hover:bg-[#5865F2]/20 border border-[#5865F2]/20 hover:border-[#5865F2]/40 text-[#5865F2] text-xs font-bold transition-all duration-200"
-                  >
-                    <FaDiscord size={14} className="flex-shrink-0" />
-                    <span className="truncate">Discord</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Details & Counter Panels */}
           <ChannelStats

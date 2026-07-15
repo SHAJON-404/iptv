@@ -71,11 +71,9 @@ export const PlaylistSidebarView = React.memo(function PlaylistSidebarView({
 
       {/* 2. Your Playlists Header */}
       <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10 sm:border-white/5 mb-3 sm:mb-4 flex-shrink-0">
-        <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 sm:border-white/5 w-full">
-          <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold w-full bg-primary text-white shadow-lg shadow-primary/20 cursor-default">
-            <List size={14} />
-            <span className="whitespace-nowrap">Your Playlists</span>
-          </div>
+        <div className="flex items-center gap-2 text-white font-bold text-xs sm:text-sm uppercase tracking-wider">
+          <List size={14} className="text-primary" />
+          <span>Your Playlists</span>
         </div>
       </div>
 

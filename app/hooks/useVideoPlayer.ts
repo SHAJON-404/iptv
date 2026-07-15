@@ -3,7 +3,7 @@
 /* eslint-disable react-hooks/immutability */
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import type Hls from "hls.js";
-import { Channel, getIsIOS } from "./useIPTVPlaylists";
+import { Channel, getIsIOS, getApiUrl } from "./useIPTVPlaylists";
 import { useStreamGuardian } from "./useStreamGuardian";
 
 // shaka-player is loaded dynamically because it requires `window` (browser-only)
@@ -34,9 +34,7 @@ export interface TrendingChannel {
 
 const getPlayableUrl = (url: string, useProxy?: boolean, referer?: string, customHeaders?: Record<string, string>) => {
   if (useProxy && url && (url.startsWith("http://") || url.startsWith("https://"))) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
-    const cleanBaseUrl = baseUrl.replace(/\/$/, "");
-    let proxyUrl = `${cleanBaseUrl}/api/iptv/proxy?url=${encodeURIComponent(url)}`;
+    let proxyUrl = getApiUrl(`/api/iptv/proxy?url=${encodeURIComponent(url)}`);
     if (referer) {
       proxyUrl += `&referer=${encodeURIComponent(referer)}`;
     }
@@ -1209,7 +1207,7 @@ export function useVideoPlayer(
                         if (request.uris && request.uris.length > 0) {
                           request.uris = request.uris.map((uri: string) => {
                             if (shakaChan.useProxy && uri && (uri.startsWith("http://") || uri.startsWith("https://")) && !uri.includes("/api/iptv/proxy")) {
-                              let proxyUri = `/api/iptv/proxy?url=${encodeURIComponent(uri)}`;
+                              let proxyUri = getApiUrl(`/api/iptv/proxy?url=${encodeURIComponent(uri)}`);
                               if (shakaChan.referer) {
                                 proxyUri += `&referer=${encodeURIComponent(shakaChan.referer)}`;
                               }
