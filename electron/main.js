@@ -10,7 +10,6 @@ const dotenv = require('dotenv');
 
 let serverProcess = null;
 let mainWindow = null;
-let serverUrl = 'http://127.0.0.1:3000';
 let sleepBlockerId = null;
 
 // Fix Linux specific connection issues and root password prompts
@@ -48,7 +47,7 @@ if (!gotTheLock) {
   app.quit();
   process.exit(0);
 } else {
-  app.on('second-instance', (event, commandLine) => {
+  app.on('second-instance', () => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
