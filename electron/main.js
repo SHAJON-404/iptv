@@ -168,6 +168,10 @@ function createMainWindow(url) {
     },
   });
 
+  if (!isDev) {
+    mainWindow.removeMenu();
+  }
+
   // Open DevTools if we are in development mode AND ENABLE_DEVTOOLS is set to true/True
   const enableDevTools = process.env.ENABLE_DEVTOOLS && process.env.ENABLE_DEVTOOLS.toLowerCase() === 'true';
   if (isDev && enableDevTools) {
