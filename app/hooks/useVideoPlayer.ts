@@ -446,16 +446,16 @@ export function useVideoPlayer(
 
       const capacitor = typeof window !== "undefined" && (window as unknown as Record<string, unknown>).Capacitor as {
         Plugins?: {
-          OrientationPlugin?: {
-            setLandscape: () => Promise<void>;
-            unlock: () => Promise<void>;
+          FullscreenPlugin?: {
+            enterFullscreen: () => Promise<void>;
+            exitFullscreen: () => Promise<void>;
           };
         };
       } | undefined;
 
       if (isFs) {
-        if (capacitor && capacitor.Plugins && capacitor.Plugins.OrientationPlugin) {
-          capacitor.Plugins.OrientationPlugin.setLandscape().catch(() => {});
+        if (capacitor && capacitor.Plugins && capacitor.Plugins.FullscreenPlugin) {
+          capacitor.Plugins.FullscreenPlugin.enterFullscreen().catch(() => {});
         }
         setTimeout(() => {
           try {
@@ -471,8 +471,8 @@ export function useVideoPlayer(
           } catch { /* ignore */ }
         }, 150);
       } else {
-        if (capacitor && capacitor.Plugins && capacitor.Plugins.OrientationPlugin) {
-          capacitor.Plugins.OrientationPlugin.unlock().catch(() => {});
+        if (capacitor && capacitor.Plugins && capacitor.Plugins.FullscreenPlugin) {
+          capacitor.Plugins.FullscreenPlugin.exitFullscreen().catch(() => {});
         }
         setTimeout(() => {
           try {
