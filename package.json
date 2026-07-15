@@ -20,13 +20,12 @@
     "build:static": "node scripts/build-static.js",
     "cap:sync": "npm run build:static && npx cap sync",
     "cap:open-android": "npx cap open android",
-    "android:build-debug": "npm run cap:sync && cd android && gradlew assembleDebug",
-    "android:build-release": "npm run cap:sync && cd android && gradlew assembleRelease"
+    "android:build-debug": "npm run cap:sync && node scripts/prepare-android-sdk.js && node -e \"require('child_process').execSync(process.platform === 'win32' ? 'gradlew assembleDebug' : './gradlew assembleDebug', { stdio: 'inherit', cwd: 'android' })\"",
+    "android:build-release": "npm run cap:sync && node scripts/prepare-android-sdk.js && node -e \"require('child_process').execSync(process.platform === 'win32' ? 'gradlew assembleRelease' : './gradlew assembleRelease', { stdio: 'inherit', cwd: 'android' })\""
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
     "@capacitor/core": "^8.4.2",
-    "@capacitor/ios": "^8.4.2",
     "@types/video.js": "^7.3.58",
     "dotenv": "^17.4.2",
     "hls.js": "^1.6.16",
