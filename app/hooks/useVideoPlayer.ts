@@ -443,7 +443,37 @@ export function useVideoPlayer(
       isFullscreenRef.current = isFs;
       window.dispatchEvent(new CustomEvent("iptv-fullscreen", { detail: { isFullscreen: isFs } }));
       setIsFullscreen(isFs);
-      if (!isFs) {
+
+      const capacitor = typeof window !== "undefined" && (window as unknown as Record<string, unknown>).Capacitor as {
+        Plugins?: {
+          OrientationPlugin?: {
+            setLandscape: () => Promise<void>;
+            unlock: () => Promise<void>;
+          };
+        };
+      } | undefined;
+
+      if (isFs) {
+        if (capacitor && capacitor.Plugins && capacitor.Plugins.OrientationPlugin) {
+          capacitor.Plugins.OrientationPlugin.setLandscape().catch(() => {});
+        }
+        setTimeout(() => {
+          try {
+            const orientation = window.screen?.orientation as ScreenOrientation & {
+              lock?: (orientation: string) => Promise<void>;
+              unlock?: () => void;
+            };
+            if (orientation && typeof orientation.lock === "function") {
+              orientation
+                .lock("landscape")
+                .catch(() => { /* orientation lock not supported */ });
+            }
+          } catch { /* ignore */ }
+        }, 150);
+      } else {
+        if (capacitor && capacitor.Plugins && capacitor.Plugins.OrientationPlugin) {
+          capacitor.Plugins.OrientationPlugin.unlock().catch(() => {});
+        }
         setTimeout(() => {
           try {
             const orientation = window.screen?.orientation as ScreenOrientation & {
