@@ -22,7 +22,9 @@ export default function IPTVPlayer() {
   const [copiedVlcUrl, setCopiedVlcUrl] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings?key=vlcLiveUrl")
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
+    const cleanBaseUrl = baseUrl.replace(/\/$/, "");
+    fetch(`${cleanBaseUrl}/api/settings?key=vlcLiveUrl`)
       .then(res => res.json())
       .then(data => {
         if (data.value) setVlcUrl(data.value);

@@ -34,7 +34,9 @@ export interface TrendingChannel {
 
 const getPlayableUrl = (url: string, useProxy?: boolean, referer?: string, customHeaders?: Record<string, string>) => {
   if (useProxy && url && (url.startsWith("http://") || url.startsWith("https://"))) {
-    let proxyUrl = `/api/iptv/proxy?url=${encodeURIComponent(url)}`;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
+    const cleanBaseUrl = baseUrl.replace(/\/$/, "");
+    let proxyUrl = `${cleanBaseUrl}/api/iptv/proxy?url=${encodeURIComponent(url)}`;
     if (referer) {
       proxyUrl += `&referer=${encodeURIComponent(referer)}`;
     }

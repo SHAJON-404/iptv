@@ -177,6 +177,12 @@ const sortPlaylists = (list: Playlist[]): Playlist[] => {
   });
 };
 
+const getApiUrl = (path: string): string => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SITE_URL || "";
+  if (!baseUrl) return path;
+  return `${baseUrl.replace(/\/$/, "")}${path}`;
+};
+
 export function useIPTVPlaylists() {
   // No auth status required
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -313,7 +319,7 @@ export function useIPTVPlaylists() {
 
         while (!success && retries > 0) {
           try {
-            const response = await fetch('/api/iptv/playlists/available', { cache: 'no-store' });
+            const response = await fetch(getApiUrl('/api/iptv/playlists/available'), { cache: 'no-store' });
             if (response.ok) {
               const data = await response.json();
               if (data && Array.isArray(data) && data.length > 0) {
@@ -418,7 +424,7 @@ export function useIPTVPlaylists() {
 
               // Step 2: Fetch hash from server in background to verify freshness
               try {
-                const hashResponse = await fetch(`/api/iptv/channels/hash?type=${playlistId}`, {
+                const hashResponse = await fetch(getApiUrl(`/api/iptv/channels/hash?type=${playlistId}`), {
                   cache: "no-store",
                 });
                 if (hashResponse.ok) {
@@ -436,7 +442,7 @@ export function useIPTVPlaylists() {
             }
 
             // Step 3: Fetch full data from server API
-            const response = await fetch(`/api/iptv/channels?type=${playlistId}`, {
+            const response = await fetch(getApiUrl(`/api/iptv/channels?type=${playlistId}`), {
               cache: "no-store",
             });
             if (!response.ok) {
@@ -489,7 +495,7 @@ export function useIPTVPlaylists() {
       for (const pl of defaultPlaylists) {
         try {
           await clearCachedChannels(pl.id);
-          const hashResponse = await fetch(`/api/iptv/channels/hash?type=${pl.id}&forceRefresh=true`, {
+          const hashResponse = await fetch(getApiUrl(`/api/iptv/channels/hash?type=${pl.id}&forceRefresh=true`), {
             cache: "no-store",
           });
           if (!hashResponse.ok) continue;
@@ -499,7 +505,7 @@ export function useIPTVPlaylists() {
           if (cached && cached.hash === serverHash) continue;
 
           // Hash mismatch or cache cleared — fetch fresh data
-          const response = await fetch(`/api/iptv/channels?type=${pl.id}`, {
+          const response = await fetch(getApiUrl(`/api/iptv/channels?type=${pl.id}`), {
             cache: "no-store",
           });
           if (response.ok) {
@@ -558,7 +564,7 @@ export function useIPTVPlaylists() {
             const playlistId = getPlaylistId(item.name, item.url);
             await clearCachedChannels(playlistId);
             // Bust server cache
-            fetch(`/api/iptv/channels/hash?type=${playlistId}&forceRefresh=true`, { cache: "no-store" }).catch(console.warn);
+            fetch(getApiUrl(`/api/iptv/channels/hash?type=${playlistId}&forceRefresh=true`), { cache: "no-store" }).catch(console.warn);
           }
         }
       } catch (e) {
@@ -594,7 +600,7 @@ export function useIPTVPlaylists() {
     // 1. Refresh available default playlists config
     let fetchedDefaultsConfig: { name: string; url: string }[] = [];
     try {
-      const response = await fetch('/api/iptv/playlists/available', { cache: 'no-store' });
+      const response = await fetch(getApiUrl('/api/iptv/playlists/available'), { cache: 'no-store' });
       if (response.ok) {
         const data = await response.json();
         if (data && Array.isArray(data) && data.length > 0) {
@@ -644,7 +650,7 @@ export function useIPTVPlaylists() {
     for (const pl of localPlaylists) {
       if (pl.type === "url" && pl.url) {
         try {
-          const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(pl.url.trim())}`;
+          const proxiedUrl = getApiUrl(`/api/iptv/proxy?url=${encodeURIComponent(pl.url.trim())}`);
           const fileRes = await fetch(proxiedUrl);
           if (fileRes.ok) {
             const text = await fileRes.text();
@@ -801,7 +807,7 @@ export function useIPTVPlaylists() {
     setImportError(null);
 
     try {
-      const proxiedUrl = `/api/iptv/proxy?url=${encodeURIComponent(importUrl.trim())}`;
+      const proxiedUrl = getApiUrl(`/api/iptv/proxy?url=${encodeURIComponent(importUrl.trim())}`);
       const res = await fetch(proxiedUrl);
       if (!res.ok) {
         throw new Error(`Failed to fetch from URL (Status ${res.status})`);
