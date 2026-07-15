@@ -1,4 +1,4 @@
-name: Build Desktop Application
+name: Build Desktop & Mobile Application
 
 on:
   workflow_dispatch:
@@ -13,7 +13,11 @@ jobs:
             os: "windows-2022"
           - platform: linux
             os: "ubuntu-22.04"
+          - platform: android
+            os: "ubuntu-22.04"
     runs-on: ${{ matrix.os }}
+    env:
+      HAS_SIGNING_SECRETS: ${{ secrets.ANDROID_SIGNING_KEY != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +30,7 @@ jobs:
         run: npm ci
 
       - name: Build Next.js & Package Electron
+        if: matrix.platform == 'windows' || matrix.platform == 'linux'
         run: |
           if [ "${{ matrix.platform }}" = "windows" ]; then
             npm run electron:dist-win -- --publish never
@@ -40,6 +45,36 @@ jobs:
           ENABLE_DEVTOOLS: "false"
           GENERATE_SOURCEMAP: "false"
           NODE_ENV: "production"
+
+      - name: Setup Java JDK
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Build Android Release APK
+        if: matrix.platform == 'android'
+        run: |
+          chmod +x android/gradlew
+          npm run android:build-release
+        shell: bash
+        env:
+          ALLOWED_DEV_ORIGINS: "live.shajon.dev,192.168.0.57,192.168.0.179,127.0.0.1"
+          NEXT_PUBLIC_SITE_URL: "https://tv.shajon.dev"
+          PLAYLIST_DOMAIN: "iamshajon.com"
+          NODE_ENV: "production"
+
+      - name: Sign Android Release APK
+        if: matrix.platform == 'android' && env.HAS_SIGNING_SECRETS == 'true'
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Upload Windows Artifacts
         if: matrix.platform == 'windows'
@@ -60,6 +95,14 @@ jobs:
             dist/*.AppImage
             dist/*.deb
             dist/*.rpm
+          if-no-files-found: error
+
+      - name: Upload Android Artifacts
+        if: matrix.platform == 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPTV-Player-android
+          path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
   publish:
@@ -85,5 +128,6 @@ jobs:
             **/*.AppImage
             **/*.deb
             **/*.rpm
+            **/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
