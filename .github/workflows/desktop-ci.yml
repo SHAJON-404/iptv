@@ -70,26 +70,29 @@ jobs:
           PLAYLIST_DOMAIN: "iamshajon.com"
           NODE_ENV: "production"
 
-      - name: Sign Android Release APK
-        if: matrix.platform == 'android' && env.HAS_SIGNING_SECRETS == 'true'
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        env:
-          BUILD_TOOLS_VERSION: "34.0.0"
-        with:
-          releaseDirectory: android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
-          alias: ${{ secrets.ANDROID_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-
-      - name: Prepare Signed APK
+      - name: Sign & Prepare Android Release APK
         if: matrix.platform == 'android'
         run: |
           if [ "${{ env.HAS_SIGNING_SECRETS }}" = "true" ]; then
-            cp "${{ steps.sign_app.outputs.signedReleaseFile }}" android/app/build/outputs/apk/release/android-iptv-player.apk
+            # 1. Decode the signing key base64
+            echo "${{ secrets.ANDROID_SIGNING_KEY }}" | base64 -d > release.keystore
+            
+            # 2. Find the latest build tools directory dynamically
+            BUILD_TOOLS_DIR=$(ls -d $ANDROID_SDK_ROOT/build-tools/* | tail -n 1)
+            echo "Using Android Build Tools: $BUILD_TOOLS_DIR"
+            
+            # 3. Zipalign the unsigned APK
+            $BUILD_TOOLS_DIR/zipalign -f -v 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+            
+            # 4. Sign the aligned APK
+            $BUILD_TOOLS_DIR/apksigner sign --ks release.keystore --ks-key-alias "${{ secrets.ANDROID_ALIAS }}" --ks-pass pass:"${{ secrets.ANDROID_KEY_STORE_PASSWORD }}" --key-pass pass:"${{ secrets.ANDROID_KEY_PASSWORD }}" --out android/app/build/outputs/apk/release/android-iptv-player.apk aligned.apk
+            
+            # 5. Clean up temporary files
+            rm -f release.keystore aligned.apk
+            echo "Android release APK signed successfully: android-iptv-player.apk"
           else
             cp android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/android-iptv-player.apk
+            echo "No signing secrets found. Fallback copied unsigned APK to: android-iptv-player.apk"
           fi
         shell: bash
 
