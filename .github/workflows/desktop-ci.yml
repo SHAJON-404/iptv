@@ -69,6 +69,8 @@ jobs:
         if: matrix.platform == 'android' && env.HAS_SIGNING_SECRETS == 'true'
         uses: r0adkll/sign-android-release@v1
         id: sign_app
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
         with:
           releaseDirectory: android/app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
