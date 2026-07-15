@@ -5,7 +5,7 @@ import { FaTelegram, FaDiscord, FaGithub } from "react-icons/fa6";
 
 export default function Footer() {
   return (
-    <footer className="w-full mt-auto bg-[#070414]/90 backdrop-blur-xl border-t border-white/[0.08] relative z-40 overflow-hidden">
+    <footer className="w-full mt-auto bg-[#070414]/90 backdrop-blur-xl border-t border-white/15 relative z-40 overflow-hidden">
       {/* Decorative top gradient line */}
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
 
@@ -17,15 +17,15 @@ export default function Footer() {
             <Link href="/" className="inline-block">
               <div className="flex items-baseline gap-1 select-none">
                 <span className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                  IP
+                  IPTV
                 </span>
                 <span className="text-2xl sm:text-3xl font-black tracking-tight gradient-text">
-                  TV Player
+                  Docs
                 </span>
               </div>
             </Link>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-sm">
-              The ultimate web-based streaming platform. Watch thousands of live TV channels from around the world without installing any applications. Supports M3U, JSON, HLS, and DASH streams.
+              The ultimate cross-platform streaming platform. Watch thousands of live TV channels from around the world in a unified, premium interface. Supports M3U, JSON, HLS, and DASH streams.
             </p>
           </div>
 
@@ -87,11 +87,11 @@ export default function Footer() {
         </div>
 
         {/* Copyright Line */}
-        <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-zinc-500 font-medium">
-            &copy; {new Date().getFullYear()} IPTV Player by <a href="https://github.com/SHAJON-404" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors font-bold">S. SHAJON</a>. All rights reserved.
+        <div className="mt-10 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-zinc-400 font-medium">
+            &copy; {new Date().getFullYear()} IPTV Docs by <a href="https://github.com/SHAJON-404" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors font-bold">S. SHAJON</a>. All rights reserved.
           </p>
-          <div className="text-[10px] text-zinc-600 font-medium tracking-widest bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
+          <div className="text-[10px] text-zinc-400 font-medium tracking-widest bg-white/5 px-2.5 py-1 rounded-md border border-white/15">
             Not affiliated with any broadcasters
           </div>
         </div>
